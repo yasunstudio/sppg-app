@@ -1,0 +1,218 @@
+'use client'
+
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '../../../components/ui/badge'
+import { Plus, Search, Filter, Package, AlertTriangle, CheckCircle, XCircle, Bot, TrendingUp } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { 
+  InventoryForm, 
+  InventoryTable, 
+  InventoryStats, 
+  InventoryAlerts,
+  AIInventoryPredictor
+} from './components'
+
+type InventoryStatus = 'AVAILABLE' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'EXPIRED'
+type MaterialCategory = 'PROTEIN' | 'VEGETABLE' | 'GRAIN' | 'SPICE' | 'OIL'
+
+interface InventoryItem {
+  id: string
+  rawMaterial: {
+    id: string
+    name: string
+    category: MaterialCategory
+    unit: string
+  }
+  supplier: {
+    id: string
+    name: string
+    contactName: string
+  }
+  quantity: number
+  minimumStock: number
+  purchasePrice: number
+  expiryDate: Date
+  batchNumber: string
+  status: InventoryStatus
+  location: string
+  receivedDate: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+export default function InventoryPage() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<InventoryStatus | 'ALL'>('ALL')
+  const [categoryFilter, setCategoryFilter] = useState<MaterialCategory | 'ALL'>('ALL')
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isAIPredictorOpen, setIsAIPredictorOpen] = useState(false)
+
+  // Fetch inventory data
+  const { data: inventoryItems = [], isLoading, refetch } = useQuery({
+    queryKey: ['inventory', searchTerm, statusFilter, categoryFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams()
+      if (searchTerm) params.append('search', searchTerm)
+      if (statusFilter !== 'ALL') params.append('status', statusFilter)
+      if (categoryFilter !== 'ALL') params.append('category', categoryFilter)
+      
+      const response = await fetch(`/api/inventory?${params}`)
+      if (!response.ok) throw new Error('Failed to fetch inventory')
+      return response.json()
+    }
+  })
+
+  const getStatusIcon = (status: InventoryStatus) => {
+    switch (status) {
+      case 'AVAILABLE':
+        return <CheckCircle className="w-4 h-4 text-green-500" />
+      case 'LOW_STOCK':
+        return <AlertTriangle className="w-4 h-4 text-yellow-500" />
+      case 'OUT_OF_STOCK':
+        return <XCircle className="w-4 h-4 text-red-500" />
+      case 'EXPIRED':
+        return <XCircle className="w-4 h-4 text-red-500" />
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      AVAILABLE: 'bg-green-100 text-green-800',
+      LOW_STOCK: 'bg-yellow-100 text-yellow-800',
+      OUT_OF_STOCK: 'bg-red-100 text-red-800',
+      EXPIRED: 'bg-red-100 text-red-800'
+    }
+    
+    const statusKey = status as InventoryStatus
+    
+    return (
+      <Badge className={variants[statusKey] || 'bg-gray-100 text-gray-800'}>
+        {getStatusIcon(statusKey)}
+        <span className="ml-1">
+          {status.replace('_', ' ')}
+        </span>
+      </Badge>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Inventory Management</h1>
+          <p className="text-muted-foreground">
+            Kelola stok bahan baku dan pantau ketersediaan untuk produksi makanan
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Dialog open={isAIPredictorOpen} onOpenChange={setIsAIPredictorOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600">
+                <Bot className="w-4 h-4 mr-2" />
+                AI Inventory Predictor
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>🤖 AI Inventory Predictor</DialogTitle>
+              </DialogHeader>
+              <AIInventoryPredictor
+                onSuccess={() => {
+                  setIsAIPredictorOpen(false)
+                  refetch()
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Tambah Stok
+              </Button>
+            </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Tambah Item Inventory</DialogTitle>
+            </DialogHeader>
+            <InventoryForm
+              onSuccess={() => {
+                setIsAddDialogOpen(false)
+                refetch()
+              }}
+            />
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>      {/* Stats Cards */}
+      <InventoryStats />
+
+      {/* Alerts */}
+      <InventoryAlerts />
+
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Package className="w-5 h-5 mr-2" />
+            Filter & Pencarian
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  placeholder="Cari bahan baku, supplier, atau batch number..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Select value={statusFilter} onValueChange={(value: InventoryStatus | 'ALL') => setStatusFilter(value)}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Semua Status</SelectItem>
+                <SelectItem value="AVAILABLE">Available</SelectItem>
+                <SelectItem value="LOW_STOCK">Low Stock</SelectItem>
+                <SelectItem value="OUT_OF_STOCK">Out of Stock</SelectItem>
+                <SelectItem value="EXPIRED">Expired</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={categoryFilter} onValueChange={(value: MaterialCategory | 'ALL') => setCategoryFilter(value)}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter Kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Semua Kategori</SelectItem>
+                <SelectItem value="PROTEIN">Protein</SelectItem>
+                <SelectItem value="VEGETABLE">Sayuran</SelectItem>
+                <SelectItem value="GRAIN">Karbohidrat</SelectItem>
+                <SelectItem value="SPICE">Bumbu</SelectItem>
+                <SelectItem value="OIL">Minyak</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Inventory Table */}
+      <InventoryTable
+        data={inventoryItems}
+        isLoading={isLoading}
+        onRefetch={refetch}
+        getStatusBadge={getStatusBadge}
+      />
+    </div>
+  )
+}

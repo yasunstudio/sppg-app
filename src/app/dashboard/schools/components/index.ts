@@ -1,0 +1,7 @@
+export { SchoolStats } from './school-stats'
+export { SchoolsList } from './schools-list'
+export { SchoolForm } from './school-form'
+export { StudentsList } from './students-list'
+export { StudentForm } from './student-form'
+export { ClassesList } from './classes-list'
+export { ClassForm } from './class-form'

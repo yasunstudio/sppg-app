@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  postgres:
+    container_name: sppg_postgres
+    image: postgres:15
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sppg_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sppg_network
+
+  pgadmin:
+    container_name: sppg_pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@sppg.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    networks:
+      - sppg_network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+
+networks:
+  sppg_network:
+    driver: bridge

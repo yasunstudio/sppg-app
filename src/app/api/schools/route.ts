@@ -1,0 +1,149 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+
+// GET /api/schools - Get all schools with filters
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const search = searchParams.get('search')
+
+    const skip = (page - 1) * limit
+
+    // Build where clause
+    const where: any = {}
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { address: { contains: search, mode: 'insensitive' } },
+        { principalName: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+
+    // Get schools with student and class counts
+    const [schools, total] = await Promise.all([
+      prisma.school.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          name: 'asc'
+        },
+        include: {
+          students: true,
+          classes: true
+        }
+      }),
+      prisma.school.count({ where })
+    ])
+
+    // Transform response
+    const schoolsWithCounts = schools.map(school => ({
+      id: school.id,
+      name: school.name,
+      principalName: school.principalName,
+      principalPhone: school.principalPhone,
+      address: school.address,
+      totalStudents: school.totalStudents,
+      notes: school.notes,
+      latitude: school.latitude,
+      longitude: school.longitude,
+      createdAt: school.createdAt,
+      updatedAt: school.updatedAt,
+      studentCount: school.students.length,
+      classCount: school.classes.length
+    }))
+
+    return NextResponse.json({
+      data: schoolsWithCounts,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching schools:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch schools' },
+      { status: 500 }
+    )
+  }
+}
+
+// POST /api/schools - Create new school
+export async function POST(request: NextRequest) {
+  try {
+    const data = await request.json()
+
+    const {
+      name,
+      principalName,
+      principalPhone,
+      address,
+      totalStudents,
+      notes,
+      latitude,
+      longitude
+    } = data
+
+    // Validate required fields
+    if (!name || !principalName || !address) {
+      return NextResponse.json(
+        { error: 'Nama sekolah, nama kepala sekolah, dan alamat harus diisi' },
+        { status: 400 }
+      )
+    }
+
+    // Check if school name already exists
+    const existingSchool = await prisma.school.findFirst({
+      where: { 
+        name: { equals: name, mode: 'insensitive' }
+      }
+    })
+
+    if (existingSchool) {
+      return NextResponse.json(
+        { error: 'Nama sekolah sudah terdaftar' },
+        { status: 400 }
+      )
+    }
+
+    const school = await prisma.school.create({
+      data: {
+        name: name.trim(),
+        principalName: principalName.trim(),
+        principalPhone: principalPhone?.trim() || '',
+        address: address.trim(),
+        totalStudents: totalStudents || 0,
+        notes: notes?.trim() || null,
+        latitude: latitude || null,
+        longitude: longitude || null
+      }
+    })
+
+    return NextResponse.json({
+      id: school.id,
+      name: school.name,
+      principalName: school.principalName,
+      principalPhone: school.principalPhone,
+      address: school.address,
+      totalStudents: school.totalStudents,
+      notes: school.notes,
+      latitude: school.latitude,
+      longitude: school.longitude,
+      createdAt: school.createdAt,
+      updatedAt: school.updatedAt,
+      studentCount: 0,
+      classCount: 0
+    }, { status: 201 })
+  } catch (error) {
+    console.error('Error creating school:', error)
+    return NextResponse.json(
+      { error: 'Failed to create school' },
+      { status: 500 }
+    )
+  }
+}
