@@ -151,53 +151,68 @@ export function MenuForm({ onSuccess, menu }: MenuFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>{menu ? 'Edit Menu' : 'Tambah Menu Baru'}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="basic">Informasi Dasar</TabsTrigger>
-              <TabsTrigger value="items">Item Menu</TabsTrigger>
-            </TabsList>
+    <div className="w-full space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 h-12 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+            <TabsTrigger 
+              value="basic" 
+              className="h-10 rounded-md font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50"
+            >
+              Informasi Dasar
+            </TabsTrigger>
+            <TabsTrigger 
+              value="items"
+              className="h-10 rounded-md font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50"
+            >
+              Item Menu
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="basic" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Nama Menu</Label>
-                  <Input
-                    id="name"
-                    {...form.register('name')}
-                    placeholder="Contoh: Menu Sarapan Sehat"
-                  />
-                  {form.formState.errors.name && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {form.formState.errors.name.message}
-                    </p>
-                  )}
-                </div>
+          <TabsContent value="basic" className="space-y-6 mt-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Nama Menu
+                </Label>
+                <Input
+                  id="name"
+                  {...form.register('name')}
+                  placeholder="Contoh: Menu Sarapan Sehat"
+                  className="h-11 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400 focus:ring-emerald-500 dark:focus:ring-emerald-400"
+                />
+                {form.formState.errors.name && (
+                  <p className="text-sm text-red-500 dark:text-red-400 mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
+                )}
+              </div>
 
-                <div>
-                  <Label htmlFor="mealType">Jenis Makanan</Label>
-                  <Select
-                    value={form.watch('mealType')}
-                    onValueChange={(value) => form.setValue('mealType', value as any)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih jenis makanan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(MEAL_TYPES).map(([key, value]) => (
-                        <SelectItem key={value} value={value}>
-                          {getMealTypeLabel(value)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {form.formState.errors.mealType && (
-                    <p className="text-sm text-red-500 mt-1">
+              <div className="space-y-2">
+                <Label htmlFor="mealType" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Jenis Makanan
+                </Label>
+                <Select
+                  value={form.watch('mealType')}
+                  onValueChange={(value) => form.setValue('mealType', value as any)}
+                >
+                  <SelectTrigger className="h-11 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400">
+                    <SelectValue placeholder="Pilih jenis makanan" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
+                    {Object.entries(MEAL_TYPES).map(([key, value]) => (
+                      <SelectItem 
+                        key={value} 
+                        value={value}
+                        className="hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800"
+                      >
+                        {getMealTypeLabel(value)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.mealType && (
+                  <p className="text-sm text-red-500 dark:text-red-400 mt-1">
                       {form.formState.errors.mealType.message}
                     </p>
                   )}

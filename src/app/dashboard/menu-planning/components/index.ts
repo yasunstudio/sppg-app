@@ -1,5 +1,5 @@
 export { MenuCalendar } from './menu-calendar'
-export { MenuForm } from './menu-form'
+export { MenuForm } from './menu-form-improved'
 export { MenuList } from './menu-list'
 export { NutritionAnalysis } from './nutrition-analysis'
 export { MenuStats } from './menu-stats'

@@ -1,0 +1,373 @@
+'use client'
+
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ArrowLeft, Activity, Target, Settings, TrendingUp } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { MacroBreakdown, Micronutrients, NutritionTargets, NutritionSettings } from './components'
+
+// Sample data untuk demonstrasi
+const sampleMacroData = {
+  carbs: { current: 285, target: 300 },
+  protein: { current: 52, target: 60 },
+  fat: { current: 71, target: 67 },
+  calories: { current: 1895, target: 2000 }
+}
+
+const sampleVitamins = [
+  {
+    name: 'Vitamin A',
+    current: 520,
+    target: 600,
+    unit: 'μg',
+    importance: 'Tinggi' as const,
+    benefits: ['Kesehatan mata', 'Sistem imun', 'Pertumbuhan sel']
+  },
+  {
+    name: 'Vitamin C',
+    current: 38,
+    target: 45,
+    unit: 'mg',
+    importance: 'Tinggi' as const,
+    benefits: ['Antioksidan', 'Penyerapan zat besi', 'Kolagen']
+  },
+  {
+    name: 'Vitamin D',
+    current: 12,
+    target: 15,
+    unit: 'μg',
+    importance: 'Tinggi' as const,
+    benefits: ['Kesehatan tulang', 'Sistem imun']
+  },
+  {
+    name: 'Vitamin E',
+    current: 6.5,
+    target: 8,
+    unit: 'mg',
+    importance: 'Sedang' as const,
+    benefits: ['Antioksidan', 'Kesehatan kulit']
+  }
+]
+
+const sampleMinerals = [
+  {
+    name: 'Kalsium',
+    current: 1050,
+    target: 1200,
+    unit: 'mg',
+    importance: 'Tinggi' as const,
+    benefits: ['Kesehatan tulang', 'Kontraksi otot', 'Fungsi saraf']
+  },
+  {
+    name: 'Zat Besi',
+    current: 11,
+    target: 13,
+    unit: 'mg',
+    importance: 'Tinggi' as const,
+    benefits: ['Pembentukan darah', 'Transportasi oksigen', 'Energi']
+  },
+  {
+    name: 'Seng',
+    current: 8,
+    target: 11,
+    unit: 'mg',
+    importance: 'Sedang' as const,
+    benefits: ['Sistem imun', 'Penyembuhan luka', 'Metabolisme']
+  },
+  {
+    name: 'Magnesium',
+    current: 98,
+    target: 120,
+    unit: 'mg',
+    importance: 'Sedang' as const,
+    benefits: ['Fungsi otot', 'Metabolisme energi', 'Kesehatan tulang']
+  }
+]
+
+const defaultNutritionTargets = {
+  calories: 2000,
+  carbs: 300,
+  protein: 60,
+  fat: 67,
+  fiber: 25,
+  vitaminA: 600,
+  vitaminC: 45,
+  vitaminD: 15,
+  vitaminE: 8,
+  vitaminK: 25,
+  thiamine: 1.1,
+  riboflavin: 1.1,
+  niacin: 12,
+  vitaminB6: 1.1,
+  vitaminB12: 1.8,
+  folate: 250,
+  calcium: 1200,
+  iron: 13,
+  magnesium: 120,
+  phosphorus: 500,
+  potassium: 1600,
+  sodium: 1200,
+  zinc: 11
+}
+
+export default function NutritionAnalysisPage() {
+  const router = useRouter()
+  const [nutritionTargets, setNutritionTargets] = useState(defaultNutritionTargets)
+  const [nutritionSettings, setNutritionSettings] = useState({
+    nutritionStandard: 'akg-indonesia' as 'akg-indonesia' | 'who' | 'usda',
+    unitSystem: 'metric' as 'metric' | 'imperial',
+    displayOptions: {
+      showPercentages: true,
+      showProgress: true,
+      showRecommendations: true,
+      groupByCategory: true
+    },
+    analysisDepth: 'detailed' as 'basic' | 'detailed' | 'comprehensive'
+  })
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 transition-colors duration-300">
+      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
+          <div className="flex items-start md:items-center space-x-4">
+            <Button 
+              variant="outline" 
+              onClick={() => router.back()}
+              className="flex items-center space-x-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 border-slate-200 dark:border-slate-700"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Kembali</span>
+            </Button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-50 flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-400 dark:to-emerald-500 rounded-xl shadow-lg">
+                  <Activity className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                </div>
+                Analisis Nutrisi
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-1 text-sm md:text-base">
+                Evaluasi mendalam kandungan nutrisi menu SPPG
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <Button 
+              variant="outline" 
+              className="flex items-center space-x-2 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              <Target className="w-4 h-4" />
+              <span>Export PDF</span>
+            </Button>
+            <Button className="flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-emerald-600 hover:from-emerald-700 hover:to-emerald-700 dark:from-emerald-500 dark:to-emerald-600 dark:hover:from-emerald-600 dark:hover:to-emerald-700 shadow-lg">
+              <Settings className="w-4 h-4" />
+              <span>Pengaturan</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 border-blue-200 dark:border-blue-800/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Kalori</p>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    {sampleMacroData.calories.current.toLocaleString('id-ID')}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">
+                    {Math.round((sampleMacroData.calories.current / sampleMacroData.calories.target) * 100)}% dari target
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-full">
+                  <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 border-emerald-200 dark:border-emerald-800/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Protein</p>
+                  <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
+                    {sampleMacroData.protein.current}g
+                  </p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                    {Math.round((sampleMacroData.protein.current / sampleMacroData.protein.target) * 100)}% dari target
+                  </p>
+                </div>
+                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/50 rounded-full">
+                  <Activity className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-950/30 dark:to-violet-900/30 border-violet-200 dark:border-violet-800/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-violet-600 dark:text-violet-400">Karbohidrat</p>
+                  <p className="text-2xl font-bold text-violet-900 dark:text-violet-100">
+                    {sampleMacroData.carbs.current}g
+                  </p>
+                  <p className="text-xs text-violet-600 dark:text-violet-400">
+                    {Math.round((sampleMacroData.carbs.current / sampleMacroData.carbs.target) * 100)}% dari target
+                  </p>
+                </div>
+                <div className="p-3 bg-violet-100 dark:bg-violet-900/50 rounded-full">
+                  <Target className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/30 border-amber-200 dark:border-amber-800/50 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Lemak</p>
+                  <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                    {sampleMacroData.fat.current}g
+                  </p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    {Math.round((sampleMacroData.fat.current / sampleMacroData.fat.target) * 100)}% dari target
+                  </p>
+                </div>
+                <div className="p-3 bg-amber-100 dark:bg-amber-900/50 rounded-full">
+                  <Settings className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 p-1 rounded-lg">
+            <TabsTrigger 
+              value="overview" 
+              className="font-medium data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/50 data-[state=active]:text-emerald-900 dark:data-[state=active]:text-emerald-100 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+            >
+              Ringkasan
+            </TabsTrigger>
+            <TabsTrigger 
+              value="micronutrients" 
+              className="font-medium data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/50 data-[state=active]:text-emerald-900 dark:data-[state=active]:text-emerald-100 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+            >
+              Mikronutrien
+            </TabsTrigger>
+            <TabsTrigger 
+              value="targets" 
+              className="font-medium data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/50 data-[state=active]:text-emerald-900 dark:data-[state=active]:text-emerald-100 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+            >
+              Target
+            </TabsTrigger>
+            <TabsTrigger 
+              value="settings" 
+              className="font-medium data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/50 data-[state=active]:text-emerald-900 dark:data-[state=active]:text-emerald-100 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+            >
+              Pengaturan
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6 mt-6">
+            <div className="space-y-6">
+              <div className="text-center p-6 bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-950/20 dark:to-blue-950/20 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                  Analisis Makronutrien
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                  Distribusi kalori dan makronutrien dalam menu harian
+                </p>
+              </div>
+              <MacroBreakdown data={sampleMacroData} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="micronutrients" className="space-y-6 mt-6">
+            <div className="space-y-6">
+              <div className="text-center p-6 bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/20 dark:to-indigo-950/20 rounded-xl border border-violet-200 dark:border-violet-800/50">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                  Analisis Mikronutrien
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                  Evaluasi vitamin dan mineral dalam menu
+                </p>
+              </div>
+              <Micronutrients vitamins={sampleVitamins} minerals={sampleMinerals} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="targets" className="space-y-6 mt-6">
+            <div className="space-y-6">
+              <div className="text-center p-6 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-xl border border-blue-200 dark:border-blue-800/50">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                  Pengaturan Target Nutrisi
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                  Atur target nutrisi berdasarkan standar AKG Indonesia
+                </p>
+              </div>
+              <NutritionTargets 
+                targets={nutritionTargets} 
+                onTargetsChange={setNutritionTargets}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-6 mt-6">
+            <div className="space-y-6">
+              <div className="text-center p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-xl border border-amber-200 dark:border-amber-800/50">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                  Pengaturan Analisis
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                  Kustomisasi tampilan dan standar analisis nutrisi
+                </p>
+              </div>
+              <NutritionSettings 
+                settings={nutritionSettings}
+                onSettingsChange={setNutritionSettings}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Footer Info */}
+        <Card className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-950/20 dark:to-blue-950/20 border-emerald-200 dark:border-emerald-800/50 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
+                  <Activity className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-emerald-900 dark:text-emerald-100 text-lg">
+                    Analisis Berdasarkan AKG Indonesia 2019
+                  </p>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
+                    Data nutrisi mengacu pada Angka Kecukupan Gizi yang direkomendasikan untuk anak sekolah
+                  </p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/20 transition-colors"
+              >
+                Pelajari Lebih Lanjut
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
