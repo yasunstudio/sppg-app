@@ -47,16 +47,16 @@ function Micronutrients({ vitamins, minerals }: MicronutrientsProps) {
         const status = getStatus(nutrient.current, nutrient.target)
         
         return (
-          <Card key={nutrient.name} className="border-0 shadow-md bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200">
+          <Card key={nutrient.name} className="border-0 shadow-sm">
             <CardContent className="p-4">
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${getImportanceColor(nutrient.importance)} shadow-sm`} />
-                    <h4 className="font-medium text-slate-900 dark:text-slate-100">{nutrient.name}</h4>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${getImportanceColor(nutrient.importance)}`} />
+                    <h4 className="font-medium text-foreground">{nutrient.name}</h4>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300">
+                    <Badge variant="outline" className="text-xs">
                       {nutrient.importance}
                     </Badge>
                     <Badge variant={status.color} className="text-xs">
@@ -67,31 +67,31 @@ function Micronutrients({ vitamins, minerals }: MicronutrientsProps) {
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                    <span className="font-medium">
                       {nutrient.current} {nutrient.unit}
                     </span>
-                    <span className="text-slate-600 dark:text-slate-400">
+                    <span className="text-muted-foreground">
                       Target: {nutrient.target} {nutrient.unit}
                     </span>
                   </div>
-                  <Progress value={percentage} className="h-2 bg-slate-200 dark:bg-slate-600" />
+                  <Progress value={percentage} className="h-2" />
                   <div className="text-right">
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <span className="text-xs text-muted-foreground">
                       {Math.round(percentage)}%
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Manfaat:</p>
+                  <p className="text-xs font-medium text-muted-foreground">Manfaat:</p>
                   <div className="flex flex-wrap gap-1">
                     {nutrient.benefits.slice(0, 3).map((benefit, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300">
+                      <Badge key={index} variant="secondary" className="text-xs">
                         {benefit}
                       </Badge>
                     ))}
                     {nutrient.benefits.length > 3 && (
-                      <Badge variant="outline" className="text-xs border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400">
+                      <Badge variant="outline" className="text-xs">
                         +{nutrient.benefits.length - 3} lainnya
                       </Badge>
                     )}
@@ -106,25 +106,15 @@ function Micronutrients({ vitamins, minerals }: MicronutrientsProps) {
   )
 
   return (
-    <Card className="border-0 shadow-lg bg-white dark:bg-slate-800 hover:shadow-xl transition-all duration-300">
+    <Card className="border-0 shadow-md">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">Analisis Mikronutrien</CardTitle>
+        <CardTitle className="text-lg font-semibold">Analisis Mikronutrien</CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="vitamins" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-100 dark:bg-slate-700 p-1">
-            <TabsTrigger 
-              value="vitamins"
-              className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 transition-all"
-            >
-              Vitamin
-            </TabsTrigger>
-            <TabsTrigger 
-              value="minerals"
-              className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 transition-all"
-            >
-              Mineral
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="vitamins">Vitamin</TabsTrigger>
+            <TabsTrigger value="minerals">Mineral</TabsTrigger>
           </TabsList>
           
           <TabsContent value="vitamins" className="mt-4">
