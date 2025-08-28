@@ -20,22 +20,39 @@ interface ProductionBatch {
   id: string;
   batchNumber: string;
   status: string;
-  targetQuantity: number;
+  plannedQuantity: number;
   actualQuantity: number | null;
-  scheduledDate: string;
   startedAt: string | null;
   completedAt: string | null;
-  estimatedCost: number;
-  actualCost: number | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
   recipe: {
     id: string;
     name: string;
     category: string;
+    servingSize: number;
+    prepTime: number;
+    cookTime: number;
   } | null;
   productionPlan: {
     id: string;
-    name: string;
+    planDate: string;
+    targetPortions: number;
+    status: string;
   } | null;
+  qualityChecks: {
+    id: string;
+    status: string;
+  }[];
+  _count: {
+    qualityChecks: number;
+  };
+  metrics?: {
+    efficiency: number;
+    durationMinutes: number;
+    isOnTime: boolean | null;
+  };
 }
 
 export default function ProductionBatchesPage() {
@@ -118,14 +135,6 @@ export default function ProductionBatchesPage() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
       year: "numeric",
@@ -135,8 +144,8 @@ export default function ProductionBatchesPage() {
   };
 
   const calculateEfficiency = (batch: ProductionBatch) => {
-    if (!batch.actualQuantity || !batch.targetQuantity) return 0;
-    return Math.round((batch.actualQuantity / batch.targetQuantity) * 100);
+    if (!batch.actualQuantity || !batch.plannedQuantity) return 0;
+    return Math.round((batch.actualQuantity / batch.plannedQuantity) * 100);
   };
 
   // Get unique categories for filter
@@ -205,7 +214,10 @@ export default function ProductionBatchesPage() {
               <div className="ml-2">
                 <p className="text-sm font-medium text-muted-foreground">Total Portions</p>
                 <p className="text-2xl font-bold">
-                  {batches.reduce((sum, batch) => sum + (batch.actualQuantity || batch.targetQuantity), 0)}
+                  {batches.reduce((sum, batch) => {
+                    const quantity = batch.actualQuantity ?? batch.plannedQuantity ?? 0;
+                    return sum + (typeof quantity === 'number' ? quantity : 0);
+                  }, 0)}
                 </p>
               </div>
             </div>
@@ -217,9 +229,9 @@ export default function ProductionBatchesPage() {
             <div className="flex items-center">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
               <div className="ml-2">
-                <p className="text-sm font-medium text-muted-foreground">Total Cost</p>
+                <p className="text-sm font-medium text-muted-foreground">Quality Checks</p>
                 <p className="text-2xl font-bold">
-                  {formatCurrency(batches.reduce((sum, batch) => sum + (batch.actualCost || batch.estimatedCost), 0))}
+                  {batches.reduce((sum, batch) => sum + (batch._count?.qualityChecks || 0), 0)}
                 </p>
               </div>
             </div>
@@ -341,7 +353,7 @@ export default function ProductionBatchesPage() {
                             <div>
                               <span className="text-muted-foreground">Quantity:</span>
                               <div className="font-medium">
-                                {batch.actualQuantity || batch.targetQuantity} porsi
+                                {batch.actualQuantity || batch.plannedQuantity} porsi
                                 {batch.actualQuantity && (
                                   <span className="text-xs text-muted-foreground ml-1">
                                     ({calculateEfficiency(batch)}% efisiensi)
@@ -351,17 +363,17 @@ export default function ProductionBatchesPage() {
                             </div>
                             
                             <div>
-                              <span className="text-muted-foreground">Scheduled:</span>
-                              <div className="font-medium">{formatDate(batch.scheduledDate)}</div>
+                              <span className="text-muted-foreground">Created:</span>
+                              <div className="font-medium">{formatDate(batch.createdAt)}</div>
                             </div>
                             
                             <div>
-                              <span className="text-muted-foreground">Cost:</span>
+                              <span className="text-muted-foreground">Quality Checks:</span>
                               <div className="font-medium">
-                                {formatCurrency(batch.actualCost || batch.estimatedCost)}
-                                {batch.actualCost && batch.actualCost !== batch.estimatedCost && (
-                                  <span className={`text-xs ml-1 ${batch.actualCost > batch.estimatedCost ? 'text-red-600' : 'text-green-600'}`}>
-                                    ({batch.actualCost > batch.estimatedCost ? '+' : ''}{formatCurrency(batch.actualCost - batch.estimatedCost)})
+                                {batch._count?.qualityChecks || 0} checks
+                                {batch.qualityChecks.length > 0 && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    (Latest: {batch.qualityChecks[0]?.status})
                                   </span>
                                 )}
                               </div>
@@ -370,7 +382,7 @@ export default function ProductionBatchesPage() {
 
                           {batch.productionPlan && (
                             <div className="mt-2 text-sm text-muted-foreground">
-                              Production Plan: {batch.productionPlan.name}
+                              Production Plan: {formatDate(batch.productionPlan.planDate)} - {batch.productionPlan.targetPortions} portions
                             </div>
                           )}
                         </div>

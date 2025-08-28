@@ -189,6 +189,52 @@ async function main() {
     }
   }
 
+  // ============================================================================
+  // 6. CREATE PRODUCTION PLANS & BATCHES  
+  // ============================================================================
+  console.log("Creating production plans and batches...")
+  
+  const productionPlans = []
+  for (let i = 0; i < 5; i++) {
+    const planDate = new Date()
+    planDate.setDate(planDate.getDate() + i - 2) // 2 days ago to 2 days from now
+    
+    try {
+      const productionPlan = await prisma.productionPlan.create({
+        data: {
+          planDate: planDate,
+          targetPortions: 200 + (i * 50),
+          status: i < 2 ? 'COMPLETED' : i < 4 ? 'IN_PROGRESS' : 'PLANNED',
+          menuId: menus[Math.floor(Math.random() * menus.length)]?.id || null,
+          notes: `Production plan for ${planDate.toDateString()}`
+        }
+      })
+      productionPlans.push(productionPlan)
+      
+      // Create 2-3 batches for each production plan
+      const batchCount = Math.floor(Math.random() * 2) + 2
+      for (let j = 0; j < batchCount; j++) {
+        const recipe = recipes[Math.floor(Math.random() * recipes.length)]
+        
+        await prisma.productionBatch.create({
+          data: {
+            productionPlanId: productionPlan.id,
+            batchNumber: `BATCH-${productionPlan.id.slice(-4)}-${j + 1}`,
+            recipeId: recipe?.id || null,
+            plannedQuantity: 50 + (j * 25),
+            actualQuantity: i < 2 ? (50 + (j * 25) + Math.floor(Math.random() * 10) - 5) : null,
+            status: i < 2 ? 'COMPLETED' : i < 4 ? 'IN_PROGRESS' : 'PENDING',
+            startedAt: i < 4 ? new Date(Date.now() - Math.random() * 86400000) : null,
+            completedAt: i < 2 ? new Date() : null,
+            notes: `Batch production for ${recipe?.name || 'manual recipe'}`
+          }
+        })
+      }
+    } catch (error) {
+      console.log(`Skipped production plan ${i + 1}`)
+    }
+  }
+
   console.log(`\n✅ Successfully created sample data for empty tables!`)
   console.log(`📊 Summary:`)
   console.log(`   - Menu Items: ${menuItems.length}`)
@@ -196,6 +242,8 @@ async function main() {
   console.log(`   - Nutrition Consultations: ${Math.min(consultations.length, students.length)}`)
   console.log(`   - Quality Checks: ${Math.min(inventoryItems.length, 3)}`)
   console.log(`   - Food Samples: ${Math.min(menus.length, 3)}`)
+  console.log(`   - Production Plans: ${productionPlans.length}`)
+  console.log(`   - Production Batches: ${productionPlans.length * 2}-${productionPlans.length * 3}`)
   console.log(`\n🎉 Database is now populated with comprehensive test data!`)
 }
 

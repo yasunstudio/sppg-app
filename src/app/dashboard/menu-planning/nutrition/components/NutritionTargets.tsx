@@ -82,13 +82,13 @@ function NutritionTargets({ targets, onTargetsChange }: NutritionTargetsProps) {
   }
 
   return (
-    <Card className="border-0 shadow-md">
+    <Card className="bg-card border border-border shadow-sm">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold">Target Nutrisi</CardTitle>
+        <CardTitle className="text-lg font-semibold text-foreground">Target Nutrisi</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* AKG Indonesia Quick Set */}
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg border">
+        <div className="p-4 bg-muted rounded-lg border border-border">
           <h3 className="font-medium text-foreground mb-3">Standar AKG Indonesia</h3>
           <div className="flex items-center gap-3">
             <div className="flex-1">

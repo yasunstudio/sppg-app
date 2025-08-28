@@ -142,11 +142,11 @@ export function MenuForm() {
     <div className="max-w-4xl mx-auto">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         {/* Header Section */}
-        <Card className="border-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+        <Card className="border-border bg-card">
           <CardHeader className="pb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500 rounded-lg">
-                <ChefHat className="h-6 w-6 text-white" />
+              <div className="p-2 bg-primary rounded-lg">
+                <ChefHat className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
                                 <CardTitle className="text-2xl text-foreground">

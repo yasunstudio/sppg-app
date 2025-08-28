@@ -44,13 +44,13 @@ export default function NutritionSettings({ settings, onSettingsChange }: Nutrit
   return (
     <div className="space-y-6">
       {/* Standar Nutrisi */}
-      <Card className="border-0 shadow-md">
+      <Card className="bg-card border border-border shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold">Standar Referensi Nutrisi</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">Standar Referensi Nutrisi</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="nutrition-standard">Standar yang Digunakan</Label>
+            <Label htmlFor="nutrition-standard" className="text-foreground">Standar yang Digunakan</Label>
             <Select 
               value={settings.nutritionStandard} 
               onValueChange={(value) => handleSettingChange('nutritionStandard', value)}
@@ -67,7 +67,7 @@ export default function NutritionSettings({ settings, onSettingsChange }: Nutrit
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="unit-system">Sistem Satuan</Label>
+            <Label htmlFor="unit-system" className="text-foreground">Sistem Satuan</Label>
             <Select 
               value={settings.unitSystem} 
               onValueChange={(value) => handleSettingChange('unitSystem', value)}
@@ -85,9 +85,9 @@ export default function NutritionSettings({ settings, onSettingsChange }: Nutrit
       </Card>
 
       {/* Opsi Tampilan */}
-      <Card className="border-0 shadow-md">
+      <Card className="bg-card border border-border shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold">Opsi Tampilan Analisis</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">Opsi Tampilan Analisis</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-4">
@@ -97,7 +97,7 @@ export default function NutritionSettings({ settings, onSettingsChange }: Nutrit
                 checked={settings.displayOptions.showPercentages}
                 onCheckedChange={(checked) => handleDisplayOptionChange('showPercentages', !!checked)}
               />
-              <Label htmlFor="show-percentages" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <Label htmlFor="show-percentages" className="text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Tampilkan persentase dari target
               </Label>
             </div>
@@ -108,7 +108,7 @@ export default function NutritionSettings({ settings, onSettingsChange }: Nutrit
                 checked={settings.displayOptions.showProgress}
                 onCheckedChange={(checked) => handleDisplayOptionChange('showProgress', !!checked)}
               />
-              <Label htmlFor="show-progress" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <Label htmlFor="show-progress" className="text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Tampilkan progress bar
               </Label>
             </div>
@@ -119,8 +119,8 @@ export default function NutritionSettings({ settings, onSettingsChange }: Nutrit
                 checked={settings.displayOptions.showRecommendations}
                 onCheckedChange={(checked) => handleDisplayOptionChange('showRecommendations', !!checked)}
               />
-              <Label htmlFor="show-recommendations" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Tampilkan rekomendasi nutrisi
+                            <Label htmlFor="show-recommendations" className="text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Tampilkan rekomendasi
               </Label>
             </div>
 
@@ -130,7 +130,7 @@ export default function NutritionSettings({ settings, onSettingsChange }: Nutrit
                 checked={settings.displayOptions.groupByCategory}
                 onCheckedChange={(checked) => handleDisplayOptionChange('groupByCategory', !!checked)}
               />
-              <Label htmlFor="group-by-category" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <Label htmlFor="group-by-category" className="text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Kelompokkan berdasarkan kategori
               </Label>
             </div>
@@ -139,13 +139,13 @@ export default function NutritionSettings({ settings, onSettingsChange }: Nutrit
       </Card>
 
       {/* Tingkat Analisis */}
-      <Card className="border-0 shadow-md">
+      <Card className="bg-card border border-border shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold">Tingkat Detail Analisis</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">Tingkat Detail Analisis</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="analysis-depth">Kedalaman Analisis</Label>
+            <Label htmlFor="analysis-depth" className="text-foreground">Kedalaman Analisis</Label>
             <Select 
               value={settings.analysisDepth} 
               onValueChange={(value) => handleSettingChange('analysisDepth', value)}

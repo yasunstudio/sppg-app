@@ -122,7 +122,10 @@ export default function ProductionPlanningPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {productionPlans.reduce((acc: number, p: any) => acc + (p.targetPortions || 0), 0).toLocaleString()}
+              {productionPlans.reduce((acc: number, p: any) => {
+                const portions = p.targetPortions ?? 0;
+                return acc + (typeof portions === 'number' ? portions : 0);
+              }, 0).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">total portions planned</p>
           </CardContent>

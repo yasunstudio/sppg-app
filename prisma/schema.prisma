@@ -453,7 +453,6 @@ model RawMaterial {
   deletedAt       DateTime?
   inventory       InventoryItem[]
   menuItems       MenuItemIngredient[]
-  qualityChecks   QualityCheck[]       @relation("MaterialQualityChecks")
 
   @@map("raw_materials")
 }
@@ -473,7 +472,6 @@ model InventoryItem {
   deletedAt       DateTime?
   rawMaterial     RawMaterial            @relation(fields: [rawMaterialId], references: [id])
   supplier        Supplier?              @relation(fields: [supplierId], references: [id])
-  qualityChecks   QualityCheck[]         @relation("MaterialQualityChecks")
 
   @@map("inventory_items")
 }
@@ -576,10 +574,9 @@ model QualityCheck {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   
-  // Relations based on referenceType
-  inventoryItem InventoryItem?   @relation("MaterialQualityChecks", fields: [referenceId], references: [id], map: "fk_quality_checks_inventory")
-  rawMaterial   RawMaterial?     @relation("MaterialQualityChecks", fields: [referenceId], references: [id], map: "fk_quality_checks_raw_material")
-
+  // Polymorphic relations - no hard foreign keys to allow flexibility
+  // Relations are managed at application level based on referenceType
+  
   @@unique([referenceType, referenceId])
   @@index([referenceType, referenceId])
   @@map("quality_checks")

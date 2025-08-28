@@ -748,8 +748,8 @@ export function AIMenuPlanner({ onSuccess }: AIMenuPlannerProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-100 to-blue-100 rounded-full mb-4">
-          <Bot className="w-8 h-8 text-purple-600" />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4">
+          <Bot className="w-8 h-8 text-primary" />
         </div>
         <h3 className="text-xl font-semibold mb-2">AI-Powered Menu Planning</h3>
         <p className="text-muted-foreground">
@@ -876,7 +876,7 @@ export function AIMenuPlanner({ onSuccess }: AIMenuPlannerProps) {
         <Button
           onClick={generateAIMenu}
           disabled={isLoading}
-          className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-8 py-3 text-lg"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
         >
           {isLoading ? (
             <>

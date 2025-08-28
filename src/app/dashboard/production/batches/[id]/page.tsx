@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowLeft, Clock, Users, DollarSign, ChefHat, TrendingUp, Edit, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,123 +30,136 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
-import Link from "next/link";
 
 interface BatchDetails {
   id: string;
   batchNumber: string;
   status: string;
-  targetQuantity: number;
+  plannedQuantity: number;
   actualQuantity: number | null;
-  scheduledDate: string;
   startedAt: string | null;
   completedAt: string | null;
-  estimatedCost: number;
-  actualCost: number | null;
   notes: string | null;
+  createdAt: string;
+  updatedAt: string;
   recipe: {
     id: string;
     name: string;
-    description: string | null;
     category: string;
     servingSize: number;
+    prepTime: number;
+    cookTime: number;
     ingredients: Array<{
       id: string;
       quantity: number;
       unit: string;
+      notes: string | null;
       item: {
         id: string;
         name: string;
+        unit: string;
         unitPrice: number | null;
-      };
+        category: string;
+      } | null;
     }>;
   } | null;
   productionPlan: {
     id: string;
-    name: string;
-    description: string | null;
-    targetDate: string;
+    planDate: string;
+    targetPortions: number;
     status: string;
   } | null;
-  scalingInfo: {
-    originalServings: number;
-    targetPortions: number;
-    scalingFactor: number;
-    totalIngredients: number;
+  qualityChecks: Array<{
+    id: string;
+    status: string;
+    createdAt: string;
+  }>;
+  resourceUsage: Array<{
+    resource: {
+      id: string;
+      name: string;
+      type: string;
+    };
+  }>;
+  metrics: {
+    efficiency: number;
+    durationMinutes: number;
     estimatedCost: number;
-    estimatedTime: number;
+    costPerPortion: number;
+    isOnTime: boolean | null;
   };
-  ingredientsList: Array<{
-    item: any;
+  ingredientBreakdown: Array<{
+    item: {
+      id: string;
+      name: string;
+      unit: string;
+      unitPrice: number | null;
+      category: string;
+    } | null;
     originalQuantity: number;
     scaledQuantity: number;
     unit: string;
-    estimatedCost: number;
+    unitCost: number;
+    totalCost: number;
+    notes: string | null;
   }>;
 }
 
-interface BatchDetailPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function BatchDetailPage({ params }: BatchDetailPageProps) {
+export default function BatchDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const router = useRouter();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [batch, setBatch] = useState<BatchDetails | null>(null);
   
-  // Edit form states
+  const [batch, setBatch] = useState<BatchDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [editData, setEditData] = useState({
-    targetQuantity: 0,
-    actualQuantity: 0,
-    actualCost: 0,
     status: "",
+    plannedQuantity: 0,
+    actualQuantity: 0,
     notes: "",
   });
 
   useEffect(() => {
-    fetchBatchDetails();
-  }, [params.id]);
-
-  const fetchBatchDetails = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/production/batches/${params.id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch batch details");
+    const fetchBatch = async () => {
+      try {
+        const response = await fetch(`/api/production/batches/${id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch batch");
+        }
+        const data = await response.json();
+        setBatch(data);
+        setEditData({
+          status: data.status,
+          plannedQuantity: data.plannedQuantity,
+          actualQuantity: data.actualQuantity || 0,
+          notes: data.notes || "",
+        });
+      } catch (error) {
+        console.error("Error fetching batch:", error);
+        toast({
+          open: true,
+          onOpenChange: () => {},
+          title: "Error",
+          description: "Gagal memuat data batch",
+        });
+      } finally {
+        setLoading(false);
       }
-      const data = await response.json();
-      setBatch(data);
-      
-      // Initialize edit form
-      setEditData({
-        targetQuantity: data.targetQuantity,
-        actualQuantity: data.actualQuantity || 0,
-        actualCost: data.actualCost || 0,
-        status: data.status,
-        notes: data.notes || "",
-      });
-    } catch (error) {
-      console.error("Error fetching batch:", error);
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Error",
-        description: "Gagal memuat detail batch",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchBatch();
+  }, [id, toast]);
 
   const handleSave = async () => {
+    setSaving(true);
     try {
-      setSaving(true);
-      const response = await fetch(`/api/production/batches/${params.id}`, {
+      const response = await fetch(`/api/production/batches/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -157,14 +171,15 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
         throw new Error("Failed to update batch");
       }
 
-      await fetchBatchDetails();
+      const updatedBatch = await response.json();
+      setBatch(updatedBatch);
       setEditing(false);
       
       toast({
         open: true,
         onOpenChange: () => {},
-        title: "Sukses",
-        description: "Data batch berhasil diperbarui",
+        title: "Success",
+        description: "Batch berhasil diperbarui",
       });
     } catch (error) {
       console.error("Error updating batch:", error);
@@ -172,7 +187,7 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
         open: true,
         onOpenChange: () => {},
         title: "Error",
-        description: "Gagal memperbarui data batch",
+        description: "Gagal memperbarui batch",
       });
     } finally {
       setSaving(false);
@@ -181,7 +196,7 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/production/batches/${params.id}`, {
+      const response = await fetch(`/api/production/batches/${id}`, {
         method: "DELETE",
       });
 
@@ -192,10 +207,10 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
       toast({
         open: true,
         onOpenChange: () => {},
-        title: "Sukses",
+        title: "Success",
         description: "Batch berhasil dihapus",
       });
-      
+
       router.push("/dashboard/production/batches");
     } catch (error) {
       console.error("Error deleting batch:", error);
@@ -240,35 +255,23 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
     });
   };
 
-  const calculateEfficiency = () => {
-    if (!batch?.actualQuantity || !batch?.targetQuantity) return 0;
-    return Math.round((batch.actualQuantity / batch.targetQuantity) * 100);
-  };
-
-  const calculateCostEfficiency = () => {
-    if (!batch?.actualCost || !batch?.estimatedCost) return 0;
-    return Math.round(((batch.estimatedCost - batch.actualCost) / batch.estimatedCost) * 100);
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Memuat detail batch...</p>
-        </div>
+      <div className="space-y-6">
+        <div className="h-8 bg-muted animate-pulse rounded" />
+        <div className="h-64 bg-muted animate-pulse rounded" />
+        <div className="h-64 bg-muted animate-pulse rounded" />
       </div>
     );
   }
 
   if (!batch) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">Batch tidak ditemukan</p>
-        <Button asChild className="mt-4">
-          <Link href="/dashboard/production/batches">
-            Kembali ke Daftar Batch
-          </Link>
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-muted-foreground">Batch tidak ditemukan</h2>
+        <Button variant="outline" onClick={() => router.back()} className="mt-4">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Kembali
         </Button>
       </div>
     );
@@ -279,18 +282,13 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/dashboard/production/batches">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
+          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Kembali
           </Button>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Batch {batch.batchNumber}
-            </h1>
-            <p className="text-muted-foreground">
-              Detail production batch dan tracking
-            </p>
+            <h1 className="text-3xl font-bold">Batch {batch.batchNumber}</h1>
+            <p className="text-muted-foreground">Detail produksi batch</p>
           </div>
         </div>
         
@@ -351,18 +349,18 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <Label>Target Quantity</Label>
+              <Label>Planned Quantity</Label>
               {editing ? (
                 <Input
                   type="number"
-                  value={editData.targetQuantity}
+                  value={editData.plannedQuantity}
                   onChange={(e) => setEditData(prev => ({
                     ...prev,
-                    targetQuantity: parseInt(e.target.value) || 0
+                    plannedQuantity: parseInt(e.target.value) || 0
                   }))}
                 />
               ) : (
-                <div className="text-2xl font-bold">{batch.targetQuantity}</div>
+                <div className="text-2xl font-bold">{batch.plannedQuantity}</div>
               )}
               <div className="text-sm text-muted-foreground">porsi</div>
             </div>
@@ -385,8 +383,8 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
             </div>
             
             <div className="space-y-2">
-              <Label>Scheduled Date</Label>
-              <div className="text-lg font-medium">{formatDate(batch.scheduledDate)}</div>
+              <Label>Created Date</Label>
+              <div className="text-lg font-medium">{formatDate(batch.createdAt)}</div>
               <div className="text-sm text-muted-foreground">
                 {batch.startedAt && `Dimulai: ${formatDate(batch.startedAt)}`}
               </div>
@@ -415,19 +413,6 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
           {editing && (
             <div className="mt-6 space-y-4">
               <div className="space-y-2">
-                <Label>Actual Cost</Label>
-                <Input
-                  type="number"
-                  value={editData.actualCost}
-                  onChange={(e) => setEditData(prev => ({
-                    ...prev,
-                    actualCost: parseFloat(e.target.value) || 0
-                  }))}
-                  placeholder="Biaya aktual produksi"
-                />
-              </div>
-              
-              <div className="space-y-2">
                 <Label>Notes</Label>
                 <Textarea
                   value={editData.notes}
@@ -454,17 +439,22 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium">Quantity Efficiency</span>
-                <span className="text-sm text-muted-foreground">{calculateEfficiency()}%</span>
+                <span className="text-sm text-muted-foreground">{batch.metrics?.efficiency?.toFixed(1) || '0'}%</span>
               </div>
-              <Progress value={calculateEfficiency()} className="h-2" />
+              <Progress value={batch.metrics?.efficiency || 0} className="h-2" />
             </div>
             
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Cost Efficiency</span>
-                <span className="text-sm text-muted-foreground">{calculateCostEfficiency()}%</span>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Durasi Produksi</span>
+                <span className="font-medium">{batch.metrics?.durationMinutes || 0} menit</span>
               </div>
-              <Progress value={Math.max(0, calculateCostEfficiency())} className="h-2" />
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Selesai Tepat Waktu</span>
+                <span className="font-medium">
+                  {batch.metrics?.isOnTime === null ? 'Belum Diketahui' : batch.metrics?.isOnTime ? 'Ya' : 'Tidak'}
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -476,24 +466,20 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
               Analisis Biaya
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm">Estimated Cost:</span>
-                <span className="font-medium">{formatCurrency(batch.estimatedCost)}</span>
+                <span className="text-sm text-muted-foreground">Estimated Cost</span>
+                <span className="font-medium">{formatCurrency(batch.metrics?.estimatedCost || 0)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm">Actual Cost:</span>
-                <span className="font-medium">{batch.actualCost ? formatCurrency(batch.actualCost) : "-"}</span>
+                <span className="text-sm text-muted-foreground">Cost per Portion</span>
+                <span className="font-medium">{formatCurrency(batch.metrics?.costPerPortion || 0)}</span>
               </div>
-              {batch.actualCost && (
-                <div className="flex justify-between border-t pt-2">
-                  <span className="text-sm font-medium">Variance:</span>
-                  <span className={`font-medium ${batch.actualCost > batch.estimatedCost ? 'text-red-600' : 'text-green-600'}`}>
-                    {formatCurrency(batch.actualCost - batch.estimatedCost)}
-                  </span>
-                </div>
-              )}
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Quality Checks</span>
+                <span className="font-medium">{batch.qualityChecks?.length || 0}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -507,7 +493,7 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
               <ChefHat className="h-5 w-5" />
               Recipe: {batch.recipe.name}
             </CardTitle>
-            <CardDescription>Scaling dari {batch.scalingInfo.originalServings} ke {batch.scalingInfo.targetPortions} porsi (factor: {batch.scalingInfo.scalingFactor.toFixed(1)}x)</CardDescription>
+            <CardDescription>Category: {batch.recipe.category} • Serving Size: {batch.recipe.servingSize} • Prep: {batch.recipe.prepTime}min • Cook: {batch.recipe.cookTime}min</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -517,38 +503,40 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
                   <div className="text-sm text-muted-foreground">Kategori</div>
                 </div>
                 <div className="text-center p-3 border rounded">
-                  <div className="text-lg font-bold">{batch.scalingInfo.totalIngredients}</div>
-                  <div className="text-sm text-muted-foreground">Total Bahan</div>
+                  <div className="text-lg font-bold">{batch.recipe.servingSize}</div>
+                  <div className="text-sm text-muted-foreground">Base Serving Size</div>
                 </div>
                 <div className="text-center p-3 border rounded">
-                  <div className="text-lg font-bold">{batch.scalingInfo.estimatedTime} min</div>
-                  <div className="text-sm text-muted-foreground">Estimasi Waktu</div>
+                  <div className="text-lg font-bold">{batch.recipe.prepTime + batch.recipe.cookTime} min</div>
+                  <div className="text-sm text-muted-foreground">Total Cook Time</div>
                 </div>
               </div>
 
               {/* Ingredients List */}
-              <div>
-                <h4 className="font-medium mb-3">Breakdown Bahan ({batch.ingredientsList.length} items):</h4>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {batch.ingredientsList.map((ingredient, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 border rounded">
-                      <div>
-                        <span className="font-medium">{ingredient.item.name}</span>
-                        <div className="text-sm text-muted-foreground">
-                          Original: {ingredient.originalQuantity} {ingredient.unit} → 
-                          Scaled: {ingredient.scaledQuantity.toFixed(1)} {ingredient.unit}
+              {batch.ingredientBreakdown && batch.ingredientBreakdown.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-3">Breakdown Bahan ({batch.ingredientBreakdown.length} items):</h4>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {batch.ingredientBreakdown.map((ingredient: any, index: number) => (
+                      <div key={index} className="flex justify-between items-center p-3 border rounded">
+                        <div>
+                          <span className="font-medium">{ingredient.item?.name || 'Unknown Item'}</span>
+                          <div className="text-sm text-muted-foreground">
+                            Original: {ingredient.originalQuantity} {ingredient.unit} → 
+                            Scaled: {ingredient.scaledQuantity.toFixed(1)} {ingredient.unit}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-medium">{formatCurrency(ingredient.totalCost)}</div>
+                          <div className="text-sm text-muted-foreground">
+                            @{formatCurrency(ingredient.unitCost || 0)}
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-medium">{formatCurrency(ingredient.estimatedCost)}</div>
-                        <div className="text-sm text-muted-foreground">
-                          @{formatCurrency(ingredient.item.unitPrice || 0)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -564,14 +552,15 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
           <CardContent>
             <div className="flex items-center justify-between p-4 border rounded">
               <div>
-                <div className="font-medium">{batch.productionPlan.name}</div>
+                <div className="font-medium">Production Plan ID: {batch.productionPlan.id}</div>
                 <div className="text-sm text-muted-foreground">
-                  Target: {formatDate(batch.productionPlan.targetDate)} • 
+                  Plan Date: {formatDate(batch.productionPlan.planDate)} • 
+                  Target Portions: {batch.productionPlan.targetPortions} • 
                   Status: {batch.productionPlan.status}
                 </div>
               </div>
               <Button variant="outline" asChild>
-                <Link href={`/dashboard/production/plans/${batch.productionPlan.id}`}>
+                <Link href={`/dashboard/production/planning/${batch.productionPlan.id}`}>
                   Lihat Plan
                 </Link>
               </Button>

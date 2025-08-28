@@ -13,8 +13,8 @@ async function fetchQualityCheckpoints() {
   if (!response.ok) {
     throw new Error("Failed to fetch quality checkpoints")
   }
-  const data = await response.json()
-  return data.data || []
+  const result = await response.json()
+  return result.data || []
 }
 
 // Fetch quality standards from API
@@ -23,8 +23,8 @@ async function fetchQualityStandards() {
   if (!response.ok) {
     throw new Error("Failed to fetch quality standards")
   }
-  const data = await response.json()
-  return data.data || []
+  const result = await response.json()
+  return result.data || []
 }
 
 const getStatusColor = (status: string) => {
@@ -297,21 +297,27 @@ export default function ProductionQualityPage() {
                     No quality standards configured
                   </div>
                 ) : (
-                  qualityStandards.map((standard: any) => (
-                    <div key={standard.id} className="p-3 border rounded-lg">
-                      <h4 className="font-semibold text-sm">{standard.name}</h4>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {standard.description}
-                      </p>
-                      <Progress 
-                        value={(standard.currentValue / standard.targetValue) * 100} 
-                        className="h-2" 
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {standard.currentValue}% compliance (Target: {standard.targetValue}%)
-                      </p>
-                    </div>
-                  ))
+                  qualityStandards.map((standard: any) => {
+                    const compliancePercentage = (standard.currentValue / standard.targetValue) * 100;
+                    const isPercentage = standard.unit === '%';
+                    
+                    return (
+                      <div key={standard.id} className="p-3 border rounded-lg">
+                        <h4 className="font-semibold text-sm">{standard.name}</h4>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {standard.description}
+                        </p>
+                        <Progress 
+                          value={Math.min(compliancePercentage, 100)} 
+                          className="h-2" 
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {standard.currentValue}{standard.unit} / {standard.targetValue}{standard.unit}
+                          {' '}({compliancePercentage.toFixed(1)}% compliance)
+                        </p>
+                      </div>
+                    )
+                  })
                 )}
               </div>
               

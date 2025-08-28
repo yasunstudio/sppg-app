@@ -132,9 +132,9 @@ export default function MenuPlanningPage() {
     <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950/30 dark:via-teal-950/30 dark:to-cyan-950/30 rounded-xl border border-emerald-200/60 dark:border-emerald-800/50 backdrop-blur-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 bg-card rounded-xl border border-border">
           <div className="space-y-2">
-            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-700 dark:from-emerald-300 dark:via-teal-300 dark:to-cyan-300 bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               Perencanaan Menu
             </h1>
             <p className="text-muted-foreground">
@@ -149,7 +149,7 @@ export default function MenuPlanningPage() {
               <CalendarIcon className="w-4 h-4 mr-2" />
               Lihat Kalender
             </Button>
-            <Button className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 shadow-lg shadow-emerald-500/25 dark:shadow-emerald-400/20 transition-all duration-200">
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
               <Plus className="w-4 h-4 mr-2" />
               Buat Menu Baru
             </Button>
@@ -158,69 +158,65 @@ export default function MenuPlanningPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <Card className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-blue-100/50 to-cyan-50 dark:from-blue-950/40 dark:via-blue-900/30 dark:to-cyan-950/40 border-blue-200/60 dark:border-blue-800/50 backdrop-blur-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 dark:from-blue-400/5 dark:to-cyan-400/5"></div>
-            <CardContent className="relative p-4 md:p-6">
+          <Card className="border-border bg-card">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Menu</p>
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                  <p className="text-sm font-medium text-muted-foreground">Total Menu</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {sampleStats.totalMenus}
                   </p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 dark:from-blue-400 dark:to-cyan-500 rounded-xl shadow-md">
-                  <ChefHat className="w-6 h-6 text-white" />
+                <div className="p-3 bg-primary rounded-xl">
+                  <ChefHat className="w-6 h-6 text-primary-foreground" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-emerald-100/50 to-teal-50 dark:from-emerald-950/40 dark:via-emerald-900/30 dark:to-teal-950/40 border-emerald-200/60 dark:border-emerald-800/50 backdrop-blur-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 dark:from-emerald-400/5 dark:to-teal-400/5"></div>
-            <CardContent className="relative p-4 md:p-6">
+          <Card className="border-border bg-card">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Minggu Terencana</p>
-                  <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
+                  <p className="text-sm font-medium text-muted-foreground">Minggu Terencana</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {sampleStats.plannedWeeks}
                   </p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-400 dark:to-teal-500 rounded-xl shadow-md">
-                  <CalendarIcon className="w-6 h-6 text-white" />
+                <div className="p-3 bg-muted rounded-xl">
+                  <CalendarIcon className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-amber-100/50 to-orange-50 dark:from-amber-950/40 dark:via-amber-900/30 dark:to-orange-950/40 border-amber-200/60 dark:border-amber-800/50 backdrop-blur-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/5 dark:from-amber-400/5 dark:to-orange-400/5"></div>
-            <CardContent className="relative p-4 md:p-6">
+          <Card className="border-border bg-card">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-amber-700 dark:text-amber-300">Total Kalori</p>
-                  <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                  <p className="text-sm font-medium text-muted-foreground">Total Kalori</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {sampleStats.totalCalories.toLocaleString()}
                   </p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 dark:from-amber-400 dark:to-orange-500 rounded-xl shadow-md">
-                  <TrendingUp className="w-6 h-6 text-white" />
+                <div className="p-3 bg-muted rounded-xl">
+                  <TrendingUp className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-purple-50 via-purple-100/50 to-violet-50 dark:from-purple-950/40 dark:via-purple-900/30 dark:to-violet-950/40 border-purple-200/60 dark:border-purple-800/50 backdrop-blur-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-violet-500/5 dark:from-purple-400/5 dark:to-violet-400/5"></div>
-            <CardContent className="relative p-4 md:p-6">
+          <Card className="border-border bg-card">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Skor Nutrisi</p>
-                  <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                  <p className="text-sm font-medium text-muted-foreground">Skor Nutrisi</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {sampleStats.avgNutritionScore}%
                   </p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-purple-500 to-violet-600 dark:from-purple-400 dark:to-violet-500 rounded-xl shadow-md">
-                  <Target className="w-6 h-6 text-white" />
+                <div className="p-3 bg-muted rounded-xl">
+                  <Target className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -229,22 +225,22 @@ export default function MenuPlanningPage() {
 
         {/* Main Content */}
         <Tabs defaultValue="calendar" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-card/80 dark:bg-card/80 backdrop-blur-sm border border-border shadow-lg">
+          <TabsList className="grid w-full grid-cols-3 bg-card border border-border">
             <TabsTrigger 
               value="calendar" 
-              className="font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white"
+              className="font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Kalender
             </TabsTrigger>
             <TabsTrigger 
               value="list" 
-              className="font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white"
+              className="font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Daftar Menu
             </TabsTrigger>
             <TabsTrigger 
               value="analytics" 
-              className="font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white"
+              className="font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Analitik
             </TabsTrigger>

@@ -36,7 +36,7 @@ function Micronutrients({ vitamins, minerals }: MicronutrientsProps) {
       case 'Tinggi': return 'bg-red-500'
       case 'Sedang': return 'bg-yellow-500'
       case 'Rendah': return 'bg-green-500'
-      default: return 'bg-gray-500'
+      default: return 'bg-muted-foreground'
     }
   }
 
@@ -67,7 +67,7 @@ function Micronutrients({ vitamins, minerals }: MicronutrientsProps) {
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium">
+                    <span className="font-medium text-foreground">
                       {nutrient.current} {nutrient.unit}
                     </span>
                     <span className="text-muted-foreground">
@@ -106,9 +106,9 @@ function Micronutrients({ vitamins, minerals }: MicronutrientsProps) {
   )
 
   return (
-    <Card className="border-0 shadow-md">
+    <Card className="bg-card border border-border shadow-sm">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold">Analisis Mikronutrien</CardTitle>
+        <CardTitle className="text-lg font-semibold text-foreground">Analisis Mikronutrien</CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="vitamins" className="w-full">

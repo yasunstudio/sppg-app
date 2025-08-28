@@ -31,8 +31,8 @@ export default function CreateMenuPage() {
             </Button>
             <div className="space-y-2">
               <h1 className="text-2xl md:text-3xl font-bold flex items-center space-x-3 text-foreground">
-                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-400 dark:to-teal-500 rounded-xl shadow-md">
-                  <Plus className="w-6 h-6 text-white" />
+                <div className="p-2 bg-primary rounded-xl">
+                  <Plus className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <span>Buat Menu Baru</span>
               </h1>
@@ -66,8 +66,8 @@ export default function CreateMenuPage() {
           <Card className="border border-border bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-start space-x-3">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 rounded-lg shadow-sm">
-                  <Lightbulb className="w-5 h-5 text-white" />
+                <div className="p-2 bg-muted rounded-lg">
+                  <Lightbulb className="w-5 h-5 text-primary" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-semibold text-foreground">Informasi Dasar</h3>
@@ -82,8 +82,8 @@ export default function CreateMenuPage() {
           <Card className="border border-border bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-start space-x-3">
-                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-400 dark:to-teal-500 rounded-lg shadow-sm">
-                  <Target className="w-5 h-5 text-white" />
+                <div className="p-2 bg-muted rounded-lg">
+                  <Target className="w-5 h-5 text-primary" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-semibold text-foreground">Target Nutrisi</h3>
@@ -98,8 +98,8 @@ export default function CreateMenuPage() {
           <Card className="border border-border bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-start space-x-3">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-violet-600 dark:from-purple-400 dark:to-violet-500 rounded-lg shadow-sm">
-                  <CheckCircle2 className="w-5 h-5 text-white" />
+                <div className="p-2 bg-muted rounded-lg">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-semibold text-foreground">Validasi Resep</h3>
@@ -113,11 +113,11 @@ export default function CreateMenuPage() {
         </div>
 
         {/* Tips Section */}
-        <Card className="border border-border bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-background dark:via-blue-950/50 dark:to-purple-950/50">
+        <Card className="border-border bg-muted/50">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
-                <Lightbulb className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Lightbulb className="w-5 h-5 text-primary" />
               </div>
               <h3 className="font-semibold text-lg text-foreground">Tips Membuat Menu</h3>
             </div>

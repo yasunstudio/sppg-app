@@ -111,14 +111,14 @@ export default function MenuPlanningPage() {
         <div className="flex gap-2">
           <Button 
             variant="outline" 
-            className="bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="border-border hover:bg-muted"
             onClick={() => router.push('/dashboard/menu-planning/ai-planner')}
           >
             <Calculator className="w-4 h-4 mr-2" />
             AI Menu Planner
           </Button>
           <Button 
-            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
             onClick={() => router.push('/dashboard/menu-planning/create')}
           >
             <Plus className="w-4 h-4 mr-2" />

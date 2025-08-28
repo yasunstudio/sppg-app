@@ -128,124 +128,108 @@ export default function NutritionAnalysisPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 dark:from-background dark:via-background dark:to-muted/20 transition-colors duration-300">
-      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
-          <div className="flex items-start md:items-center space-x-4">
-            <Button 
-              variant="outline" 
-              onClick={() => router.back()}
-              className="flex items-center space-x-2 bg-card/80 dark:bg-card/80 border-border hover:bg-muted backdrop-blur-sm transition-all duration-200 shrink-0"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Kembali</span>
-            </Button>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 dark:from-emerald-400 dark:via-green-400 dark:to-teal-500 rounded-xl shadow-lg ring-1 ring-border">
-                  <Activity className="w-6 h-6 md:w-7 md:h-7 text-white drop-shadow-sm" />
-                </div>
-                Analisis Nutrisi
-              </h1>
-              <p className="text-muted-foreground mt-1 text-sm md:text-base">
-                Evaluasi mendalam kandungan nutrisi menu SPPG
-              </p>
-            </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 bg-card rounded-xl border border-border shadow-sm">
+          <div className="space-y-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
+              <div className="p-3 bg-primary rounded-xl shadow-sm">
+                <Activity className="w-6 h-6 md:w-7 md:h-7 text-primary-foreground" />
+              </div>
+              Analisis Nutrisi
+            </h1>
+            <p className="text-muted-foreground">
+              Evaluasi komprehensif nilai gizi menu SPPG berdasarkan standar AKG Indonesia
+            </p>
           </div>
-
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button 
               variant="outline" 
-              className="flex items-center space-x-2 bg-card/80 dark:bg-card/80 border-border hover:bg-muted backdrop-blur-sm transition-all duration-200"
+              className="border-border hover:bg-muted"
             >
-              <Target className="w-4 h-4" />
-              <span>Export PDF</span>
+              <Target className="w-4 h-4 mr-2" />
+              Export PDF
             </Button>
-            <Button className="flex items-center space-x-2 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 hover:from-emerald-700 hover:via-green-700 hover:to-teal-700 shadow-lg shadow-emerald-500/25 dark:shadow-emerald-400/20 transition-all duration-200">
-              <Settings className="w-4 h-4" />
-              <span>Pengaturan</span>
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+              <Settings className="w-4 h-4 mr-2" />
+              Pengaturan
             </Button>
           </div>
         </div>
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
-          <Card className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-blue-100/50 to-cyan-50 dark:from-blue-950/40 dark:via-blue-900/30 dark:to-cyan-950/40 border-blue-200/60 dark:border-blue-800/50 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 dark:from-blue-400/5 dark:to-cyan-400/5"></div>
-            <CardContent className="relative p-4 md:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Kalori</p>
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                  <p className="text-sm font-medium text-muted-foreground">Total Kalori</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {sampleMacroData.calories.current.toLocaleString('id-ID')}
                   </p>
-                  <p className="text-xs text-blue-600 dark:text-blue-400">
+                  <p className="text-xs text-muted-foreground">
                     {Math.round((sampleMacroData.calories.current / sampleMacroData.calories.target) * 100)}% dari target
                   </p>
                 </div>
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 dark:from-blue-400 dark:to-cyan-500 rounded-xl shadow-md">
-                  <TrendingUp className="w-8 h-8 text-white drop-shadow-sm" />
+                <div className="p-2 bg-blue-500 rounded-xl shadow-sm">
+                  <TrendingUp className="w-8 h-8 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-green-100/50 to-teal-50 dark:from-emerald-950/40 dark:via-green-900/30 dark:to-teal-950/40 border-emerald-200/60 dark:border-emerald-800/50 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 dark:from-emerald-400/5 dark:to-teal-400/5"></div>
-            <CardContent className="relative p-4 md:p-6">
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Protein</p>
-                  <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
+                  <p className="text-sm font-medium text-muted-foreground">Protein</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {sampleMacroData.protein.current}g
                   </p>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                  <p className="text-xs text-muted-foreground">
                     {Math.round((sampleMacroData.protein.current / sampleMacroData.protein.target) * 100)}% dari target
                   </p>
                 </div>
-                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-400 dark:to-teal-500 rounded-xl shadow-md">
-                  <Activity className="w-8 h-8 text-white drop-shadow-sm" />
+                <div className="p-2 bg-emerald-500 rounded-xl shadow-sm">
+                  <Activity className="w-8 h-8 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-violet-50 via-purple-100/50 to-indigo-50 dark:from-violet-950/40 dark:via-purple-900/30 dark:to-indigo-950/40 border-violet-200/60 dark:border-violet-800/50 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-indigo-500/5 dark:from-violet-400/5 dark:to-indigo-400/5"></div>
-            <CardContent className="relative p-4 md:p-6">
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-violet-700 dark:text-violet-300">Karbohidrat</p>
-                  <p className="text-2xl font-bold text-violet-900 dark:text-violet-100">
+                  <p className="text-sm font-medium text-muted-foreground">Karbohidrat</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {sampleMacroData.carbs.current}g
                   </p>
-                  <p className="text-xs text-violet-600 dark:text-violet-400">
+                  <p className="text-xs text-muted-foreground">
                     {Math.round((sampleMacroData.carbs.current / sampleMacroData.carbs.target) * 100)}% dari target
                   </p>
                 </div>
-                <div className="p-2 bg-gradient-to-br from-violet-500 to-indigo-600 dark:from-violet-400 dark:to-indigo-500 rounded-xl shadow-md">
-                  <Target className="w-8 h-8 text-white drop-shadow-sm" />
+                <div className="p-2 bg-violet-500 rounded-xl shadow-sm">
+                  <Target className="w-8 h-8 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-100/50 to-red-50 dark:from-amber-950/40 dark:via-orange-900/30 dark:to-red-950/40 border-amber-200/60 dark:border-amber-800/50 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-red-500/5 dark:from-amber-400/5 dark:to-red-400/5"></div>
-            <CardContent className="relative p-4 md:p-6">
+          <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-amber-700 dark:text-amber-300">Lemak</p>
-                  <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                  <p className="text-sm font-medium text-muted-foreground">Lemak</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {sampleMacroData.fat.current}g
                   </p>
-                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                  <p className="text-xs text-muted-foreground">
                     {Math.round((sampleMacroData.fat.current / sampleMacroData.fat.target) * 100)}% dari target
                   </p>
                 </div>
-                <div className="p-2 bg-gradient-to-br from-amber-500 to-red-600 dark:from-amber-400 dark:to-red-500 rounded-xl shadow-md">
-                  <Settings className="w-8 h-8 text-white drop-shadow-sm" />
+                <div className="p-2 bg-amber-500 rounded-xl shadow-sm">
+                  <Settings className="w-8 h-8 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -254,28 +238,28 @@ export default function NutritionAnalysisPage() {
 
         {/* Main Content */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-card/80 dark:bg-card/80 backdrop-blur-sm border border-border shadow-lg transition-all duration-300">
+          <TabsList className="grid w-full grid-cols-4 bg-muted border border-border shadow-sm">
             <TabsTrigger 
               value="overview" 
-              className="font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+              className="font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Ringkasan
             </TabsTrigger>
             <TabsTrigger 
               value="micronutrients" 
-              className="font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+              className="font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Mikronutrien
             </TabsTrigger>
             <TabsTrigger 
               value="targets" 
-              className="font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+              className="font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Target
             </TabsTrigger>
             <TabsTrigger 
               value="settings" 
-              className="font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+              className="font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Pengaturan
             </TabsTrigger>
@@ -283,8 +267,8 @@ export default function NutritionAnalysisPage() {
 
           <TabsContent value="overview" className="space-y-6 mt-6">
             <div className="space-y-6">
-              <div className="text-center p-6 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-200/60 dark:border-emerald-800/50">
-                <h2 className="text-xl font-semibold bg-gradient-to-r from-emerald-700 to-teal-700 dark:from-emerald-300 dark:to-teal-300 bg-clip-text text-transparent mb-2">
+              <div className="text-center p-6 bg-muted/50 rounded-xl border border-border">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
                   Analisis Makronutrien
                 </h2>
                 <p className="text-muted-foreground text-sm">
@@ -297,8 +281,8 @@ export default function NutritionAnalysisPage() {
 
           <TabsContent value="micronutrients" className="space-y-6 mt-6">
             <div className="space-y-6">
-              <div className="text-center p-6 bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/30 rounded-xl border border-violet-200/60 dark:border-violet-800/50">
-                <h2 className="text-xl font-semibold bg-gradient-to-r from-violet-700 to-indigo-700 dark:from-violet-300 dark:to-indigo-300 bg-clip-text text-transparent mb-2">
+              <div className="text-center p-6 bg-muted/50 rounded-xl border border-border">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
                   Analisis Mikronutrien
                 </h2>
                 <p className="text-muted-foreground text-sm">
@@ -311,8 +295,8 @@ export default function NutritionAnalysisPage() {
 
           <TabsContent value="targets" className="space-y-6 mt-6">
             <div className="space-y-6">
-              <div className="text-center p-6 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 rounded-xl border border-blue-200/60 dark:border-blue-800/50">
-                <h2 className="text-xl font-semibold bg-gradient-to-r from-blue-700 to-cyan-700 dark:from-blue-300 dark:to-cyan-300 bg-clip-text text-transparent mb-2">
+              <div className="text-center p-6 bg-muted/50 rounded-xl border border-border">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
                   Pengaturan Target Nutrisi
                 </h2>
                 <p className="text-muted-foreground text-sm">
@@ -328,8 +312,8 @@ export default function NutritionAnalysisPage() {
 
           <TabsContent value="settings" className="space-y-6 mt-6">
             <div className="space-y-6">
-              <div className="text-center p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl border border-amber-200/60 dark:border-amber-800/50">
-                <h2 className="text-xl font-semibold bg-gradient-to-r from-amber-700 to-orange-700 dark:from-amber-300 dark:to-orange-300 bg-clip-text text-transparent mb-2">
+              <div className="text-center p-6 bg-muted/50 rounded-xl border border-border">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
                   Pengaturan Analisis
                 </h2>
                 <p className="text-muted-foreground text-sm">
@@ -345,13 +329,12 @@ export default function NutritionAnalysisPage() {
         </Tabs>
 
         {/* Footer Info */}
-        <Card className="relative overflow-hidden bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-purple-950/30 border-blue-200/60 dark:border-blue-800/50 shadow-lg shadow-blue-500/10 dark:shadow-blue-400/5 backdrop-blur-sm">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-indigo-500/5 to-purple-500/5 dark:from-blue-400/5 dark:via-indigo-400/5 dark:to-purple-400/5"></div>
-          <CardContent className="relative p-6">
+        <Card className="bg-card border border-border shadow-sm">
+          <CardContent className="p-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center space-x-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-500 rounded-xl shadow-md ring-1 ring-white/20 dark:ring-border/50">
-                  <Activity className="w-6 h-6 text-white drop-shadow-sm" />
+                <div className="p-3 bg-primary rounded-xl shadow-sm">
+                  <Activity className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">
@@ -365,7 +348,7 @@ export default function NutritionAnalysisPage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-card/80 dark:bg-card/80 border-border text-foreground hover:bg-muted backdrop-blur-sm transition-all duration-200 shrink-0"
+                className="border-border hover:bg-muted"
               >
                 Pelajari Lebih Lanjut
               </Button>
@@ -373,6 +356,5 @@ export default function NutritionAnalysisPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  )
-}
+    )
+  }

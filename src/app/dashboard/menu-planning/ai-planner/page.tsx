@@ -31,8 +31,8 @@ export default function AIMenuPlannerPage() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
-                  <Calculator className="w-6 h-6 text-white" />
+                <div className="p-2 bg-primary rounded-lg">
+                  <Calculator className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <span>AI Menu Planner</span>
               </h1>
