@@ -149,11 +149,11 @@ export function MenuForm() {
                 <ChefHat className="h-6 w-6 text-white" />
               </div>
               <div>
-                <CardTitle className="text-2xl text-gray-900 dark:text-gray-100">
-                  Buat Menu Baru
+                                <CardTitle className="text-2xl text-foreground">
+                  Formulir Menu
                 </CardTitle>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Rancang menu sehat dan bergizi untuk program SPPG
+                <p className="text-sm text-muted-foreground mt-1">
+                  Lengkapi detail menu dengan informasi nutrisi yang akurat
                 </p>
               </div>
             </div>
@@ -161,9 +161,9 @@ export function MenuForm() {
         </Card>
 
         {/* Basic Information */}
-        <Card className="shadow-sm border-gray-200 dark:border-gray-800">
-          <CardHeader className="border-b border-gray-100 dark:border-gray-800">
-            <CardTitle className="flex items-center gap-2 text-lg text-gray-900 dark:text-gray-100">
+        <Card className="shadow-sm border border-border">
+          <CardHeader className="border-b border-border">
+            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
               <Calendar className="h-5 w-5 text-blue-500" />
               Informasi Dasar Menu
             </CardTitle>
@@ -171,14 +171,14 @@ export function MenuForm() {
           <CardContent className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <Label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label htmlFor="name" className="text-sm font-medium text-foreground">
                   Nama Menu *
                 </Label>
                 <Input
                   id="name"
                   {...register('name')}
                   placeholder="Contoh: Menu Sehat Hari Senin"
-                  className="h-11 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
+                  className="h-11 bg-background border-border focus:border-blue-500 dark:focus:border-blue-400"
                 />
                 {errors.name && (
                   <p className="text-sm text-red-500 dark:text-red-400">{errors.name.message}</p>
@@ -186,14 +186,14 @@ export function MenuForm() {
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="menuDate" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label htmlFor="menuDate" className="text-sm font-medium text-foreground">
                   Tanggal Menu *
                 </Label>
                 <Input
                   id="menuDate"
                   type="date"
                   {...register('menuDate')}
-                  className="h-11 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
+                  className="h-11 bg-background border-border focus:border-blue-500 dark:focus:border-blue-400"
                 />
                 {errors.menuDate && (
                   <p className="text-sm text-red-500 dark:text-red-400">{errors.menuDate.message}</p>
