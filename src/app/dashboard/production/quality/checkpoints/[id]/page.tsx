@@ -17,17 +17,17 @@ async function fetchQualityCheckpoint(id: string) {
 const getStatusColor = (status: string) => {
   switch (status) {
     case "PASS":
-      return "bg-green-100 text-green-800 border-green-200"
+      return "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
     case "FAIL":
-      return "bg-red-100 text-red-800 border-red-200"
+      return "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
     case "CONDITIONAL":
-      return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      return "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800"
     case "PENDING":
-      return "bg-blue-100 text-blue-800 border-blue-200"
+      return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
     case "REWORK_REQUIRED":
-      return "bg-orange-100 text-orange-800 border-orange-200"
+      return "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800"
     default:
-      return "bg-gray-100 text-gray-800 border-gray-200"
+      return "bg-muted text-muted-foreground border-border"
   }
 }
 
@@ -92,7 +92,7 @@ export default function QualityCheckpointDetailPage({
             <h1 className="text-3xl font-bold tracking-tight">Quality Checkpoint Details</h1>
           </div>
         </div>
-        <div className="text-center py-8 text-red-600">
+        <div className="text-center py-8 text-destructive">
           Error loading checkpoint details: {error?.message || "Checkpoint not found"}
         </div>
       </div>
@@ -163,7 +163,7 @@ export default function QualityCheckpointDetailPage({
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Temperature</Label>
                     <div className="flex items-center space-x-1 mt-1">
-                      <Thermometer className="h-4 w-4 text-red-500" />
+                      <Thermometer className="h-4 w-4 text-destructive" />
                       <span className="text-sm">{checkpoint.temperature}°C</span>
                     </div>
                   </div>
@@ -181,47 +181,47 @@ export default function QualityCheckpointDetailPage({
               {checkpoint.visualInspection && (
                 <div>
                   <div className="flex items-center space-x-2 mb-2">
-                    <Eye className="h-4 w-4 text-blue-500" />
+                    <Eye className="h-4 w-4 text-primary" />
                     <Label className="font-medium">Visual Inspection</Label>
                   </div>
-                  <p className="text-sm bg-blue-50 p-3 rounded-lg">{checkpoint.visualInspection}</p>
+                  <p className="text-sm bg-primary/5 border border-primary/20 p-3 rounded-lg">{checkpoint.visualInspection}</p>
                 </div>
               )}
 
               {checkpoint.tasteTest && (
                 <div>
                   <div className="flex items-center space-x-2 mb-2">
-                    <Utensils className="h-4 w-4 text-green-500" />
+                    <Utensils className="h-4 w-4 text-green-600 dark:text-green-400" />
                     <Label className="font-medium">Taste Test</Label>
                   </div>
-                  <p className="text-sm bg-green-50 p-3 rounded-lg">{checkpoint.tasteTest}</p>
+                  <p className="text-sm bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3 rounded-lg">{checkpoint.tasteTest}</p>
                 </div>
               )}
 
               {checkpoint.textureEvaluation && (
                 <div>
                   <div className="flex items-center space-x-2 mb-2">
-                    <CheckCircle className="h-4 w-4 text-purple-500" />
+                    <CheckCircle className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                     <Label className="font-medium">Texture Evaluation</Label>
                   </div>
-                  <p className="text-sm bg-purple-50 p-3 rounded-lg">{checkpoint.textureEvaluation}</p>
+                  <p className="text-sm bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 p-3 rounded-lg">{checkpoint.textureEvaluation}</p>
                 </div>
               )}
 
               {checkpoint.correctiveAction && (
                 <div>
                   <div className="flex items-center space-x-2 mb-2">
-                    <AlertTriangle className="h-4 w-4 text-orange-500" />
-                    <Label className="font-medium text-orange-700">Corrective Action Required</Label>
+                    <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                    <Label className="font-medium text-orange-700 dark:text-orange-300">Corrective Action Required</Label>
                   </div>
-                  <p className="text-sm bg-orange-50 p-3 rounded-lg border border-orange-200">{checkpoint.correctiveAction}</p>
+                  <p className="text-sm bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-3 rounded-lg">{checkpoint.correctiveAction}</p>
                 </div>
               )}
 
               {checkpoint.notes && (
                 <div>
                   <Label className="font-medium">Additional Notes</Label>
-                  <p className="text-sm mt-2 bg-gray-50 p-3 rounded-lg">{checkpoint.notes}</p>
+                  <p className="text-sm mt-2 bg-muted p-3 rounded-lg">{checkpoint.notes}</p>
                 </div>
               )}
             </CardContent>
@@ -236,7 +236,7 @@ export default function QualityCheckpointDetailPage({
               <CardContent>
                 <div className="grid md:grid-cols-3 gap-4">
                   {typeof checkpoint.metrics === 'object' && Object.entries(checkpoint.metrics).map(([key, value]) => (
-                    <div key={key} className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div key={key} className="text-center p-3 bg-muted rounded-lg">
                       <div className="text-2xl font-bold">{String(value)}</div>
                       <div className="text-sm text-muted-foreground">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
                     </div>

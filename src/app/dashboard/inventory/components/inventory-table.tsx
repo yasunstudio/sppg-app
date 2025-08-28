@@ -18,6 +18,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import Link from 'next/link'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 interface InventoryTableProps {
   data: any[]
@@ -27,6 +30,34 @@ interface InventoryTableProps {
 }
 
 export function InventoryTable({ data, isLoading, onRefetch, getStatusBadge }: InventoryTableProps) {
+  const queryClient = useQueryClient()
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/inventory/${id}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete inventory item')
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      toast.success('Item inventory berhasil dihapus!')
+      queryClient.invalidateQueries({ queryKey: ['inventory'] })
+      onRefetch()
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Gagal menghapus item inventory')
+    }
+  })
+
+  const handleDelete = async (id: string, name: string) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus item "${name}"?`)) {
+      deleteMutation.mutate(id)
+    }
+  }
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -159,17 +190,25 @@ export function InventoryTable({ data, isLoading, onRefetch, getStatusBadge }: I
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="w-4 h-4 mr-2" />
-                            Lihat Detail
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/inventory/${item.id}`}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              Lihat Detail
+                            </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/inventory/${item.id}/edit`}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
+                            </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => handleDelete(item.id, item.rawMaterial?.name || 'Item')}
+                            disabled={deleteMutation.isPending}
+                          >
                             <Trash2 className="w-4 h-4 mr-2" />
-                            Hapus
+                            {deleteMutation.isPending ? 'Menghapus...' : 'Hapus'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

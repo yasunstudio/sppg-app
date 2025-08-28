@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
-import { cn } from "@/lib/utils/cn"
+import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
 const AlertDialog = AlertDialogPrimitive.Root
@@ -95,7 +95,8 @@ const AlertDialogDescription = React.forwardRef<
     {...props}
   />
 ))
-AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayName
+AlertDialogDescription.displayName =
+  AlertDialogPrimitive.Description.displayName
 
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,

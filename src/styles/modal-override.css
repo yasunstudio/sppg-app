@@ -1,0 +1,35 @@
+/* Modal and Dialog Professional Theme Implementation */
+
+/* AlertDialog theme-aware styling */
+[data-radix-alert-dialog-content] {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure overlay is consistent */
+[data-radix-alert-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Photo modal specific styling */
+[data-radix-dialog-content] {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+[data-radix-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Ensure text inherits proper colors */
+[data-radix-alert-dialog-content] h2,
+[data-radix-alert-dialog-content] h3 {
+  color: hsl(var(--foreground));
+}
+
+[data-radix-alert-dialog-content] p {
+  color: hsl(var(--muted-foreground));
+}

@@ -11,7 +11,7 @@ const createInventorySchema = z.object({
   unitPrice: z.number().min(0),
   expiryDate: z.string().optional(),
   batchNumber: z.string().optional(),
-  location: z.string().optional()
+  qualityStatus: z.enum(['GOOD', 'FAIR', 'POOR', 'REJECTED', 'PENDING']).optional()
 })
 
 // GET /api/inventory - Get all inventory items with filters
@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
         totalPrice: validatedData.quantity * validatedData.unitPrice,
         expiryDate: validatedData.expiryDate ? new Date(validatedData.expiryDate) : null,
         batchNumber: validatedData.batchNumber,
+        qualityStatus: validatedData.qualityStatus || 'GOOD'
       },
       include: {
         rawMaterial: {

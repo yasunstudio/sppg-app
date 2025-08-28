@@ -10,12 +10,12 @@ import { Badge } from '../../../components/ui/badge'
 import { Plus, Search, Filter, Package, AlertTriangle, CheckCircle, XCircle, Bot, TrendingUp } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { 
-  InventoryForm, 
   InventoryTable, 
   InventoryStats, 
   InventoryAlerts,
   AIInventoryPredictor
 } from './components'
+import Link from 'next/link'
 
 type InventoryStatus = 'AVAILABLE' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'EXPIRED'
 type MaterialCategory = 'PROTEIN' | 'VEGETABLE' | 'GRAIN' | 'SPICE' | 'OIL'
@@ -49,7 +49,6 @@ export default function InventoryPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<InventoryStatus | 'ALL'>('ALL')
   const [categoryFilter, setCategoryFilter] = useState<MaterialCategory | 'ALL'>('ALL')
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isAIPredictorOpen, setIsAIPredictorOpen] = useState(false)
 
   // Fetch inventory data
@@ -130,25 +129,12 @@ export default function InventoryPage() {
               />
             </DialogContent>
           </Dialog>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Tambah Stok
-              </Button>
-            </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Tambah Item Inventory</DialogTitle>
-            </DialogHeader>
-            <InventoryForm
-              onSuccess={() => {
-                setIsAddDialogOpen(false)
-                refetch()
-              }}
-            />
-            </DialogContent>
-          </Dialog>
+          <Button asChild>
+            <Link href="/dashboard/inventory/add">
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah Stok
+            </Link>
+          </Button>
         </div>
       </div>      {/* Stats Cards */}
       <InventoryStats />

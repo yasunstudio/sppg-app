@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { PrismaClient } from "@/generated/prisma"
+import { saveFile, validateFile, getFileInfo, UPLOAD_CONFIG } from "@/lib/upload"
 
 const prisma = new PrismaClient()
 
@@ -63,34 +64,50 @@ export async function GET(
       const uploadedAt = new Date(qualityCheckpoint.checkedAt.getTime() + (index * 300000)) // 5 min intervals
       const checkpointType = qualityCheckpoint.checkpointType
       
-      // Generate tags based on checkpoint type
+      // Check if there's stored metadata for this photo
+      const storedMetadata = ((qualityCheckpoint.metrics as any)?.photoMetadata?.[photoId]) || null
+      
+      // Generate default tags and description based on checkpoint type if no stored metadata
       let tags = []
       let description = ""
       
-      switch (checkpointType) {
-        case "RAW_MATERIAL_INSPECTION":
-          tags = ["raw_materials", "inspection", "freshness", "quality"]
-          description = `Raw material inspection photo ${index + 1}`
-          break
-        case "COOKING_PROCESS":
-          tags = ["cooking", "process", "temperature", "monitoring"]
-          description = `Cooking process documentation ${index + 1}`
-          break
-        case "FINAL_INSPECTION":
-          tags = ["final_inspection", "plating", "portion_control", "presentation"]
-          description = `Final inspection and plating check ${index + 1}`
-          break
-        case "PACKAGING":
-          tags = ["packaging", "labeling", "final_check", "delivery_prep"]
-          description = `Packaging and labeling verification ${index + 1}`
-          break
-        case "HYGIENE_CHECK":
-          tags = ["hygiene", "cleanliness", "safety", "sanitation"]
-          description = `Hygiene and cleanliness verification ${index + 1}`
-          break
-        default:
-          tags = ["quality", "checkpoint", "documentation"]
-          description = `Quality checkpoint photo ${index + 1}`
+      if (storedMetadata) {
+        // Use stored metadata
+        tags = storedMetadata.tags || []
+        description = storedMetadata.description || ""
+      } else {
+        // Generate default metadata based on checkpoint type
+        switch (checkpointType) {
+          case "RAW_MATERIAL_INSPECTION":
+          case "RAW_MATERIAL":
+            tags = ["raw_materials", "inspection", "freshness", "quality"]
+            description = `Raw material inspection photo ${index + 1}`
+            break
+          case "COOKING_PROCESS":
+            tags = ["cooking", "process", "temperature", "monitoring"]
+            description = `Cooking process documentation ${index + 1}`
+            break
+          case "FINAL_INSPECTION":
+            tags = ["final_inspection", "plating", "portion_control", "presentation"]
+            description = `Final inspection and plating check ${index + 1}`
+            break
+          case "FINAL_PRODUCT":
+            // Use consistent simple tags for final product
+            tags = ["final_product", "quality_check"]
+            description = `Final product quality photo ${index + 1}`
+            break
+          case "PACKAGING":
+            tags = ["packaging", "labeling", "final_check", "delivery_prep"]
+            description = `Packaging and labeling verification ${index + 1}`
+            break
+          case "HYGIENE_CHECK":
+            tags = ["hygiene", "cleanliness", "safety", "sanitation"]
+            description = `Hygiene and cleanliness verification ${index + 1}`
+            break
+          default:
+            tags = ["quality", "checkpoint", "documentation"]
+            description = `Quality checkpoint photo ${index + 1}`
+        }
       }
 
       return {
@@ -142,24 +159,85 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
-    const body = await request.json()
-    const { photoUrls, description, tags } = body
-
+    const { id } = await params;
+    
     // Get current checkpoint
     const checkpoint = await prisma.qualityCheckpoint.findUnique({
-      where: { id }
-    })
+      where: { id },
+      include: {
+        checker: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
 
     if (!checkpoint) {
       return NextResponse.json(
         { error: "Quality checkpoint not found" },
         { status: 404 }
-      )
+      );
     }
 
-    // Add new photos to existing photos array
-    const updatedPhotos = [...checkpoint.photos, ...photoUrls]
+    // Handle multipart form data
+    const formData = await request.formData();
+    const files = formData.getAll('files') as File[];
+    const description = formData.get('description') as string || '';
+    const tags = formData.get('tags') as string || '';
+
+    if (!files || files.length === 0) {
+      return NextResponse.json(
+        { error: "No files provided" },
+        { status: 400 }
+      );
+    }
+
+    // Validate and upload files
+    const uploadedFiles = [];
+    const errors = [];
+
+    for (const file of files) {
+      try {
+        // Validate file
+        const validation = validateFile(file);
+        if (!validation.valid) {
+          errors.push(`${file.name}: ${validation.error}`);
+          continue;
+        }
+
+        // Create checkpoint-specific subdirectory
+        const subDir = `${UPLOAD_CONFIG.qualityPhotosDir}/${id}`;
+        
+        // Save file
+        const savedFile = await saveFile(file, subDir);
+        
+        // Get file info
+        const fileInfo = getFileInfo(file, savedFile);
+        
+        uploadedFiles.push(fileInfo);
+      } catch (error) {
+        console.error(`Error uploading file ${file.name}:`, error);
+        errors.push(`${file.name}: Upload failed`);
+      }
+    }
+
+    if (uploadedFiles.length === 0) {
+      return NextResponse.json(
+        { 
+          error: "No files were uploaded successfully", 
+          details: errors 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Get current photos and add new ones
+    const currentPhotos = checkpoint.photos || [];
+    const newPhotoUrls = uploadedFiles.map(file => file.url);
+    const updatedPhotos = [...currentPhotos, ...newPhotoUrls];
 
     // Update checkpoint with new photos
     const updatedCheckpoint = await prisma.qualityCheckpoint.update({
@@ -176,19 +254,23 @@ export async function POST(
           }
         }
       }
-    })
+    });
 
     return NextResponse.json({
-      message: "Photos added successfully",
-      photosCount: updatedPhotos.length,
+      message: "Photos uploaded successfully",
+      uploadedCount: uploadedFiles.length,
+      totalPhotos: updatedPhotos.length,
+      uploadedFiles: uploadedFiles,
+      errors: errors.length > 0 ? errors : undefined,
       checkpoint: updatedCheckpoint
-    })
+    });
+
   } catch (error) {
-    console.error("Error adding photos to checkpoint:", error)
+    console.error("Error uploading photos:", error);
     return NextResponse.json(
-      { error: "Failed to add photos" },
+      { error: "Failed to upload photos" },
       { status: 500 }
-    )
+    );
   }
 }
 
