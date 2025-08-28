@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { CheckCircle, XCircle, AlertTriangle, Clock, Camera, FileText, Plus } from "lucide-react"
+import Link from "next/link"
 
 // Fetch quality checkpoints from API
 async function fetchQualityCheckpoints() {
@@ -111,14 +112,18 @@ export default function ProductionQualityPage() {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline">
-            <FileText className="mr-2 h-4 w-4" />
-            SOP Guidelines
-          </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Quality Check
-          </Button>
+          <Link href="/dashboard/production/quality/sop-guidelines">
+            <Button variant="outline">
+              <FileText className="mr-2 h-4 w-4" />
+              SOP Guidelines
+            </Button>
+          </Link>
+          <Link href="/dashboard/production/quality/create">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Quality Check
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -255,14 +260,18 @@ export default function ProductionQualityPage() {
                       )}
                       
                       <div className="flex space-x-2 mt-3">
-                        <Button variant="outline" size="sm">
-                          <Camera className="h-3 w-3 mr-1" />
-                          View Photos
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <FileText className="h-3 w-3 mr-1" />
-                          Details
-                        </Button>
+                        <Link href={`/dashboard/production/quality/photos/${checkpoint.id}`}>
+                          <Button variant="outline" size="sm">
+                            <Camera className="h-3 w-3 mr-1" />
+                            View Photos
+                          </Button>
+                        </Link>
+                        <Link href={`/dashboard/production/quality/checkpoints/${checkpoint.id}`}>
+                          <Button variant="outline" size="sm">
+                            <FileText className="h-3 w-3 mr-1" />
+                            Details
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   ))
@@ -322,10 +331,12 @@ export default function ProductionQualityPage() {
               </div>
               
               <div className="mt-6">
-                <Button variant="outline" className="w-full">
-                  <FileText className="mr-2 h-4 w-4" />
-                  View Full SOP Documentation
-                </Button>
+                <Link href="/dashboard/production/quality/sop-documentation">
+                  <Button variant="outline" className="w-full">
+                    <FileText className="mr-2 h-4 w-4" />
+                    View Full SOP Documentation
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
@@ -336,22 +347,30 @@ export default function ProductionQualityPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Quality Checkpoint
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Camera className="mr-2 h-4 w-4" />
-                  Photo Documentation
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Generate QC Report
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <AlertTriangle className="mr-2 h-4 w-4" />
-                  Report Issue
-                </Button>
+                <Link href="/dashboard/production/quality/create">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Quality Checkpoint
+                  </Button>
+                </Link>
+                <Link href="/dashboard/production/quality/photo-documentation">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Camera className="mr-2 h-4 w-4" />
+                    Photo Documentation
+                  </Button>
+                </Link>
+                <Link href="/dashboard/production/quality/reports">
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Generate QC Report
+                  </Button>
+                </Link>
+                <Link href="/dashboard/production/quality/report-issue">
+                  <Button variant="outline" className="w-full justify-start">
+                    <AlertTriangle className="mr-2 h-4 w-4" />
+                    Report Issue
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
