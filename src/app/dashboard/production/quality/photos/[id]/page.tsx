@@ -10,89 +10,64 @@ import { ArrowLeft, Camera, Download, Upload, ZoomIn, Trash2, Edit, Calendar, Us
 import Link from "next/link"
 import { useState } from "react"
 
-async function fetchQualityCheckpointPhotos(id: string) {
-  // Mock data structure - replace with real API call
-  return {
-    checkpoint: {
-      id: id,
-      checkpointType: "FINAL_INSPECTION",
-      status: "PASS",
-      checkedAt: new Date().toISOString(),
-      checker: { name: "Chef Maria" },
-      productionPlan: {
-        id: "1",
-        menu: { name: "Nasi Gudeg Ayam" }
-      }
-    },
-    photos: [
-      {
-        id: "1",
-        filename: "final_inspection_001.jpg",
-        url: "/api/placeholder/400/300",
-        mimeType: "image/jpeg",
-        size: 245760,
-        uploadedAt: new Date(Date.now() - 3600000).toISOString(),
-        uploadedBy: { name: "Chef Maria" },
-        description: "Final plating inspection - all portions checked",
-        tags: ["final_inspection", "plating", "portion_control"]
-      },
-      {
-        id: "2", 
-        filename: "temperature_check_002.jpg",
-        url: "/api/placeholder/400/300",
-        mimeType: "image/jpeg",
-        size: 189432,
-        uploadedAt: new Date(Date.now() - 2400000).toISOString(),
-        uploadedBy: { name: "Chef Maria" },
-        description: "Temperature probe reading during cooking",
-        tags: ["temperature", "cooking", "monitoring"]
-      },
-      {
-        id: "3",
-        filename: "ingredient_prep_003.jpg", 
-        url: "/api/placeholder/400/300",
-        mimeType: "image/jpeg",
-        size: 432156,
-        uploadedAt: new Date(Date.now() - 7200000).toISOString(),
-        uploadedBy: { name: "Staff Andi" },
-        description: "Fresh ingredients prepared for cooking",
-        tags: ["ingredients", "preparation", "freshness"]
-      },
-      {
-        id: "4",
-        filename: "hygiene_check_004.jpg",
-        url: "/api/placeholder/400/300", 
-        mimeType: "image/jpeg",
-        size: 356789,
-        uploadedAt: new Date(Date.now() - 5400000).toISOString(),
-        uploadedBy: { name: "QC Inspector" },
-        description: "Kitchen hygiene and cleanliness verification",
-        tags: ["hygiene", "cleanliness", "safety"]
-      },
-      {
-        id: "5",
-        filename: "packaging_005.jpg",
-        url: "/api/placeholder/400/300",
-        mimeType: "image/jpeg", 
-        size: 198765,
-        uploadedAt: new Date(Date.now() - 1800000).toISOString(),
-        uploadedBy: { name: "Packaging Team" },
-        description: "Final packaging and labeling check",
-        tags: ["packaging", "labeling", "final_check"]
-      },
-      {
-        id: "6",
-        filename: "delivery_prep_006.jpg",
-        url: "/api/placeholder/400/300",
-        mimeType: "image/jpeg",
-        size: 287543,
-        uploadedAt: new Date(Date.now() - 900000).toISOString(), 
-        uploadedBy: { name: "Logistics Team" },
-        description: "Food containers ready for delivery",
-        tags: ["delivery", "containers", "logistics"]
-      }
-    ]
+interface Photo {
+  id: string
+  filename: string
+  url: string
+  mimeType: string
+  size: number
+  uploadedAt: string
+  uploadedBy: {
+    id: string
+    name: string
+    email: string
   }
+  description: string
+  tags: string[]
+  checkpointId: string
+  checkpointType: string
+}
+
+interface Checkpoint {
+  id: string
+  checkpointType: string
+  status: string
+  checkedAt: string
+  checker: {
+    id: string
+    name: string
+    email: string
+  }
+  productionPlan?: {
+    id: string
+    planDate: string
+    targetPortions: number
+    menu: {
+      id: string
+      name: string
+      mealType: string
+    }
+  }
+  batch?: {
+    id: string
+    batchNumber: string
+    status: string
+  }
+  temperature?: number
+  notes?: string
+}
+
+interface PhotosResponse {
+  checkpoint: Checkpoint
+  photos: Photo[]
+}
+
+async function fetchQualityCheckpointPhotos(id: string): Promise<PhotosResponse> {
+  const response = await fetch(`/api/quality/checkpoints/${id}/photos`)
+  if (!response.ok) {
+    throw new Error("Failed to fetch quality checkpoint photos")
+  }
+  return response.json()
 }
 
 const formatFileSize = (bytes: number) => {
@@ -132,7 +107,7 @@ export default function QualityPhotosPage({
             <h1 className="text-3xl font-bold tracking-tight">Quality Photos</h1>
           </div>
         </div>
-        <div className="text-center py-8">Loading photos...</div>
+        <div className="text-center py-8">Loading photos from database...</div>
       </div>
     )
   }
@@ -152,7 +127,7 @@ export default function QualityPhotosPage({
           </div>
         </div>
         <div className="text-center py-8 text-red-600">
-          Error loading photos
+          Error loading photos from database: {error?.message || "Photos not found"}
         </div>
       </div>
     )
@@ -160,11 +135,11 @@ export default function QualityPhotosPage({
 
   const { checkpoint, photos } = data
 
-  // Get all unique tags
-  const allTags = Array.from(new Set(photos.flatMap(photo => photo.tags)))
+  // Get all unique tags with proper typing
+  const allTags = Array.from(new Set(photos.flatMap((photo: Photo) => photo.tags)))
 
-  // Filter photos based on search and tag
-  const filteredPhotos = photos.filter(photo => {
+  // Filter photos based on search and tag with proper typing
+  const filteredPhotos = photos.filter((photo: Photo) => {
     const matchesSearch = searchQuery === "" || 
       photo.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
       photo.description?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -223,8 +198,8 @@ export default function QualityPhotosPage({
                   >
                     All Photos ({photos.length})
                   </Button>
-                  {allTags.map(tag => {
-                    const count = photos.filter(p => p.tags.includes(tag)).length
+                  {allTags.map((tag: string) => {
+                    const count = photos.filter((p: Photo) => p.tags.includes(tag)).length
                     return (
                       <Button
                         key={tag}
@@ -254,13 +229,13 @@ export default function QualityPhotosPage({
               <div className="flex justify-between">
                 <span className="text-sm">Total Size</span>
                 <span className="font-medium">
-                  {formatFileSize(photos.reduce((sum, photo) => sum + photo.size, 0))}
+                  {formatFileSize(photos.reduce((sum: number, photo: Photo) => sum + photo.size, 0))}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm">Latest Upload</span>
                 <span className="font-medium text-xs">
-                  {new Date(Math.max(...photos.map(p => new Date(p.uploadedAt).getTime()))).toLocaleDateString()}
+                  {new Date(Math.max(...photos.map((p: Photo) => new Date(p.uploadedAt).getTime()))).toLocaleDateString()}
                 </span>
               </div>
             </CardContent>
@@ -285,12 +260,22 @@ export default function QualityPhotosPage({
             <Card>
               <CardContent className="py-8 text-center">
                 <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No photos found matching your criteria</p>
+                <p className="text-muted-foreground">
+                  {photos.length === 0 
+                    ? "No photos have been uploaded for this quality checkpoint yet" 
+                    : "No photos found matching your search criteria"
+                  }
+                </p>
+                <Button className="mt-4">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Photos
+                </Button>
               </CardContent>
             </Card>
           ) : (
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredPhotos.map((photo) => (
+              {/* Photos loaded from database via /api/quality/checkpoints/[id]/photos */}
+              {filteredPhotos.map((photo: Photo) => (
                 <Card key={photo.id} className="overflow-hidden">
                   <div className="relative aspect-video bg-gray-100">
                     <img
@@ -326,7 +311,7 @@ export default function QualityPhotosPage({
                       </div>
 
                       <div className="flex flex-wrap gap-1">
-                        {photo.tags.slice(0, 2).map(tag => (
+                        {photo.tags.slice(0, 2).map((tag: string) => (
                           <Badge key={tag} variant="secondary" className="text-xs">
                             {tag.replace(/_/g, ' ')}
                           </Badge>
@@ -377,7 +362,7 @@ export default function QualityPhotosPage({
           <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b flex items-center justify-between">
               <h3 className="font-medium">
-                {filteredPhotos.find(p => p.id === selectedPhoto)?.filename}
+                {filteredPhotos.find((p: Photo) => p.id === selectedPhoto)?.filename}
               </h3>
               <Button
                 variant="ghost"
@@ -389,7 +374,7 @@ export default function QualityPhotosPage({
             </div>
             <div className="p-4">
               <img
-                src={filteredPhotos.find(p => p.id === selectedPhoto)?.url}
+                src={filteredPhotos.find((p: Photo) => p.id === selectedPhoto)?.url}
                 alt="Full size"
                 className="max-w-full max-h-[70vh] mx-auto"
               />
