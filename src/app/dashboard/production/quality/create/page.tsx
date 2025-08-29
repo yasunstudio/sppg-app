@@ -157,7 +157,7 @@ export default function CreateQualityCheckpointPage() {
                     <SelectValue placeholder="Select production plan" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {productionPlans.map((plan: any) => (
                       <SelectItem key={plan.id} value={plan.id}>
                         {plan.menu?.name} - {new Date(plan.planDate).toLocaleDateString()}
@@ -174,7 +174,7 @@ export default function CreateQualityCheckpointPage() {
                     <SelectValue placeholder="Select production batch" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {productionBatches.map((batch: any) => (
                       <SelectItem key={batch.id} value={batch.id}>
                         {batch.batchNumber} - {batch.status}

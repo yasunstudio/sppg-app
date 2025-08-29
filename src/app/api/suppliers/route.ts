@@ -14,7 +14,11 @@ export async function GET() {
       orderBy: { name: 'asc' }
     })
 
-    return NextResponse.json(suppliers)
+    return NextResponse.json({
+      data: suppliers,
+      total: suppliers.length,
+      message: 'Suppliers fetched successfully'
+    })
   } catch (error) {
     console.error('Error fetching suppliers:', error)
     return NextResponse.json(

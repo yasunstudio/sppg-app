@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const url = new URL(request.url);
-    const status = url.searchParams.get("status") as ProductionBatchStatus | null;
+    const statusParam = url.searchParams.get("status");
     const recipeId = url.searchParams.get("recipeId");
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "10");
@@ -21,7 +21,15 @@ export async function GET(request: NextRequest) {
 
     const where: any = {};
     
-    if (status) where.status = status;
+    // Handle multiple statuses separated by comma
+    if (statusParam) {
+      const statuses = statusParam.split(',').map(s => s.trim()) as ProductionBatchStatus[];
+      if (statuses.length === 1) {
+        where.status = statuses[0];
+      } else {
+        where.status = { in: statuses };
+      }
+    }
     if (recipeId) where.recipeId = recipeId;
     
     if (startDate || endDate) {

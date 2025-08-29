@@ -104,6 +104,41 @@ async function generateSummaryReport(startDate: Date, endDate: Date) {
     generateSchoolMetrics(startDate, endDate),
   ]);
 
+  // Get detailed data for the details tab
+  const productionPlans = await prisma.productionPlan.findMany({
+    where: {
+      planDate: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    include: {
+      menu: true,
+      batches: {
+        include: {
+          qualityChecks: true,
+        },
+      },
+    },
+    orderBy: {
+      planDate: 'desc'
+    },
+    take: 20 // Limit to last 20 records for performance
+  });
+
+  const transactions = await prisma.financialTransaction.findMany({
+    where: {
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    orderBy: {
+      createdAt: 'desc'
+    },
+    take: 20 // Limit to last 20 records for performance
+  });
+
   return {
     summary: {
       totalMealsProduced: productionMetrics.totalMealsProduced,
@@ -121,6 +156,26 @@ async function generateSummaryReport(startDate: Date, endDate: Date) {
       quality: qualityMetrics,
       schools: schoolMetrics,
     },
+    // Add detailed data for the details tab
+    plans: productionPlans.map(plan => ({
+      id: plan.id,
+      date: plan.planDate,
+      menuName: plan.menu?.name || 'Unknown Menu',
+      targetPortions: plan.targetPortions,
+      actualPortions: plan.batches.reduce((sum, batch) => sum + (batch.actualQuantity || 0), 0),
+      efficiency: plan.batches.length > 0 ? 
+        (plan.batches.reduce((sum, batch) => sum + (batch.actualQuantity || 0), 0) / plan.targetPortions) * 100 : 0,
+      batchesCount: plan.batches.length,
+      qualityChecks: plan.batches.reduce((acc, batch) => acc + batch.qualityChecks.length, 0),
+    })),
+    transactions: transactions.map(tx => ({
+      id: tx.id,
+      date: tx.createdAt,
+      type: tx.type,
+      category: tx.category || 'General',
+      description: tx.description || 'No description',
+      amount: tx.amount,
+    })),
     trends: await generateTrends(startDate, endDate),
     recommendations: generateRecommendations(productionMetrics, distributionMetrics, financialMetrics, qualityMetrics),
   };

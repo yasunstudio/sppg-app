@@ -196,7 +196,7 @@ export default function CreateProductionPlanPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {menusLoading ? (
-                      <SelectItem value="" disabled>Loading menus...</SelectItem>
+                      <SelectItem value="loading" disabled>Loading menus...</SelectItem>
                     ) : (
                       menus.map((menu: any) => (
                         <SelectItem key={menu.id} value={menu.id}>

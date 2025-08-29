@@ -1,6 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -57,17 +58,24 @@ const getResourceStatusIcon = (status: string) => {
 }
 
 export default function ProductionResourcesPage() {
-  const { data: resources = [], isLoading: resourcesLoading, error: resourcesError } = useQuery({
+  const router = useRouter()
+  
+  const { data: resources = [], isLoading: resourcesLoading, error: resourcesError, refetch: refetchResources } = useQuery({
     queryKey: ["production-resources"],
     queryFn: fetchProductionResources,
     refetchInterval: 30000, // Refresh every 30 seconds
   })
 
-  const { data: rawMaterials = [], isLoading: materialsLoading, error: materialsError } = useQuery({
+  const { data: rawMaterials = [], isLoading: materialsLoading, error: materialsError, refetch: refetchMaterials } = useQuery({
     queryKey: ["raw-materials"],
     queryFn: fetchRawMaterials,
     refetchInterval: 60000, // Refresh every minute
   })
+
+  const handleRefresh = () => {
+    refetchResources()
+    refetchMaterials()
+  }
 
   if (resourcesLoading || materialsLoading) {
     return (
@@ -116,11 +124,11 @@ export default function ProductionResourcesPage() {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleRefresh}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh Status
           </Button>
-          <Button>
+          <Button onClick={() => router.push('/dashboard/production/resources/add')}>
             <Plus className="mr-2 h-4 w-4" />
             Add Resource
           </Button>
@@ -264,16 +272,28 @@ export default function ProductionResourcesPage() {
                       )}
                       
                       <div className="flex space-x-2 mt-3">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => router.push(`/dashboard/production/resources/${resource.id}/edit-status`)}
+                        >
                           Edit Status
                         </Button>
                         {resource.status === "IN_USE" && (
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => router.push(`/dashboard/production/resources/${resource.id}/edit-status`)}
+                          >
                             Mark Available
                           </Button>
                         )}
                         {resource.status === "AVAILABLE" && (
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => router.push(`/dashboard/production/resources/${resource.id}/assign`)}
+                          >
                             Assign to Batch
                           </Button>
                         )}
@@ -362,13 +382,32 @@ export default function ProductionResourcesPage() {
               </div>
               
               <div className="mt-6 space-y-2">
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => router.push('/dashboard/production/resources/inventory')}
+                >
                   View Full Inventory
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => router.push('/dashboard/production/resources/purchase-order')}
+                >
                   Create Purchase Order
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => router.push('/dashboard/production/resources/maintenance')}
+                >
+                  Schedule Maintenance
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => router.push('/dashboard/production/resources/stock-report')}
+                >
                   Stock Movement Report
                 </Button>
               </div>

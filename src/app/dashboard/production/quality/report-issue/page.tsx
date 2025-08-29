@@ -238,7 +238,7 @@ export default function ReportIssuePage() {
                         <SelectValue placeholder="Select production plan (if applicable)" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {productionPlans.map((plan: any) => (
                           <SelectItem key={plan.id} value={plan.id}>
                             {plan.menu?.name} - {new Date(plan.planDate).toLocaleDateString()}

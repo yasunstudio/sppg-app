@@ -274,9 +274,9 @@ export default function CreateDistributionPage() {
                         <SelectValue placeholder="Select driver" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No driver assigned</SelectItem>
+                        <SelectItem value="no-driver">No driver assigned</SelectItem>
                         {isLoadingDrivers ? (
-                          <SelectItem value="" disabled>Loading drivers...</SelectItem>
+                          <SelectItem value="loading" disabled>Loading drivers...</SelectItem>
                         ) : (
                           drivers.map((driver: any) => (
                             <SelectItem key={driver.id} value={driver.id}>
@@ -297,9 +297,9 @@ export default function CreateDistributionPage() {
                         <SelectValue placeholder="Select vehicle" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No vehicle assigned</SelectItem>
+                        <SelectItem value="no-vehicle">No vehicle assigned</SelectItem>
                         {isLoadingVehicles ? (
-                          <SelectItem value="" disabled>Loading vehicles...</SelectItem>
+                          <SelectItem value="loading" disabled>Loading vehicles...</SelectItem>
                         ) : (
                           vehicles.map((vehicle: any) => (
                             <SelectItem key={vehicle.id} value={vehicle.id}>
