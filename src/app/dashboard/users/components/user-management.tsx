@@ -68,7 +68,7 @@ interface User {
   emailVerified: boolean
   phone: string | null
   address: string | null
-  image: string | null
+  avatar: string | null
 }
 
 interface UserStats {
@@ -459,8 +459,8 @@ export function UserManagement() {
                   <TableCell>
                     <div className="flex items-center space-x-3">
                       <Avatar>
-                        {user.image ? (
-                          <AvatarImage src={user.image} alt={user.name || ""} />
+                        {user.avatar ? (
+                          <AvatarImage src={user.avatar} alt={user.name || ""} />
                         ) : (
                           <AvatarFallback>
                             {user.name?.charAt(0) || user.email.charAt(0)}
@@ -600,8 +600,8 @@ export function UserManagement() {
             <div className="py-4">
               <div className="flex items-center space-x-3 p-4 border rounded-lg">
                 <Avatar>
-                  {selectedUser.image ? (
-                    <AvatarImage src={selectedUser.image} alt={selectedUser.name || ""} />
+                  {selectedUser.avatar ? (
+                    <AvatarImage src={selectedUser.avatar} alt={selectedUser.name || ""} />
                   ) : (
                     <AvatarFallback>
                       {selectedUser.name?.charAt(0) || selectedUser.email.charAt(0)}

@@ -75,6 +75,7 @@ export async function createUser(formData: FormData) {
     const password = formData.get("password")
     const phone = formData.get("phone")
     const address = formData.get("address")
+    const avatar = formData.get("avatar")
     const role = formData.get("role")
     const isActive = formData.get("isActive") === "true"
 
@@ -123,6 +124,7 @@ export async function createUser(formData: FormData) {
         password: hashedPassword,
         phone: phone && typeof phone === "string" && phone.trim() ? phone.trim() : null,
         address: address && typeof address === "string" && address.trim() ? address.trim() : null,
+        avatar: avatar && typeof avatar === "string" && avatar.trim() ? avatar.trim() : null,
         isActive,
         roles: {
           create: {
@@ -168,6 +170,7 @@ export async function updateUser(userId: string, formData: FormData) {
     const password = formData.get("password")
     const phone = formData.get("phone")
     const address = formData.get("address")
+    const avatar = formData.get("avatar")
     const isActive = formData.get("isActive") === "true"
 
     if (!name || typeof name !== "string") throw new Error("Name is required")
@@ -212,6 +215,11 @@ export async function updateUser(userId: string, formData: FormData) {
       phone: phone && typeof phone === "string" && phone.trim() ? phone.trim() : null,
       address: address && typeof address === "string" && address.trim() ? address.trim() : null,
       isActive,
+    }
+
+    // Only update avatar if provided
+    if (avatar && typeof avatar === "string" && avatar.trim()) {
+      updateData.avatar = avatar.trim()
     }
 
     // Only update password if provided

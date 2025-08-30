@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition, useState } from "react"
+import { useTransition, useState, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Select,
   SelectContent,
@@ -28,9 +29,10 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { toast } from "sonner"
-import { Loader2, Eye, EyeOff } from "lucide-react"
+import { Loader2, Eye, EyeOff, Upload, X } from "lucide-react"
 import { createUser, updateUser } from "../actions"
 import { USER_ROLES } from "@/lib/permissions"
+import { validateFile } from "@/lib/upload"
 
 interface User {
   id: string
@@ -94,6 +96,7 @@ const userFormSchema = z
       { message: "Please select a valid role" }
     ),
     isActive: z.boolean(),
+    avatar: z.any().optional(), // File input
   })
   .refine(
     (data) => {
@@ -110,6 +113,10 @@ type UserFormValues = z.infer<typeof userFormSchema>
 
 export function UserForm({ user, onSuccess }: Props) {
   const [showPassword, setShowPassword] = useState(false)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string>(user?.avatar || "")
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   
@@ -127,6 +134,37 @@ export function UserForm({ user, onSuccess }: Props) {
     mode: "onChange",
   })
 
+  // Handle avatar file selection
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file
+    const validation = validateFile(file)
+    if (!validation.valid) {
+      toast.error(validation.error || "Invalid file")
+      return
+    }
+
+    setAvatarFile(file)
+    
+    // Create preview URL
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setAvatarPreview(e.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Remove avatar
+  const handleRemoveAvatar = () => {
+    setAvatarFile(null)
+    setAvatarPreview("")
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
   const handleSubmit = form.handleSubmit(async (data) => {
     // Validate password for new users
     if (!user?.id && !data.password) {
@@ -136,12 +174,38 @@ export function UserForm({ user, onSuccess }: Props) {
 
     startTransition(async () => {
       try {
+        let avatarUrl = user?.avatar || ""
+
+        // Upload avatar if a new file is selected
+        if (avatarFile) {
+          setUploadingAvatar(true)
+          const formData = new FormData()
+          formData.append('file', avatarFile)
+          formData.append('type', 'avatar')
+
+          const uploadResponse = await fetch('/api/upload/avatar', {
+            method: 'POST',
+            body: formData,
+          })
+
+          if (!uploadResponse.ok) {
+            throw new Error('Failed to upload avatar')
+          }
+
+          const uploadResult = await uploadResponse.json()
+          avatarUrl = uploadResult.url
+          setUploadingAvatar(false)
+        }
+
         const formData = new FormData()
         formData.append("name", data.name.trim())
         formData.append("email", data.email.trim().toLowerCase())
         formData.append("role", data.role)
         formData.append("isActive", data.isActive.toString())
         
+        if (avatarUrl) {
+          formData.append("avatar", avatarUrl)
+        }
         if (data.username) {
           formData.append("username", data.username.trim())
         }
@@ -244,6 +308,70 @@ export function UserForm({ user, onSuccess }: Props) {
                 </FormItem>
               )}
             />
+
+            {/* Avatar Upload */}
+            <div className="space-y-2">
+              <Label>Profile Picture</Label>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-20 w-20">
+                  {avatarPreview ? (
+                    <AvatarImage src={avatarPreview} alt="Avatar preview" />
+                  ) : (
+                    <AvatarFallback className="text-lg">
+                      {form.watch("name")?.charAt(0)?.toUpperCase() || 
+                       form.watch("email")?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isPending || uploadingAvatar}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {avatarPreview ? "Change" : "Upload"}
+                    </Button>
+                    
+                    {avatarPreview && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemoveAvatar}
+                        disabled={isPending || uploadingAvatar}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground">
+                    Upload a profile picture (JPG, PNG, max 10MB)
+                  </p>
+                  
+                  {uploadingAvatar && (
+                    <p className="text-sm text-blue-600 flex items-center">
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Uploading...
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+            </div>
           </div>
 
           {/* Security */}
