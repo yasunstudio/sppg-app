@@ -32,7 +32,7 @@ import { toast } from "sonner"
 import { Loader2, Eye, EyeOff, Upload, X } from "lucide-react"
 import { createUser, updateUser } from "../actions"
 import { USER_ROLES } from "@/lib/permissions"
-import { validateFile } from "@/lib/upload"
+import { validateFileClient } from "@/lib/upload-client"
 
 interface User {
   id: string
@@ -140,7 +140,7 @@ export function UserForm({ user, onSuccess }: Props) {
     if (!file) return
 
     // Validate file
-    const validation = validateFile(file)
+    const validation = validateFileClient(file)
     if (!validation.valid) {
       toast.error(validation.error || "Invalid file")
       return
