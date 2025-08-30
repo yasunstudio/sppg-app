@@ -34,13 +34,13 @@ interface TransactionResponse {
 }
 
 const transactionTypes = [
-  { value: '', label: 'Semua Jenis' },
+  { value: 'ALL', label: 'Semua Jenis' },
   { value: 'INCOME', label: 'Pemasukan' },
   { value: 'EXPENSE', label: 'Pengeluaran' },
 ];
 
 const transactionCategories = [
-  { value: '', label: 'Semua Kategori' },
+  { value: 'ALL', label: 'Semua Kategori' },
   { value: 'RAW_MATERIALS', label: 'Bahan Baku' },
   { value: 'TRANSPORTATION', label: 'Transportasi' },
   { value: 'UTILITIES', label: 'Utilitas' },
@@ -87,8 +87,8 @@ export default function TransactionsList() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: '',
-    type: '',
-    category: '',
+    type: 'ALL',
+    category: 'ALL',
     period: '',
     page: 1,
   });
@@ -103,8 +103,8 @@ export default function TransactionsList() {
       const params = new URLSearchParams();
       
       if (filters.search) params.set('search', filters.search);
-      if (filters.type) params.set('type', filters.type);
-      if (filters.category) params.set('category', filters.category);
+      if (filters.type && filters.type !== 'ALL') params.set('type', filters.type);
+      if (filters.category && filters.category !== 'ALL') params.set('category', filters.category);
       if (filters.period) params.set('period', filters.period);
       params.set('page', filters.page.toString());
       params.set('limit', '20');
@@ -152,8 +152,8 @@ export default function TransactionsList() {
   const clearFilters = () => {
     setFilters({
       search: '',
-      type: '',
-      category: '',
+      type: 'ALL',
+      category: 'ALL',
       period: '',
       page: 1,
     });
