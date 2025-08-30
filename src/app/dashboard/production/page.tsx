@@ -191,7 +191,7 @@ export default function ProductionPage() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="plans">Production Plans</TabsTrigger>
           <TabsTrigger value="batches">Active Batches</TabsTrigger>
