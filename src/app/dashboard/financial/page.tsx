@@ -42,6 +42,41 @@ interface FinancialStats {
   }>;
 }
 
+interface FinancialReports {
+  type: string;
+  period: string;
+  summary?: {
+    totalIncome: number;
+    totalExpenses: number;
+    netIncome: number;
+    incomeTransactions: number;
+    expenseTransactions: number;
+    profitMargin: number;
+  };
+  topIncomeCategories?: Array<{
+    category: string;
+    amount: number;
+  }>;
+  topExpenseCategories?: Array<{
+    category: string;
+    amount: number;
+  }>;
+  weeklyTrends?: Array<{
+    week: string;
+    income: number;
+    expenses: number;
+    net: number;
+  }>;
+  budgetVariance?: Array<{
+    category: string;
+    budgeted: number;
+    actual: number;
+    variance: number;
+    variancePercentage: number;
+    status: string;
+  }>;
+}
+
 const categoryLabels: Record<string, string> = {
   RAW_MATERIALS: 'Bahan Baku',
   TRANSPORTATION: 'Transportasi',
@@ -92,8 +127,11 @@ function generatePeriodOptions(): Array<{ value: string; label: string }> {
 
 export default function FinancialDashboard() {
   const [stats, setStats] = useState<FinancialStats | null>(null);
+  const [reports, setReports] = useState<FinancialReports | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
+  const [selectedReportType, setSelectedReportType] = useState<string>('summary');
   const [loading, setLoading] = useState(true);
+  const [reportsLoading, setReportsLoading] = useState(false);
 
   const periodOptions = generatePeriodOptions();
 
@@ -106,8 +144,9 @@ export default function FinancialDashboard() {
   useEffect(() => {
     if (selectedPeriod) {
       fetchStats();
+      fetchReports();
     }
-  }, [selectedPeriod]);
+  }, [selectedPeriod, selectedReportType]);
 
   const fetchStats = async () => {
     try {
@@ -121,6 +160,21 @@ export default function FinancialDashboard() {
       console.error('Error fetching financial stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchReports = async () => {
+    try {
+      setReportsLoading(true);
+      const response = await fetch(`/api/financial/reports?period=${selectedPeriod}&type=${selectedReportType}`);
+      if (response.ok) {
+        const data = await response.json();
+        setReports(data);
+      }
+    } catch (error) {
+      console.error('Error fetching financial reports:', error);
+    } finally {
+      setReportsLoading(false);
     }
   };
 
@@ -400,16 +454,168 @@ export default function FinancialDashboard() {
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-4">
-          <div className="text-center py-8">
-            <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Laporan Keuangan</h3>
-            <p className="text-muted-foreground mb-4">
-              Fitur laporan keuangan akan segera tersedia
-            </p>
-            <Button variant="outline" disabled>
-              Coming Soon
-            </Button>
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium">Laporan Keuangan</h3>
+            <Select value={selectedReportType} onValueChange={setSelectedReportType}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Pilih jenis laporan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="summary">Ringkasan</SelectItem>
+                <SelectItem value="category">Per Kategori</SelectItem>
+                <SelectItem value="trend">Tren Mingguan</SelectItem>
+                <SelectItem value="budget-variance">Analisis Budget</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
+          {reportsLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-sm text-muted-foreground">Memuat laporan...</p>
+            </div>
+          ) : reports ? (
+            <div className="space-y-6">
+              {/* Summary Report */}
+              {reports.type === 'summary' && reports.summary && (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Ringkasan Keuangan</CardTitle>
+                      <CardDescription>Periode {formatPeriod(reports.period)}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <div className="text-muted-foreground">Total Pemasukan</div>
+                          <div className="font-medium text-green-600">{formatCurrency(reports.summary.totalIncome)}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Total Pengeluaran</div>
+                          <div className="font-medium text-red-600">{formatCurrency(reports.summary.totalExpenses)}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Laba Bersih</div>
+                          <div className={`font-medium ${reports.summary.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency(reports.summary.netIncome)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Margin Keuntungan</div>
+                          <div className="font-medium">{reports.summary.profitMargin.toFixed(1)}%</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Top Kategori Pemasukan</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {reports.topIncomeCategories?.map((item, index) => (
+                        <div key={item.category} className="flex justify-between items-center">
+                          <span className="text-sm">{index + 1}. {categoryLabels[item.category]}</span>
+                          <span className="font-medium text-green-600">{formatCurrency(item.amount)}</span>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Top Kategori Pengeluaran</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {reports.topExpenseCategories?.map((item, index) => (
+                        <div key={item.category} className="flex justify-between items-center">
+                          <span className="text-sm">{index + 1}. {categoryLabels[item.category]}</span>
+                          <span className="font-medium text-red-600">{formatCurrency(item.amount)}</span>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Weekly Trends Report */}
+              {reports.type === 'trend' && reports.weeklyTrends && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Tren Mingguan</CardTitle>
+                    <CardDescription>Performa keuangan per minggu di periode {formatPeriod(reports.period)}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {reports.weeklyTrends.map((week) => (
+                        <div key={week.week} className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">{week.week}</span>
+                            <Badge variant={week.net >= 0 ? 'default' : 'destructive'}>
+                              {formatCurrency(week.net)}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                            <div>Pemasukan: {formatCurrency(week.income)}</div>
+                            <div>Pengeluaran: {formatCurrency(week.expenses)}</div>
+                          </div>
+                          <Progress value={week.income > 0 ? (week.net / week.income) * 100 : 0} className="h-2" />
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Budget Variance Report */}
+              {reports.type === 'budget-variance' && reports.budgetVariance && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Analisis Varians Budget</CardTitle>
+                    <CardDescription>Perbandingan budget vs realisasi periode {formatPeriod(reports.period)}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {reports.budgetVariance.map((item) => (
+                        <div key={item.category} className="space-y-3 p-4 border rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <h4 className="font-medium">{categoryLabels[item.category]}</h4>
+                            <Badge variant={item.status === 'over' ? 'destructive' : 'default'}>
+                              {item.status === 'over' ? 'Over Budget' : 'Under Budget'}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <div className="text-muted-foreground">Budget</div>
+                              <div className="font-medium">{formatCurrency(item.budgeted)}</div>
+                            </div>
+                            <div>
+                              <div className="text-muted-foreground">Aktual</div>
+                              <div className="font-medium">{formatCurrency(item.actual)}</div>
+                            </div>
+                            <div>
+                              <div className="text-muted-foreground">Selisih</div>
+                              <div className={`font-medium ${item.variance >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                {formatCurrency(Math.abs(item.variance))} ({Math.abs(item.variancePercentage).toFixed(1)}%)
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">Tidak Ada Data Laporan</h3>
+              <p className="text-muted-foreground">
+                Tidak ada data laporan untuk periode yang dipilih
+              </p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
