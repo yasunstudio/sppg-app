@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import Link from "next/link";
 
 interface Posyandu {
@@ -47,7 +47,6 @@ interface Posyandu {
 }
 
 export default function PosyanduDashboard() {
-  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [posyandu, setPosyandu] = useState<Posyandu[]>([]);
   const [filteredPosyandu, setFilteredPosyandu] = useState<Posyandu[]>([]);
@@ -75,12 +74,7 @@ export default function PosyanduDashboard() {
       }
     } catch (error) {
       console.error("Error fetching posyandu:", error);
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Error",
-        description: "Gagal memuat daftar posyandu",
-      });
+      toast.error("Gagal memuat daftar posyandu");
     } finally {
       setLoading(false);
     }

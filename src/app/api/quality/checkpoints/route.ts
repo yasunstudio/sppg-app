@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { PrismaClient, QualityCheckStatus } from "@/generated/prisma"
-
-const prisma = new PrismaClient()
+import { QualityCheckStatus } from "@/generated/prisma"
+import { prisma } from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
   try {

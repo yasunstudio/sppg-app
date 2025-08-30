@@ -7,7 +7,17 @@ interface UserProfile {
   id: string
   name: string
   email: string
-  roles: string[]
+  roles: Array<{
+    id: string
+    userId: string
+    roleId: string
+    assignedAt: Date
+    role: {
+      id: string
+      name: string
+      description?: string
+    }
+  }>
   avatar?: string
 }
 
@@ -34,7 +44,7 @@ export function useUserProfile() {
             id: session.user.id || '',
             name: session.user.name || '',
             email: session.user.email || '',
-            roles: ['Administrator'], // Default role
+            roles: [], // Empty roles array for fallback
           })
         }
       } catch (error) {
@@ -44,7 +54,7 @@ export function useUserProfile() {
           id: session.user.id || '',
           name: session.user.name || '',
           email: session.user.email || '',
-          roles: ['Administrator'], // Default role
+          roles: [], // Empty roles array for fallback
         })
       } finally {
         setLoading(false)
@@ -58,7 +68,8 @@ export function useUserProfile() {
     if (!profile?.roles || profile.roles.length === 0) {
       return 'User'
     }
-    return profile.roles[0] // Show primary role
+    // Extract role name from the role object
+    return profile.roles[0].role.name || 'User'
   }
 
   return {

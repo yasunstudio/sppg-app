@@ -3,107 +3,128 @@
 
 export const PERMISSIONS = {
   // User Management
-  'users.create': ['KEPALA_SPPG', 'ADMIN'],
-  'users.view': ['KEPALA_SPPG', 'ADMIN', 'AKUNTAN'],
-  'users.edit': ['KEPALA_SPPG', 'ADMIN'],
-  'users.delete': ['KEPALA_SPPG'],
+  'users.create': ['SUPER_ADMIN', 'ADMIN'],
+  'users.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR'],
+  'users.edit': ['SUPER_ADMIN', 'ADMIN'],
+  'users.delete': ['SUPER_ADMIN'],
   
   // Menu Planning & Nutrition
-  'menus.create': ['AHLI_GIZI', 'KEPALA_SPPG'],
-  'menus.view': ['AHLI_GIZI', 'KEPALA_SPPG', 'STAFF_OPERASIONAL'],
-  'menus.edit': ['AHLI_GIZI', 'KEPALA_SPPG'],
-  'menus.approve': ['KEPALA_SPPG'],
-  'nutrition.consult': ['AHLI_GIZI'],
+  'menus.create': ['NUTRITIONIST', 'CHEF', 'SUPER_ADMIN'],
+  'menus.view': ['NUTRITIONIST', 'CHEF', 'ADMIN', 'SUPER_ADMIN'],
+  'menus.edit': ['NUTRITIONIST', 'CHEF', 'SUPER_ADMIN'],
+  'menus.approve': ['SUPER_ADMIN', 'ADMIN'],
+  'nutrition.consult': ['NUTRITIONIST', 'HEALTH_WORKER'],
   
   // Inventory & Raw Materials
-  'inventory.create': ['AKUNTAN', 'KEPALA_SPPG'],
-  'inventory.view': ['AKUNTAN', 'KEPALA_SPPG', 'STAFF_OPERASIONAL', 'AHLI_GIZI'],
-  'inventory.edit': ['AKUNTAN', 'KEPALA_SPPG'],
-  'suppliers.manage': ['AKUNTAN', 'KEPALA_SPPG'],
+  'inventory.create': ['ADMIN', 'CHEF', 'SUPER_ADMIN'],
+  'inventory.view': ['ADMIN', 'CHEF', 'NUTRITIONIST', 'SUPER_ADMIN'],
+  'inventory.edit': ['ADMIN', 'CHEF', 'SUPER_ADMIN'],
+  'suppliers.manage': ['ADMIN', 'SUPER_ADMIN'],
   
   // Production Management
-  'production.create': ['STAFF_OPERASIONAL', 'KEPALA_SPPG'],
-  'production.view': ['STAFF_OPERASIONAL', 'KEPALA_SPPG', 'AHLI_GIZI'],
-  'production.manage': ['STAFF_OPERASIONAL', 'KEPALA_SPPG'],
-  'quality.check': ['AHLI_GIZI', 'STAFF_OPERASIONAL'],
+  'production.create': ['CHEF', 'SUPER_ADMIN'],
+  'production.view': ['CHEF', 'NUTRITIONIST', 'ADMIN', 'SUPER_ADMIN'],
+  'production.manage': ['CHEF', 'SUPER_ADMIN'],
+  'quality.check': ['CHEF', 'NUTRITIONIST'],
   
-  // Distribution & Logistics
-  'distribution.create': ['ASISTEN_LAPANGAN', 'KEPALA_SPPG'],
-  'distribution.view': ['ASISTEN_LAPANGAN', 'KEPALA_SPPG', 'DRIVER'],
-  'distribution.manage': ['ASISTEN_LAPANGAN', 'KEPALA_SPPG'],
-  'delivery.execute': ['DRIVER', 'ASISTEN_LAPANGAN'],
-  'schools.manage': ['ASISTEN_LAPANGAN', 'KEPALA_SPPG'],
+  // Posyandu Management
+  'posyandu.create': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR'],
+  'posyandu.view': ['POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'VOLUNTEER', 'ADMIN', 'SUPER_ADMIN'],
+  'posyandu.edit': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR'],
+  'posyandu.delete': ['SUPER_ADMIN', 'ADMIN'],
+  
+  // Volunteer Management
+  'volunteers.create': ['POSYANDU_COORDINATOR', 'ADMIN', 'SUPER_ADMIN'],
+  'volunteers.view': ['POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'ADMIN', 'SUPER_ADMIN'],
+  'volunteers.edit': ['POSYANDU_COORDINATOR', 'ADMIN', 'SUPER_ADMIN'],
+  'volunteers.assign': ['POSYANDU_COORDINATOR', 'ADMIN', 'SUPER_ADMIN'],
+  
+  // Programs Management
+  'programs.create': ['POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'ADMIN', 'SUPER_ADMIN'],
+  'programs.view': ['POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'VOLUNTEER', 'ADMIN', 'SUPER_ADMIN'],
+  'programs.edit': ['POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'ADMIN', 'SUPER_ADMIN'],
+  'programs.participate': ['VOLUNTEER'],
+  
+  // Participants Management
+  'participants.create': ['HEALTH_WORKER', 'POSYANDU_COORDINATOR', 'ADMIN', 'SUPER_ADMIN'],
+  'participants.view': ['HEALTH_WORKER', 'POSYANDU_COORDINATOR', 'VOLUNTEER', 'NUTRITIONIST', 'ADMIN', 'SUPER_ADMIN'],
+  'participants.edit': ['HEALTH_WORKER', 'POSYANDU_COORDINATOR', 'ADMIN', 'SUPER_ADMIN'],
+  'participants.health_check': ['HEALTH_WORKER', 'NUTRITIONIST'],
+  
+  // Health & Nutrition Data
+  'health.read': ['HEALTH_WORKER', 'NUTRITIONIST', 'POSYANDU_COORDINATOR', 'ADMIN', 'SUPER_ADMIN'],
+  'health.write': ['HEALTH_WORKER', 'NUTRITIONIST'],
+  'nutrition.read': ['NUTRITIONIST', 'HEALTH_WORKER', 'CHEF', 'ADMIN', 'SUPER_ADMIN'],
+  'nutrition.write': ['NUTRITIONIST', 'HEALTH_WORKER'],
+  
+  // Activities & Reports
+  'activities.read': ['VOLUNTEER', 'HEALTH_WORKER', 'POSYANDU_COORDINATOR', 'ADMIN', 'SUPER_ADMIN'],
+  'activities.create': ['HEALTH_WORKER', 'POSYANDU_COORDINATOR', 'ADMIN', 'SUPER_ADMIN'],
   
   // Financial Management
-  'finance.view': ['AKUNTAN', 'KEPALA_SPPG'],
-  'finance.manage': ['AKUNTAN', 'KEPALA_SPPG'],
-  'budget.create': ['AKUNTAN', 'KEPALA_SPPG'],
-  'budget.approve': ['KEPALA_SPPG'],
-  'transactions.create': ['AKUNTAN'],
+  'finance.view': ['ADMIN', 'SUPER_ADMIN'],
+  'finance.manage': ['ADMIN', 'SUPER_ADMIN'],
+  'budget.create': ['ADMIN', 'SUPER_ADMIN'],
+  'budget.approve': ['SUPER_ADMIN'],
+  'transactions.create': ['ADMIN'],
   
   // Reporting & Analytics
-  'reports.view': ['KEPALA_SPPG', 'AKUNTAN', 'AHLI_GIZI', 'ASISTEN_LAPANGAN'],
-  'analytics.view': ['KEPALA_SPPG'],
+  'reports.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER'],
+  'analytics.view': ['SUPER_ADMIN', 'ADMIN'],
   
   // System Administration
-  'system.config': ['KEPALA_SPPG'],
-  'audit.view': ['KEPALA_SPPG'],
+  'system.config': ['SUPER_ADMIN'],
+  'audit.view': ['SUPER_ADMIN', 'ADMIN'],
   
   // Feedback Management
-  'feedback.view': ['KEPALA_SPPG', 'AHLI_GIZI', 'ASISTEN_LAPANGAN'],
-  'feedback.respond': ['KEPALA_SPPG', 'AHLI_GIZI', 'ASISTEN_LAPANGAN'],
+  'feedback.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER'],
+  'feedback.respond': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER'],
 }
 
 export type Permission = keyof typeof PERMISSIONS
 
 export const USER_ROLES = {
-  KEPALA_SPPG: {
-    name: 'Kepala SPPG',
-    description: 'Full access, monitoring & evaluation',
+  SUPER_ADMIN: {
+    name: 'Super Administrator',
+    description: 'Full system access and administration',
     color: 'red',
-    dashboard: '/dashboard/kepala-sppg'
-  },
-  AHLI_GIZI: {
-    name: 'Ahli Gizi',
-    description: 'Menu planning, quality control, nutrition consultation',
-    color: 'green',
-    dashboard: '/dashboard/ahli-gizi'
-  },
-  AKUNTAN: {
-    name: 'Akuntan',
-    description: 'Financial management, procurement, reporting',
-    color: 'blue',
-    dashboard: '/dashboard/akuntan'
-  },
-  ASISTEN_LAPANGAN: {
-    name: 'Asisten Lapangan',
-    description: 'Distribution management, school relations',
-    color: 'purple',
-    dashboard: '/dashboard/asisten-lapangan'
-  },
-  STAFF_OPERASIONAL: {
-    name: 'Staff Operasional',
-    description: 'Preparation, cooking, portioning, packing, cleaning',
-    color: 'orange',
-    dashboard: '/dashboard/staff-operasional'
-  },
-  DRIVER: {
-    name: 'Driver',
-    description: 'Distribution, logistics',
-    color: 'yellow',
-    dashboard: '/dashboard/driver'
-  },
-  PENERIMA_MANFAAT: {
-    name: 'Penerima Manfaat',
-    description: 'Feedback system',
-    color: 'pink',
-    dashboard: '/dashboard/penerima-manfaat'
+    dashboard: '/dashboard/super-admin'
   },
   ADMIN: {
     name: 'Administrator',
-    description: 'System administration',
-    color: 'gray',
+    description: 'System administration and user management',
+    color: 'blue',
     dashboard: '/dashboard/admin'
+  },
+  CHEF: {
+    name: 'Chef',
+    description: 'Food production and kitchen management',
+    color: 'orange',
+    dashboard: '/dashboard/chef'
+  },
+  POSYANDU_COORDINATOR: {
+    name: 'Koordinator Posyandu',
+    description: 'Manages posyandu operations and volunteers',
+    color: 'green',
+    dashboard: '/dashboard/posyandu-coordinator'
+  },
+  HEALTH_WORKER: {
+    name: 'Tenaga Kesehatan',
+    description: 'Healthcare professional with access to health data',
+    color: 'teal',
+    dashboard: '/dashboard/health-worker'
+  },
+  VOLUNTEER: {
+    name: 'Kader Posyandu',
+    description: 'Posyandu volunteer with limited access',
+    color: 'purple',
+    dashboard: '/dashboard/volunteer'
+  },
+  NUTRITIONIST: {
+    name: 'Ahli Gizi',
+    description: 'Nutrition specialist with meal planning access',
+    color: 'emerald',
+    dashboard: '/dashboard/nutritionist'
   }
 } as const
 
@@ -120,4 +141,35 @@ export function getUserPermissions(userRoles: string[]): Permission[] {
   return Object.keys(PERMISSIONS).filter(permission => 
     hasPermission(userRoles, permission as Permission)
   ) as Permission[]
+}
+
+// Helper function to get user role details
+export function getUserRoleDetails(roleName: string) {
+  return USER_ROLES[roleName as UserRole] || null
+}
+
+// Helper function to check if user has specific role
+export function hasRole(userRoles: string[], role: UserRole): boolean {
+  return userRoles.includes(role)
+}
+
+// Helper function to get highest priority role (for dashboard routing)
+export function getPrimaryRole(userRoles: string[]): UserRole | null {
+  const roleHierarchy: UserRole[] = [
+    'SUPER_ADMIN',
+    'ADMIN', 
+    'POSYANDU_COORDINATOR',
+    'NUTRITIONIST',
+    'CHEF',
+    'HEALTH_WORKER',
+    'VOLUNTEER'
+  ]
+  
+  for (const role of roleHierarchy) {
+    if (userRoles.includes(role)) {
+      return role
+    }
+  }
+  
+  return null
 }

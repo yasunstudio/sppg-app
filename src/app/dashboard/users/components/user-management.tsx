@@ -1,0 +1,924 @@
+"use client"
+
+import { useState, useEffect, useMemo } from "react"
+import { useSession } from "next-auth/react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { toast } from "sonner"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Search,
+  Plus,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  UserPlus,
+  Users,
+  Shield,
+  Activity,
+  Download,
+  Upload,
+  Eye,
+  EyeOff,
+  Filter,
+  RefreshCcw,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Mail,
+  Phone,
+  Calendar,
+  MapPin,
+  Key,
+  Settings,
+  Ban,
+  FileText,
+  AlertTriangle,
+  Info
+} from "lucide-react"
+
+// Custom Avatar component fallback
+const Avatar = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  <div className={`relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full ${className}`}>
+    {children}
+  </div>
+)
+
+const AvatarImage = ({ src, alt, className }: { src: string, alt: string, className?: string }) => (
+  <img className={`aspect-square h-full w-full ${className}`} src={src} alt={alt} />
+)
+
+const AvatarFallback = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  <div className={`flex h-full w-full items-center justify-center rounded-full bg-muted ${className}`}>
+    {children}
+  </div>
+)
+
+// Custom Switch component fallback
+const Switch = ({ 
+  checked, 
+  onCheckedChange, 
+  disabled,
+  className 
+}: { 
+  checked?: boolean
+  onCheckedChange?: (checked: boolean) => void
+  disabled?: boolean
+  className?: string 
+}) => (
+  <button
+    type="button"
+    role="switch"
+    aria-checked={checked}
+    disabled={disabled}
+    onClick={() => onCheckedChange?.(!checked)}
+    className={`
+      peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent 
+      transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring 
+      focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed 
+      disabled:opacity-50 ${checked ? 'bg-primary' : 'bg-input'} ${className}
+    `}
+  >
+    <span
+      className={`
+        pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform
+        ${checked ? 'translate-x-5' : 'translate-x-0'}
+      `}
+    />
+  </button>
+)
+
+interface User {
+  id: string
+  name: string | null
+  email: string
+  role: string
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+  createdAt: string
+  lastLoginAt: string | null
+  emailVerified: boolean
+  phone: string | null
+  address: string | null
+  image: string | null
+}
+
+interface UserStats {
+  total: number
+  active: number
+  inactive: number
+  suspended: number
+  newThisMonth: number
+  verified: number
+}
+
+export function UserManagement() {
+  const { data: session } = useSession()
+  
+  // State management
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [roleFilter, setRoleFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [sortBy, setSortBy] = useState("createdAt")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(10)
+  const [stats, setStats] = useState<UserStats>({
+    total: 0,
+    active: 0,
+    inactive: 0,
+    suspended: 0,
+    newThisMonth: 0,
+    verified: 0
+  })
+  
+  // Dialog states
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    role: "USER",
+    status: "ACTIVE" as "ACTIVE" | "INACTIVE" | "SUSPENDED",
+    phone: "",
+    address: ""
+  })
+
+  // Fetch users data
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/users/enhanced', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch users')
+      }
+
+      const data = await response.json()
+      setUsers(data.users || [])
+      setStats(data.stats || stats)
+    } catch (error) {
+      toast.error("Failed to load users data")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Load users on component mount
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  // Filter and sort users
+  const filteredUsers = useMemo(() => {
+    const filtered = users.filter(user => {
+      const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesRole = roleFilter === "all" || user.role === roleFilter
+      const matchesStatus = statusFilter === "all" || user.status === statusFilter
+      
+      return matchesSearch && matchesRole && matchesStatus
+    })
+
+    // Sort users
+    filtered.sort((a, b) => {
+      let aValue: any = a[sortBy as keyof User]
+      let bValue: any = b[sortBy as keyof User]
+      
+      if (aValue === null) aValue = ""
+      if (bValue === null) bValue = ""
+      
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1
+      } else {
+        return aValue < bValue ? 1 : -1
+      }
+    })
+
+    return filtered
+  }, [users, searchTerm, roleFilter, statusFilter, sortBy, sortOrder])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredUsers.length / pageSize)
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
+
+  // Handle user creation
+  const handleCreateUser = async () => {
+    try {
+      setSaving(true)
+      const response = await fetch('/api/users/enhanced', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create user')
+      }
+
+      await fetchUsers()
+      setShowCreateDialog(false)
+      setFormData({
+        name: "",
+        email: "",
+        role: "USER",
+        status: "ACTIVE",
+        phone: "",
+        address: ""
+      })
+      
+      toast.success("User created successfully")
+    } catch (error) {
+      toast.error("Failed to create user")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Handle user update
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return
+
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/users/enhanced/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update user')
+      }
+
+      await fetchUsers()
+      setShowEditDialog(false)
+      setSelectedUser(null)
+      
+      toast.success("User updated successfully")
+    } catch (error) {
+      toast.error("Failed to update user")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Handle user deletion
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return
+
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/users/enhanced/${selectedUser.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete user')
+      }
+
+      await fetchUsers()
+      setShowDeleteDialog(false)
+      setSelectedUser(null)
+      
+      toast.success("User deleted successfully")
+    } catch (error) {
+      toast.error("Failed to delete user")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Handle status toggle
+  const handleStatusToggle = async (user: User) => {
+    try {
+      const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+      const response = await fetch(`/api/users/enhanced/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update user status')
+      }
+
+      await fetchUsers()
+      toast.success(`User ${newStatus.toLowerCase()} successfully`)
+    } catch (error) {
+      toast.error("Failed to update user status")
+    }
+  }
+
+  // Export users data
+  const handleExport = async () => {
+    try {
+      const response = await fetch('/api/users/export', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to export users')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast.success("Users exported successfully")
+    } catch (error) {
+      toast.error("Failed to export users")
+    }
+  }
+
+  // Get status badge variant
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+        return <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>
+      case 'INACTIVE':
+        return <Badge variant="secondary">Inactive</Badge>
+      case 'SUSPENDED':
+        return <Badge variant="destructive">Suspended</Badge>
+      default:
+        return <Badge variant="outline">{status}</Badge>
+    }
+  }
+
+  // Get role badge
+  const getRoleBadge = (role: string) => {
+    const colors = {
+      SUPER_ADMIN: "bg-purple-100 text-purple-800",
+      ADMIN: "bg-blue-100 text-blue-800",
+      MANAGER: "bg-green-100 text-green-800",
+      SUPERVISOR: "bg-yellow-100 text-yellow-800",
+      STAFF: "bg-gray-100 text-gray-800",
+      USER: "bg-gray-100 text-gray-800",
+      VIEWER: "bg-slate-100 text-slate-800"
+    }
+    
+    return (
+      <Badge variant="outline" className={colors[role as keyof typeof colors] || "bg-gray-100 text-gray-800"}>
+        {role}
+      </Badge>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Loading user management...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+          <p className="text-muted-foreground">
+            Manage users, roles, and permissions for your application
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add User
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">
+              +{stats.newThisMonth} from last month
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.active}</div>
+            <p className="text-xs text-muted-foreground">
+              {((stats.active / stats.total) * 100).toFixed(1)}% of total
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Verified Users</CardTitle>
+            <Shield className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.verified}</div>
+            <p className="text-xs text-muted-foreground">
+              {((stats.verified / stats.total) * 100).toFixed(1)}% verified
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Suspended</CardTitle>
+            <XCircle className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.suspended}</div>
+            <p className="text-xs text-muted-foreground">
+              Require attention
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters and Search */}
+      <Card>
+        <CardHeader>
+          <CardTitle>User Directory</CardTitle>
+          <CardDescription>
+            Search, filter, and manage all users in your system
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+            </div>
+            
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                <SelectItem value="ADMIN">Admin</SelectItem>
+                <SelectItem value="MANAGER">Manager</SelectItem>
+                <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
+                <SelectItem value="STAFF">Staff</SelectItem>
+                <SelectItem value="USER">User</SelectItem>
+                <SelectItem value="VIEWER">Viewer</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="INACTIVE">Inactive</SelectItem>
+                <SelectItem value="SUSPENDED">Suspended</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button variant="outline" onClick={fetchUsers}>
+              <RefreshCcw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Users Table */}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Last Login</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedUsers.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        {user.image ? (
+                          <AvatarImage src={user.image} alt={user.name || ""} />
+                        ) : (
+                          <AvatarFallback>
+                            {user.name?.charAt(0) || user.email.charAt(0)}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{user.name || "No name"}</div>
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
+                        {user.emailVerified && (
+                          <div className="flex items-center gap-1 text-xs text-green-600">
+                            <CheckCircle className="h-3 w-3" />
+                            Verified
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{getRoleBadge(user.role)}</TableCell>
+                  <TableCell>{getStatusBadge(user.status)}</TableCell>
+                  <TableCell>
+                    {user.lastLoginAt 
+                      ? new Date(user.lastLoginAt).toLocaleDateString()
+                      : "Never"
+                    }
+                  </TableCell>
+                  <TableCell>
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUser(user)
+                            setFormData({
+                              name: user.name || "",
+                              email: user.email,
+                              role: user.role,
+                              status: user.status,
+                              phone: user.phone || "",
+                              address: user.address || ""
+                            })
+                            setShowEditDialog(true)
+                          }}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit User
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleStatusToggle(user)}
+                        >
+                          {user.status === 'ACTIVE' ? (
+                            <>
+                              <EyeOff className="h-4 w-4 mr-2" />
+                              Deactivate
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Activate
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUser(user)
+                            setShowDeleteDialog(true)
+                          }}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete User
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          
+          {paginatedUsers.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No users found matching your criteria.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, filteredUsers.length)} of {filteredUsers.length} users
+          </p>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(page)}
+                  className="w-8"
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Create User Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create New User</DialogTitle>
+            <DialogDescription>
+              Add a new user to the system. They will receive an email invitation.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter full name"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Enter email address"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="role">Role</Label>
+              <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USER">User</SelectItem>
+                  <SelectItem value="STAFF">Staff</SelectItem>
+                  <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
+                  <SelectItem value="MANAGER">Manager</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="Enter phone number"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateUser} disabled={saving}>
+              {saving ? "Creating..." : "Create User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user information and permissions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-name">Full Name</Label>
+              <Input
+                id="edit-name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter full name"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-email">Email Address</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Enter email address"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-role">Role</Label>
+              <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USER">User</SelectItem>
+                  <SelectItem value="STAFF">Staff</SelectItem>
+                  <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
+                  <SelectItem value="MANAGER">Manager</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as "ACTIVE" | "INACTIVE" | "SUSPENDED" }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="INACTIVE">Inactive</SelectItem>
+                  <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-phone">Phone Number</Label>
+              <Input
+                id="edit-phone"
+                value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="Enter phone number"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateUser} disabled={saving}>
+              {saving ? "Updating..." : "Update User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this user? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="py-4">
+              <div className="flex items-center space-x-3 p-4 border rounded-lg">
+                <Avatar>
+                  {selectedUser.image ? (
+                    <AvatarImage src={selectedUser.image} alt={selectedUser.name || ""} />
+                  ) : (
+                    <AvatarFallback>
+                      {selectedUser.name?.charAt(0) || selectedUser.email.charAt(0)}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div>
+                  <div className="font-medium">{selectedUser.name || "No name"}</div>
+                  <div className="text-sm text-muted-foreground">{selectedUser.email}</div>
+                  <div className="text-sm text-muted-foreground">Role: {selectedUser.role}</div>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteUser} disabled={saving}>
+              {saving ? "Deleting..." : "Delete User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

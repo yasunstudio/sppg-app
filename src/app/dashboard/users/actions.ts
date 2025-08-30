@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/app/api/auth/[...nextauth]/route"
+import { auth } from "@/lib/auth"
+import { isAdmin } from '@/lib/auth-utils'
 import bcrypt from "bcryptjs"
 
 export async function getUsers() {
@@ -60,7 +61,7 @@ export async function createUser(formData: FormData) {
   try {
     const session = await auth()
     
-    if (!session || session.user?.role !== "ADMIN") {
+    if (!session || !isAdmin(session)) {
       throw new Error("You are not authorized to perform this action")
     }
 
@@ -133,7 +134,7 @@ export async function updateUser(userId: string, formData: FormData) {
   try {
     const session = await auth()
     
-    if (!session || session.user?.role !== "ADMIN") {
+    if (!session || !isAdmin(session)) {
       throw new Error("You are not authorized to perform this action")
     }
 
@@ -220,7 +221,7 @@ export async function deleteUser(userId: string) {
   try {
     const session = await auth()
     
-    if (!session || session.user?.role !== "ADMIN") {
+    if (!session || !isAdmin(session)) {
       throw new Error("You are not authorized to perform this action")
     }
 

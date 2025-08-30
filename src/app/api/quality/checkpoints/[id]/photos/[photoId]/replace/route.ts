@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { PrismaClient } from "@/generated/prisma"
+import { prisma } from "@/lib/prisma"
 import { saveFile, validateFile } from "@/lib/upload"
 import fs from 'fs/promises'
 import path from 'path'
 
-const prisma = new PrismaClient()
+// prisma imported from lib
 
 export async function POST(
   request: NextRequest,

@@ -1,5 +1,6 @@
-import { auth } from "@/app/api/auth/[...nextauth]/route"
+import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { isAuthorizedAdmin } from '@/lib/auth-utils'
 import { 
   Shield,
   Key,
@@ -10,13 +11,10 @@ import {
 
 export default async function SecurityPage() {
   const session = await auth()
-  
-  if (!session?.user || !session.user.role || 
-      !["ADMIN", "KEPALA_SPPG"].includes(session.user.role)) {
-    redirect("/dashboard")
-  }
 
-  const securityMetrics = [
+  if (!session?.user || !isAuthorizedAdmin(session)) {
+    redirect('/auth/login')
+  }  const securityMetrics = [
     { value: "24", icon: Activity, status: "normal" },
     { value: "3", icon: AlertTriangle, status: "warning" },
     { value: "98%", icon: Shield, status: "good" },

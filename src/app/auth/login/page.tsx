@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { auth } from "@/app/api/auth/[...nextauth]/route"
+import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import LoginClientPage from "./login-client"
 

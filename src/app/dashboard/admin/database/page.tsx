@@ -1,4 +1,4 @@
-import { auth } from "@/app/api/auth/[...nextauth]/route"
+import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { 
@@ -10,13 +10,13 @@ import {
   Upload
 } from "lucide-react"
 
+import { isAuthorizedAdmin } from '@/lib/auth-utils'
+
 export default async function DatabasePage() {
   const session = await auth()
-  
-  // Allow both ADMIN and KEPALA_SPPG to access database page
-  if (!session?.user || !session.user.role || 
-      !["ADMIN", "KEPALA_SPPG"].includes(session.user.role)) {
-    redirect("/dashboard")
+
+  if (!session?.user || !isAuthorizedAdmin(session)) {
+    redirect('/auth/login')
   }
 
   const dbMetrics = [

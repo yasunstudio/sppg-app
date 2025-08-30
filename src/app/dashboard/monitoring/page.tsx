@@ -1,906 +1,792 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CalendarIcon, RefreshCw, Play, Pause } from 'lucide-react';
+import { AutoRefreshNotification } from '@/components/ui/auto-refresh-notification';
+
+// Import modular components
 import { 
-  Activity, AlertTriangle, CheckCircle, Clock, DollarSign, Factory, 
-  School, Truck, Users, Gauge, Server, Database, Wifi, RefreshCw,
-  TrendingUp, TrendingDown, BarChart3, PieChart, Calendar,
-  Bell, AlertCircle, Info
-} from 'lucide-react';
+  MetricCards, 
+  SystemHealthCard,
+  ProductionTab,
+  DistributionTab,
+  FinancialTab
+} from '@/components/dashboard/monitoring';
 
-interface MonitoringData {
-  period: string;
-  dateRange: {
-    startDate: string;
-    endDate: string;
-  };
-  metrics: {
-    production: {
-      totalPlans: number;
-      completedBatches: number;
-      activeProduction: number;
-      avgEfficiency: number;
-    };
-    distribution: {
-      totalDistributions: number;
-      completedDeliveries: number;
-      inTransit: number;
-      avgDeliveryTime: number;
-      onTimeDeliveryRate: number;
-    };
-    financial: {
-      totalIncome: number;
-      totalExpenses: number;
-      netIncome: number;
-      budgetUtilization: number;
-    };
-    quality: {
-      totalChecks: number;
-      passedChecks: number;
-      failedChecks: number;
-      passRate: number;
-      avgScore: number;
-    };
-    inventory: {
-      totalItems: number;
-      lowStockItems: number;
-      stockValue: number;
-      stockTurnover: number;
-    };
-    schools: {
-      totalSchools: number;
-      activeSchools: number;
-      totalStudents: number;
-      satisfactionRate: number;
-      avgMealsPerDay: number;
-    };
-  };
-  systemHealth: {
-    serverStatus: string;
-    databaseStatus: string;
-    apiResponseTime: number;
-    uptime: number;
-    memoryUsage: number;
-    cpuUsage: number;
-    diskUsage: number;
-  };
-  alertSummary: {
-    critical: number;
-    warning: number;
-    info: number;
-    total: number;
-    recentAlerts: Array<{
-      id: string;
-      type: string;
-      message: string;
-      timestamp: string;
-    }>;
-  };
-  lastUpdated: string;
-}
+// Import chart components
+import ProductionChart from '@/components/dashboard/monitoring/charts/ProductionChart';
+import DistributionChart from '@/components/dashboard/monitoring/charts/DistributionChart';
+import FinancialChart from '@/components/dashboard/monitoring/charts/FinancialChart';
 
-const periodOptions = [
-  { value: 'today', label: 'Hari Ini' },
-  { value: 'week', label: 'Minggu Ini' },
-  { value: 'month', label: 'Bulan Ini' },
-  { value: 'quarter', label: 'Kuartal Ini' },
-  { value: 'year', label: 'Tahun Ini' },
+// Import hooks and utilities
+import { useMonitoringData } from '@/hooks/use-monitoring-data';
+import { formatDateTime } from '@/lib/monitoring-utils';
+import { PeriodOption } from '@/types/monitoring';
+
+const periodOptions: PeriodOption[] = [
+  { value: 'today', label: 'Today' },
+  { value: 'week', label: 'This Week' },
+  { value: 'month', label: 'This Month' },
+  { value: 'quarter', label: 'This Quarter' },
+  { value: 'year', label: 'This Year' },
 ];
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
+export default function MonitoringPage() {
+  const { 
+    data, 
+    loading, 
+    error, 
+    period, 
+    setPeriod, 
+    fetchData,
+    autoRefresh,
+    setAutoRefresh,
+    refreshInterval,
+    setRefreshInterval
+  } = useMonitoringData();
 
-function formatDateTime(dateString: string): string {
-  return new Date(dateString).toLocaleString('id-ID');
-}
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: 'success' | 'info' | 'warning';
+  } | null>(null);
 
-function getStatusColor(value: number, thresholds: { good: number; warning: number }) {
-  if (value >= thresholds.good) return 'text-green-600 dark:text-green-400';
-  if (value >= thresholds.warning) return 'text-yellow-600 dark:text-yellow-400';
-  return 'text-red-600 dark:text-red-400';
-}
+  const handleAutoRefreshToggle = () => {
+    const newState = !autoRefresh;
+    setAutoRefresh(newState);
+    
+    setNotification({
+      message: newState 
+        ? `Auto refresh diaktifkan (setiap ${refreshInterval / 1000} detik)` 
+        : 'Auto refresh dinonaktifkan',
+      type: newState ? 'success' : 'info'
+    });
+  };
 
-function getHealthStatus(status: string) {
-  switch (status) {
-    case 'healthy':
-      return <Badge className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Healthy</Badge>;
-    case 'warning':
-      return <Badge className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">Warning</Badge>;
-    case 'critical':
-      return <Badge className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">Critical</Badge>;
-    default:
-      return <Badge variant="outline">Unknown</Badge>;
-  }
-}
-
-export default function MonitoringDashboard() {
-  const [data, setData] = useState<MonitoringData | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState('today');
-  const [loading, setLoading] = useState(true);
-  const [autoRefresh, setAutoRefresh] = useState(true);
-
-  useEffect(() => {
-    fetchData();
-  }, [selectedPeriod]);
-
-  useEffect(() => {
+  const handleIntervalChange = (newInterval: number) => {
+    console.log('Changing interval from', refreshInterval, 'to', newInterval);
+    setRefreshInterval(newInterval);
+    setNotification({
+      message: `Interval refresh diubah ke ${newInterval / 1000} detik`,
+      type: 'success'
+    });
+    
+    // If auto refresh is active, show additional info
     if (autoRefresh) {
-      const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
-      return () => clearInterval(interval);
-    }
-  }, [autoRefresh]);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/monitoring/dashboard?period=${selectedPeriod}`);
-      if (response.ok) {
-        const result = await response.json();
-        setData(result);
-      }
-    } catch (error) {
-      console.error('Error fetching monitoring data:', error);
-    } finally {
-      setLoading(false);
+      console.log('Auto refresh is active, new interval will take effect immediately');
     }
   };
 
-  if (loading && !data) {
+  // Loading state
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto p-6 space-y-6">
-          <div className="h-8 bg-muted rounded animate-pulse" />
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-32 bg-muted rounded animate-pulse" />
-            ))}
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-48 bg-muted rounded animate-pulse" />
-            ))}
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Real-Time Monitoring</h1>
+          <p className="text-muted-foreground">
+            Monitor system performance and key metrics across all operations
+          </p>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-sm text-muted-foreground">Loading monitoring data...</p>
           </div>
         </div>
       </div>
     );
   }
 
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Real-Time Monitoring</h1>
+          <p className="text-muted-foreground">
+            Monitor system performance and key metrics across all operations
+          </p>
+        </div>
+        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
+          <CardHeader>
+            <CardTitle className="text-red-800 dark:text-red-200">Error Loading Data</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-red-700 dark:text-red-300 mb-4">{error}</p>
+            <button 
+              onClick={fetchData}
+              className="inline-flex items-center space-x-2 px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Retry</span>
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // No data state
   if (!data) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto p-6">
-          <div className="text-center py-12">
-            <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
-            <h3 className="text-lg font-semibold text-destructive mb-2">
-              Error Loading Monitoring Data
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Unable to fetch monitoring data. Please try refreshing the page.
-            </p>
-            <Button onClick={fetchData}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Retry
-            </Button>
-          </div>
-        </div>
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">No monitoring data available</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Monitoring & Reporting</h1>
-            <p className="text-muted-foreground">
-              Real-time system monitoring dan performance analytics • Last updated: {data ? formatDateTime(data.lastUpdated) : 'Loading...'}
-            </p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Pilih periode" />
-              </SelectTrigger>
-              <SelectContent>
-                {periodOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                fetchData(); // Always refresh data when clicked
-                setAutoRefresh(!autoRefresh); // Toggle auto refresh
-              }}
-              className={autoRefresh ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : ''}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              {autoRefresh ? 'Auto Refresh ON' : 'Enable Auto Refresh'}
-            </Button>
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Real-Time Monitoring</h1>
+          <p className="text-muted-foreground">
+            Monitor system performance and key metrics across all operations
+          </p>
         </div>
+        
+        <div className="flex items-center space-x-2">
+          {/* Auto Refresh Toggle */}
+          <Button
+            variant={autoRefresh ? "default" : "outline"}
+            size="sm"
+            onClick={handleAutoRefreshToggle}
+            className={autoRefresh ? "bg-green-600 hover:bg-green-700" : ""}
+            title={autoRefresh ? "Klik untuk menonaktifkan auto refresh" : "Klik untuk mengaktifkan auto refresh"}
+          >
+            {autoRefresh ? (
+              <Pause className="h-4 w-4 mr-2" />
+            ) : (
+              <Play className="h-4 w-4 mr-2" />
+            )}
+            Auto Refresh
+            {autoRefresh && (
+              <span className="ml-1 text-xs opacity-80">
+                ({refreshInterval / 1000}s)
+              </span>
+            )}
+          </Button>
 
-      {/* Main Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Production */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Produksi Aktif</CardTitle>
-            <Factory className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{data.metrics.production.activeProduction}</div>
-            <div className="text-xs text-muted-foreground">
-              {data.metrics.production.completedBatches} batch selesai
-            </div>
-            <div className="mt-2">
-              <div className="text-xs text-muted-foreground">Efisiensi</div>
-              <div className="text-sm font-medium">{data.metrics.production.avgEfficiency.toFixed(1)}%</div>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Refresh Interval Settings */}
+          <div className="flex items-center space-x-1">
+            <span className="text-xs text-muted-foreground">Interval:</span>
+            <select
+              value={refreshInterval}
+              onChange={(e) => handleIntervalChange(parseInt(e.target.value))}
+              className="px-2 py-1 text-xs border border-input bg-background rounded-md cursor-pointer hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+              title="Pilih interval auto refresh"
+            >
+              <option value={10000}>10s</option>
+              <option value={30000}>30s</option>
+              <option value={60000}>1m</option>
+              <option value={300000}>5m</option>
+            </select>
+          </div>
 
-        {/* Distribution */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Distribusi</CardTitle>
-            <Truck className="h-4 w-4 text-green-600 dark:text-green-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{data.metrics.distribution.inTransit}</div>
-            <div className="text-xs text-muted-foreground">dalam perjalanan</div>
-            <div className="mt-2">
-              <div className="text-xs text-muted-foreground">On-time Rate</div>
-              <div className="text-sm font-medium text-green-600 dark:text-green-400">
-                {data.metrics.distribution.onTimeDeliveryRate}%
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Manual Refresh */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchData}
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
 
-        {/* Financial */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Laba Bersih</CardTitle>
-            <DollarSign className={`h-4 w-4 ${data.metrics.financial.netIncome >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${data.metrics.financial.netIncome >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {formatCurrency(data.metrics.financial.netIncome)}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Budget: {data.metrics.financial.budgetUtilization.toFixed(1)}%
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quality */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Quality Score</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {data.metrics.quality.passRate.toFixed(1)}%
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {data.metrics.quality.passedChecks}/{data.metrics.quality.totalChecks} checks
-            </div>
-          </CardContent>
-        </Card>
+          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {periodOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {/* Alerts Summary */}
+      {/* Date Range & Last Updated */}
+      <div className="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div className="text-sm text-muted-foreground">
+          Period: {data.dateRange.startDate} - {data.dateRange.endDate}
+        </div>
+        <div className="flex items-center space-x-4">
+          <div className="text-sm text-muted-foreground">
+            Last updated: {formatDateTime(data.lastUpdated)}
+          </div>
+          {autoRefresh && (
+            <div className="flex items-center space-x-1 text-xs text-green-600 dark:text-green-400">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Auto refresh aktif ({refreshInterval / 1000}s)</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main Metrics Cards */}
+      <MetricCards data={data} />
+
+      {/* Alert Summary */}
       {data.alertSummary.total > 0 && (
-        <Card className="border-l-4 border-l-yellow-500 dark:border-l-yellow-400">
+        <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-              Alerts & Notifications
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <span>Active Alerts</span>
+              <Badge variant="outline" className="text-orange-800 dark:text-orange-200">
+                {data.alertSummary.total}
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-4 mb-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                <span className="text-sm">Critical: {data.alertSummary.critical}</span>
+            <div className="flex items-center space-x-4 text-sm">
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span>Critical: {data.alertSummary.critical}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                <span className="text-sm">Warning: {data.alertSummary.warning}</span>
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span>Warning: {data.alertSummary.warning}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span className="text-sm">Info: {data.alertSummary.info}</span>
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>Info: {data.alertSummary.info}</span>
               </div>
-              <div className="text-sm font-medium">Total: {data.alertSummary.total}</div>
-            </div>
-            <div className="space-y-2">
-              {data.alertSummary.recentAlerts.map((alert) => (
-                <div key={alert.id} className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                  <span className="text-sm">{alert.message}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDateTime(alert.timestamp)}
-                  </span>
-                </div>
-              ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Detailed Metrics */}
+      {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="production">Production</TabsTrigger>
           <TabsTrigger value="distribution">Distribution</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
-          <TabsTrigger value="system">System Health</TabsTrigger>
+          <TabsTrigger value="system">System</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
+        <TabsContent value="overview" className="space-y-6">
+          {/* Main Analytics Grid */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Production Performance Chart */}
+            <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <School className="h-5 w-5" />
-                  School Performance
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Total Schools</span>
-                  <span className="font-medium">{data.metrics.schools.totalSchools}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Active Schools</span>
-                  <span className="font-medium">{data.metrics.schools.activeSchools}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Total Students</span>
-                  <span className="font-medium">{data.metrics.schools.totalStudents.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Satisfaction Rate</span>
-                  <span className="font-medium text-green-600">
-                    {data.metrics.schools.satisfactionRate}%
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Meals/Day</span>
-                  <span className="font-medium">{data.metrics.schools.avgMealsPerDay.toLocaleString()}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Inventory Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Total Items</span>
-                  <span className="font-medium">{data.metrics.inventory.totalItems}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Low Stock</span>
-                  <span className={`font-medium ${data.metrics.inventory.lowStockItems > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                    {data.metrics.inventory.lowStockItems}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Stock Value</span>
-                  <span className="font-medium">{formatCurrency(data.metrics.inventory.stockValue)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Turnover</span>
-                  <span className="font-medium">{data.metrics.inventory.stockTurnover}x/year</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Quality Metrics</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Pass Rate</span>
-                    <span className="font-medium">{data.metrics.quality.passRate.toFixed(1)}%</span>
-                  </div>
-                  <Progress value={data.metrics.quality.passRate} className="h-2" />
-                </div>
-                <div className="flex justify-between">
-                  <span>Total Checks</span>
-                  <span className="font-medium">{data.metrics.quality.totalChecks}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Passed</span>
-                  <span className="font-medium text-green-600">{data.metrics.quality.passedChecks}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Failed</span>
-                  <span className={`font-medium ${data.metrics.quality.failedChecks > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                    {data.metrics.quality.failedChecks}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="production" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Factory className="h-5 w-5" />
-                  Production Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Total Plans</span>
-                  <span className="font-medium">{data.metrics.production.totalPlans}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Completed Batches</span>
-                  <span className="font-medium text-green-600">{data.metrics.production.completedBatches}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Active Production</span>
-                  <span className="font-medium text-blue-600">{data.metrics.production.activeProduction}</span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Efficiency</span>
-                    <span className="font-medium">{data.metrics.production.avgEfficiency.toFixed(1)}%</span>
-                  </div>
-                  <Progress value={Math.min(data.metrics.production.avgEfficiency, 100)} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Production Trends</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
-                  <span className="text-sm">Production trending up 12.5%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm">Peak hours: 8-12 AM</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm">Avg batch time: 4.2 hours</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Resource Utilization</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Equipment Usage</span>
-                    <span className="font-medium">85%</span>
-                  </div>
-                  <Progress value={85} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Staff Utilization</span>
-                    <span className="font-medium">92%</span>
-                  </div>
-                  <Progress value={92} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Kitchen Capacity</span>
-                    <span className="font-medium">78%</span>
-                  </div>
-                  <Progress value={78} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="distribution" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Truck className="h-5 w-5" />
-                  Distribution Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Total Distributions</span>
-                  <span className="font-medium">{data.metrics.distribution.totalDistributions}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Completed</span>
-                  <span className="font-medium text-green-600">{data.metrics.distribution.completedDeliveries}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>In Transit</span>
-                  <span className="font-medium text-blue-600">{data.metrics.distribution.inTransit}</span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>On-time Rate</span>
-                    <span className="font-medium">{data.metrics.distribution.onTimeDeliveryRate}%</span>
-                  </div>
-                  <Progress value={data.metrics.distribution.onTimeDeliveryRate} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Delivery Performance</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Avg Delivery Time</span>
-                  <span className="font-medium">{data.metrics.distribution.avgDeliveryTime} hours</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
-                  <span className="text-sm">Delivery efficiency up 8.3%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm">Peak delivery: 11 AM - 1 PM</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Route Optimization</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Route Efficiency</span>
-                    <span className="font-medium">94%</span>
-                  </div>
-                  <Progress value={94} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Fuel Efficiency</span>
-                    <span className="font-medium">88%</span>
-                  </div>
-                  <Progress value={88} className="h-2" />
-                </div>
-                <div className="flex justify-between">
-                  <span>Total Distance</span>
-                  <span className="font-medium">1,250 km</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="financial" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Financial Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Total Income</span>
-                  <span className="font-medium text-green-600">{formatCurrency(data.metrics.financial.totalIncome)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Total Expenses</span>
-                  <span className="font-medium text-red-600">{formatCurrency(data.metrics.financial.totalExpenses)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Net Income</span>
-                  <span className={`font-medium ${data.metrics.financial.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(data.metrics.financial.netIncome)}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Budget Utilization</span>
-                    <span className="font-medium">{data.metrics.financial.budgetUtilization.toFixed(1)}%</span>
-                  </div>
-                  <Progress value={Math.min(data.metrics.financial.budgetUtilization, 100)} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Cost Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Raw Materials</span>
-                  <span className="font-medium">45%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Labor</span>
-                  <span className="font-medium">30%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Operations</span>
-                  <span className="font-medium">15%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Other</span>
-                  <span className="font-medium">10%</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Financial Trends</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <TrendingDown className="h-4 w-4 text-red-600" />
-                  <span className="text-sm">Profit margin down 2.1%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
-                  <span className="text-sm">Revenue up 15.2%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <PieChart className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm">Cost optimization target: 8%</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Budget Performance</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Raw Materials</span>
-                    <span className="font-medium">90%</span>
-                  </div>
-                  <Progress value={90} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Operations</span>
-                    <span className="font-medium">75%</span>
-                  </div>
-                  <Progress value={75} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Distribution</span>
-                    <span className="font-medium">82%</span>
-                  </div>
-                  <Progress value={82} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Revenue vs Expenses</CardTitle>
+                <CardTitle className="text-lg font-semibold">Production Performance Overview</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Real-time monitoring of production efficiency and output trends
+                </p>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
-                  <BarChart3 className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-                  <p className="text-sm text-muted-foreground">Revenue vs Expenses Chart</p>
-                  <p className="text-xs text-muted-foreground mt-1">Chart visualization will be displayed here</p>
+                <div className="grid gap-4 md:grid-cols-3 mb-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {data.metrics.production.activeProduction}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Active Productions</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {data.metrics.production.completedBatches}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Completed Batches</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {data.metrics.production.avgEfficiency.toFixed(1)}%
+                    </div>
+                    <p className="text-xs text-muted-foreground">Avg Efficiency</p>
+                  </div>
+                </div>
+                
+                {/* Efficiency Progress Bar */}
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span>Production Efficiency</span>
+                    <span className="font-medium">{data.metrics.production.avgEfficiency.toFixed(1)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-green-500 h-2.5 rounded-full transition-all duration-300" 
+                      style={{width: `${Math.min(data.metrics.production.avgEfficiency, 100)}%`}}
+                    ></div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Key Metrics Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Today's Highlights</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium">Total Schools</p>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {data.metrics.schools.totalSchools}
+                    </p>
+                  </div>
+                  <div className="text-blue-600 dark:text-blue-400">
+                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium">Students Served</p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {data.metrics.schools.totalStudents.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="text-green-600 dark:text-green-400">
+                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                    </svg>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium">In Transit</p>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {data.metrics.distribution.inTransit}
+                    </p>
+                  </div>
+                  <div className="text-orange-600 dark:text-orange-400">
+                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                      <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"/>
+                    </svg>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
+
+          {/* Performance Analytics */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Quality & Distribution Metrics */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Quality & Distribution</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Quality assurance and delivery performance metrics
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Quality Pass Rate</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">
+                      {data.metrics.quality.passRate.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full" 
+                      style={{width: `${data.metrics.quality.passRate}%`}}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>On-Time Delivery</span>
+                    <span className="font-medium text-blue-600 dark:text-blue-400">
+                      {data.metrics.distribution.onTimeDeliveryRate}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full" 
+                      style={{width: `${data.metrics.distribution.onTimeDeliveryRate}%`}}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="text-center">
+                    <p className="text-lg font-bold">{data.metrics.quality.passedChecks}</p>
+                    <p className="text-xs text-muted-foreground">Passed QC</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold">{data.metrics.distribution.completedDeliveries}</p>
+                    <p className="text-xs text-muted-foreground">Completed</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Financial Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Financial Overview</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Budget utilization and financial performance tracking
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className={`text-center p-4 rounded-lg ${
+                  data.metrics.financial.netIncome >= 0 
+                    ? 'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300'
+                    : 'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300'
+                }`}>
+                  <p className="text-sm font-medium">Net Income</p>
+                  <p className="text-2xl font-bold">
+                    Rp {Math.abs(data.metrics.financial.netIncome).toLocaleString()}
+                  </p>
+                  <p className="text-xs">
+                    {data.metrics.financial.netIncome >= 0 ? 'Profit' : 'Loss'} this period
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Budget Utilization</span>
+                    <span className="font-medium">
+                      {data.metrics.financial.budgetUtilization.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        data.metrics.financial.budgetUtilization > 90 
+                          ? 'bg-red-500' 
+                          : data.metrics.financial.budgetUtilization > 75 
+                          ? 'bg-yellow-500' 
+                          : 'bg-green-500'
+                      }`}
+                      style={{width: `${Math.min(data.metrics.financial.budgetUtilization, 100)}%`}}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                      {data.metrics.financial.totalIncome.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Total Income</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-red-600 dark:text-red-400">
+                      {data.metrics.financial.totalExpenses.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Total Expenses</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Charts Section */}
+          {data.chartData && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Analytics & Trends</h2>
+                <p className="text-sm text-muted-foreground">Visual insights and performance trends</p>
+              </div>
+              
+              {/* Production Charts */}
+              <ProductionChart data={data.chartData.production} />
+              
+              {/* Distribution and Financial Charts */}
+              <DistributionChart data={data.chartData.distribution} />
+              
+              {/* Financial Charts */}
+              <FinancialChart data={data.chartData.financial} />
+            </div>
+          )}
         </TabsContent>
 
-        <TabsContent value="system" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>System Resources</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>CPU Usage</span>
-                    <span className={`font-medium ${getStatusColor(100 - data.systemHealth.cpuUsage, { good: 70, warning: 50 })}`}>
-                      {data.systemHealth.cpuUsage}%
-                    </span>
-                  </div>
-                  <Progress value={data.systemHealth.cpuUsage} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Memory Usage</span>
-                    <span className={`font-medium ${getStatusColor(100 - data.systemHealth.memoryUsage, { good: 70, warning: 50 })}`}>
-                      {data.systemHealth.memoryUsage}%
-                    </span>
-                  </div>
-                  <Progress value={data.systemHealth.memoryUsage} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Disk Usage</span>
-                    <span className={`font-medium ${getStatusColor(100 - data.systemHealth.diskUsage, { good: 70, warning: 50 })}`}>
-                      {data.systemHealth.diskUsage}%
-                    </span>
-                  </div>
-                  <Progress value={data.systemHealth.diskUsage} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
+        <TabsContent value="production">
+          <ProductionTab data={data} />
+        </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>System Performance</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Server Status</span>
-                  {getHealthStatus(data.systemHealth.serverStatus)}
-                </div>
-                <div className="flex justify-between">
-                  <span>Database Status</span>
-                  {getHealthStatus(data.systemHealth.databaseStatus)}
-                </div>
-                <div className="flex justify-between">
-                  <span>API Response Time</span>
-                  <span className={`font-medium ${getStatusColor(1000 - data.systemHealth.apiResponseTime, { good: 800, warning: 500 })}`}>
-                    {data.systemHealth.apiResponseTime}ms
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Uptime</span>
-                  <span className="font-medium text-green-600">{data.systemHealth.uptime}%</span>
-                </div>
-              </CardContent>
-            </Card>
+        <TabsContent value="distribution">
+          <DistributionTab data={data} />
+        </TabsContent>
 
+        <TabsContent value="financial">
+          <FinancialTab data={data} />
+        </TabsContent>
+
+        <TabsContent value="system" className="space-y-6">
+          {/* System Health Overview */}
+          <div className="grid gap-6 md:grid-cols-3">
+            <SystemHealthCard data={data} />
+            
+            {/* Performance Metrics */}
             <Card>
               <CardHeader>
-                <CardTitle>Network & Connectivity</CardTitle>
+                <CardTitle className="text-sm font-medium">Performance Metrics</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span>Internet Connection</span>
-                  <div className="flex items-center gap-2">
-                    <Wifi className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-600">Online</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Database Query Time</span>
+                    <span className="font-medium">12ms</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div className="bg-green-500 h-2 rounded-full" style={{width: '20%'}}></div>
                   </div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Active Connections</span>
-                  <span className="font-medium">47</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Data Transfer</span>
-                  <span className="font-medium">2.4 GB/day</span>
-                </div>
+                
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Bandwidth Usage</span>
-                    <span className="font-medium">64%</span>
-                  </div>
-                  <Progress value={64} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Database Performance</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Query Performance</span>
-                  <span className="font-medium text-green-600">Excellent</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Avg Query Time</span>
-                  <span className="font-medium">12ms</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Active Connections</span>
-                  <span className="font-medium">8/100</span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span>Cache Hit Rate</span>
-                    <span className="font-medium">96%</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">96%</span>
                   </div>
-                  <Progress value={96} className="h-2" />
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div className="bg-green-500 h-2 rounded-full" style={{width: '96%'}}></div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Security Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span>SSL Certificate</span>
-                  <Badge className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Valid</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Last Security Scan</span>
-                  <span className="text-sm">2 hours ago</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Threats Blocked</span>
-                  <span className="font-medium">0</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Firewall</span>
-                  <Badge className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Active</Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>System Alerts</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                
                 <div className="space-y-2">
-                  <div className="p-2 bg-yellow-50 dark:bg-yellow-950/50 border-l-2 border-yellow-400 dark:border-yellow-500 text-sm">
-                    <span className="font-medium">Warning:</span> Memory usage approaching 70%
+                  <div className="flex justify-between text-sm">
+                    <span>Error Rate</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">0.2%</span>
                   </div>
-                  <div className="p-2 bg-blue-50 dark:bg-blue-950/50 border-l-2 border-blue-400 dark:border-blue-500 text-sm">
-                    <span className="font-medium">Info:</span> System backup completed successfully
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div className="bg-green-500 h-2 rounded-full" style={{width: '2%'}}></div>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  <Bell className="mr-2 h-4 w-4" />
-                  View All Alerts
-                </Button>
+                
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="text-center">
+                    <p className="text-lg font-bold">99.9%</p>
+                    <p className="text-xs text-muted-foreground">Uptime</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold">1.2s</p>
+                    <p className="text-xs text-muted-foreground">Avg Response</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Security Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">Security Status</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium">SSL Certificate</p>
+                    <p className="text-xs text-muted-foreground">Valid until Dec 2025</p>
+                  </div>
+                  <div className="text-green-600 dark:text-green-400">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium">Firewall</p>
+                    <p className="text-xs text-muted-foreground">Active & Updated</p>
+                  </div>
+                  <div className="text-blue-600 dark:text-blue-400">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-green-600 dark:text-green-400">0</p>
+                    <p className="text-xs text-muted-foreground">Threats Blocked</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold">2h</p>
+                    <p className="text-xs text-muted-foreground">Last Scan</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* System Resources & Activity */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Resource Usage Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Resource Usage Trends</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  24-hour system resource monitoring
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>CPU Usage</span>
+                      <span className="font-medium">{data.systemHealth.cpuUsage.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
+                      <div 
+                        className={`h-3 rounded-full transition-all duration-300 ${
+                          data.systemHealth.cpuUsage > 80 
+                            ? 'bg-red-500' 
+                            : data.systemHealth.cpuUsage > 60 
+                            ? 'bg-yellow-500' 
+                            : 'bg-green-500'
+                        }`}
+                        style={{width: `${data.systemHealth.cpuUsage}%`}}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Memory Usage</span>
+                      <span className="font-medium">{data.systemHealth.memoryUsage.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
+                      <div 
+                        className={`h-3 rounded-full transition-all duration-300 ${
+                          data.systemHealth.memoryUsage > 80 
+                            ? 'bg-red-500' 
+                            : data.systemHealth.memoryUsage > 60 
+                            ? 'bg-yellow-500' 
+                            : 'bg-blue-500'
+                        }`}
+                        style={{width: `${data.systemHealth.memoryUsage}%`}}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Disk Usage</span>
+                      <span className="font-medium">{data.systemHealth.diskUsage.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
+                      <div 
+                        className={`h-3 rounded-full transition-all duration-300 ${
+                          data.systemHealth.diskUsage > 80 
+                            ? 'bg-red-500' 
+                            : data.systemHealth.diskUsage > 60 
+                            ? 'bg-yellow-500' 
+                            : 'bg-purple-500'
+                        }`}
+                        style={{width: `${data.systemHealth.diskUsage}%`}}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                    <div className="text-center">
+                      <p className="text-sm font-medium">Network</p>
+                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400">2.4GB</p>
+                      <p className="text-xs text-muted-foreground">Daily Transfer</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium">Connections</p>
+                      <p className="text-lg font-bold text-green-600 dark:text-green-400">47</p>
+                      <p className="text-xs text-muted-foreground">Active</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium">Bandwidth</p>
+                      <p className="text-lg font-bold text-orange-600 dark:text-orange-400">64%</p>
+                      <p className="text-xs text-muted-foreground">Usage</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* System Activity Log */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Recent System Activity</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Latest system events and operations
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Database backup completed</p>
+                      <p className="text-xs text-muted-foreground">2 minutes ago</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Cache refreshed automatically</p>
+                      <p className="text-xs text-muted-foreground">15 minutes ago</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">High CPU usage detected (temporary)</p>
+                      <p className="text-xs text-muted-foreground">1 hour ago</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Security scan completed - No threats</p>
+                      <p className="text-xs text-muted-foreground">2 hours ago</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">System updated to latest version</p>
+                      <p className="text-xs text-muted-foreground">6 hours ago</p>
+                    </div>
+                  </div>
+
+                  <div className="text-center pt-2">
+                    <button className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                      View All Logs
+                    </button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
       </Tabs>
-      </div>
+
+      {/* Auto Refresh Notification */}
+      {notification && (
+        <AutoRefreshNotification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </div>
   );
 }

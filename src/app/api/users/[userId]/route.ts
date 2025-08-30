@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { auth } from "../../auth/[...nextauth]/route"
+import { auth } from "@/lib/auth"
+import { isAdmin } from "@/lib/auth-utils"
 import type { ApiUser, ApiUserUpdateInput } from "@/lib/types/api"
 
 export async function GET(
@@ -10,7 +11,7 @@ export async function GET(
   try {
     const session = await auth()
 
-    if (!session || session.user?.role !== "ADMIN") {
+    if (!session || !isAdmin(session)) {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
@@ -55,7 +56,7 @@ export async function PATCH(
   try {
     const session = await auth()
 
-    if (!session || session.user?.role !== "ADMIN") {
+    if (!session || !isAdmin(session)) {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
@@ -125,7 +126,7 @@ export async function DELETE(
   try {
     const session = await auth()
 
-    if (!session || session.user?.role !== "ADMIN") {
+    if (!session || !isAdmin(session)) {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 

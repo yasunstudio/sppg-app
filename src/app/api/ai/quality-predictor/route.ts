@@ -100,8 +100,13 @@ async function getHistoricalQualityData(targetType: string, days: number) {
           createdAt: { gte: startDate }
         },
         include: {
-          qualityChecks: true,
-          rawMaterial: true
+          rawMaterial: {
+            select: {
+              id: true,
+              name: true,
+              category: true
+            }
+          }
         }
       })
 
@@ -111,7 +116,7 @@ async function getHistoricalQualityData(targetType: string, days: number) {
         createdAt: item.createdAt,
         qualityStatus: item.qualityStatus,
         expiryDate: item.expiryDate,
-        qualityChecks: item.qualityChecks,
+        qualityChecks: [], // No direct relation in schema
         rawMaterial: item.rawMaterial
       }))
       break

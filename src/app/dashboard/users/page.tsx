@@ -1,12 +1,26 @@
 import { Metadata } from "next"
-import { ClientPage } from "./components/client-page"
+import { UserManagement } from "./components/user-management"
+import { PermissionGuard } from "@/hooks/use-permissions"
 
 export const metadata: Metadata = {
-  title: "Users",
-  description: "User management dashboard.",
+  title: "User Management | SPPG",
+  description: "Comprehensive user management system for SPPG application.",
 }
 
 export default async function UsersPage() {
-  // Remove server-side data fetching since we'll use client-side with pagination
-  return <ClientPage users={[]} />
+  return (
+    <PermissionGuard 
+      permission={["users.view"]} 
+      fallback={
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold">Access Denied</h2>
+            <p className="text-muted-foreground">You don't have permission to view user management.</p>
+          </div>
+        </div>
+      }
+    >
+      <UserManagement />
+    </PermissionGuard>
+  )
 }

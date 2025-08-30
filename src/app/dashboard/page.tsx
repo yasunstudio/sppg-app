@@ -1,6 +1,7 @@
-import { auth } from "@/app/api/auth/[...nextauth]/route"
+import { auth } from "@/lib/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { prisma } from "@/lib/prisma"
+import { DashboardAlerts } from "@/components/dashboard/dashboard-alerts"
 import { 
   Users, 
   School, 
@@ -262,12 +263,15 @@ export default async function DashboardPage() {
   ]
   
   return (
-    <div className="space-y-8">
-      {/* Header Section */}
-      <div className="flex flex-col space-y-2">
+    <div className="space-y-6">
+      {/* Dashboard Alerts for access denied or other notifications */}
+      <DashboardAlerts />
+      
+      {/* Header */}
+      <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Selamat datang kembali, {session?.user?.name}. Berikut adalah ringkasan aktivitas hari ini.
+          Selamat datang di sistem manajemen SPPG (Sekolah Program Pangan Gratis)
         </p>
       </div>
 

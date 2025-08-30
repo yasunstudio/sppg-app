@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { auth } from "../auth/[...nextauth]/route"
+import { auth } from "@/lib/auth"
 import type { ApiUser, ApiUserCreateInput } from "@/lib/types/api"
 
 export async function GET(request: NextRequest) {
@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const role = searchParams.get("role") || ""
     const sortBy = searchParams.get("sortBy") || "createdAt"
     const sortOrder = searchParams.get("sortOrder") || "desc"
+    const include = searchParams.get("include") || ""
 
     const skip = (page - 1) * limit
 
@@ -58,6 +59,9 @@ export async function GET(request: NextRequest) {
     // Get total count
     const totalCount = await prisma.user.count({ where })
 
+    // Determine what to include based on query parameter
+    const includeRoles = include.includes('roles')
+
     // Get users
     const users = await prisma.user.findMany({
       where,
@@ -65,7 +69,17 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         email: true,
-        roles: {
+        roles: includeRoles ? {
+          select: {
+            role: {
+              select: {
+                id: true,
+                name: true,
+                description: true
+              }
+            }
+          }
+        } : {
           select: {
             role: {
               select: {
@@ -81,6 +95,20 @@ export async function GET(request: NextRequest) {
       skip,
       take: limit,
     })
+
+    // If include=roles, return full role data
+    if (includeRoles) {
+      return NextResponse.json({
+        users: users,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(totalCount / limit),
+          totalCount,
+          hasNextPage: page < Math.ceil(totalCount / limit),
+          hasPreviousPage: page > 1,
+        },
+      })
+    }
 
     const formattedUsers = users.map((user) => ({
       id: user.id,
@@ -114,7 +142,12 @@ export async function POST(request: Request) {
   try {
     const session = await auth()
     
-    if (!session || session.user?.role !== "ADMIN") {
+    // Check if user has admin privileges
+    const hasAdminRole = session?.user?.roles?.some((ur: any) => 
+      ['SUPER_ADMIN', 'ADMIN'].includes(ur.role.name)
+    )
+    
+    if (!session || !hasAdminRole) {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 

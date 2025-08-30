@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '../../../generated/prisma'
+import { prisma } from "@/lib/prisma"
 import { z } from 'zod'
 
-const prisma = new PrismaClient()
+// prisma imported from lib
 
 const createInventorySchema = z.object({
   rawMaterialId: z.string(),

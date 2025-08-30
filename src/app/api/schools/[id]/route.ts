@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from "@/lib/prisma"
 
-const prisma = new PrismaClient()
+// prisma imported from lib
 
 // GET /api/schools/[id] - Get school by ID
 export async function GET(

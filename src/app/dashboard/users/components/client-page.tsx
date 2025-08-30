@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Pagination } from "@/components/ui/pagination"
+import { PermissionGuard, usePermissions } from "@/hooks/use-permissions"
 import {
   Select,
   SelectContent,
@@ -201,25 +202,39 @@ export function ClientPage({ users: initialUsers }: { users: User[] }) {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <UsersIcon className="w-8 h-8" />
-            Users Management
-          </h1>
-          <p className="text-muted-foreground">
-            Manage users and their permissions in the system.
-          </p>
+    <PermissionGuard 
+      permission={['users.view']} 
+      fallback={
+        <div className="container mx-auto py-6">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
+            <p className="text-muted-foreground">You don't have permission to view user management.</p>
+            <Button onClick={() => router.back()}>Go Back</Button>
+          </div>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/users/create">
-            <Plus className="w-4 h-4 mr-2" />
-            Add User
-          </Link>
-        </Button>
-      </div>
+      }
+    >
+      <div className="container mx-auto py-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <UsersIcon className="w-8 h-8" />
+              Users Management
+            </h1>
+            <p className="text-muted-foreground">
+              Manage users and their permissions in the system.
+            </p>
+          </div>
+          <PermissionGuard permission={['users.create']} fallback={null}>
+            <Button asChild>
+              <Link href="/dashboard/users/create">
+                <Plus className="w-4 h-4 mr-2" />
+                Add User
+              </Link>
+            </Button>
+          </PermissionGuard>
+        </div>
 
       {/* Filters */}
       <Card>
@@ -451,5 +466,6 @@ export function ClientPage({ users: initialUsers }: { users: User[] }) {
         </Card>
       )}
     </div>
+    </PermissionGuard>
   )
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '../../../../generated/prisma'
+import { prisma } from "@/lib/prisma"
 
-const prisma = new PrismaClient()
+// prisma imported from lib
 
 // GET /api/inventory/alerts - Get inventory alerts
 export async function GET() {

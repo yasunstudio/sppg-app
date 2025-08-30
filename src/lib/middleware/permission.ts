@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/app/api/auth/[...nextauth]/route"
+import { auth } from "@/lib/auth"
+import { getUserRoles } from '@/lib/auth-utils'
 import { hasPermission, type Permission } from "@/lib/permissions"
 
 export async function withPermission(
@@ -18,7 +19,7 @@ export async function withPermission(
       }
 
       // Get user roles from session
-      const userRoles = session.user.role ? [session.user.role] : []
+      const userRoles = getUserRoles(session)
       
       if (!hasPermission(userRoles, permission)) {
         return NextResponse.json(

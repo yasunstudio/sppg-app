@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '../../../../generated/prisma'
+import { prisma } from "@/lib/prisma"
 
-const prisma = new PrismaClient()
+// prisma imported from lib
 
 // GET /api/production/stock-analytics - Get stock analytics and summary
 export async function GET(request: NextRequest) {

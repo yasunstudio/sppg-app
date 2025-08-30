@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
@@ -11,7 +11,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user has admin access
-    const userRole = session.user?.role;
+    const userRoles = session.user?.roles?.map(r => r.role.name) || [];
+    const userRole = userRoles[0] || null;
     const hasAdminAccess = userRole && ['ADMIN', 'KEPALA_SPPG'].includes(userRole);
 
     if (!hasAdminAccess) {

@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '../../../../../generated/prisma'
+import { prisma } from "@/lib/prisma"
 
-const prisma = new PrismaClient()
+// prisma imported from lib
 
 // GET /api/production/resources/[id] - Get single resource
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const resourceId = params.id
+    const { id } = await params
+    const resourceId = id
 
     const resource = await prisma.productionResource.findUnique({
       where: { id: resourceId },
@@ -70,40 +71,16 @@ export async function GET(
 // PUT /api/production/resources/[id] - Update resource
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  return updateResource(request, { params })
-}
-
-// PATCH /api/production/resources/[id] - Update resource (partial)
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  return updateResource(request, { params })
-}
-
-async function updateResource(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const resourceId = params.id
+    const { id } = await params
+    const resourceId = id
     const body = await request.json()
-    const { status, notes, ...updateData } = body
 
-    // Update the resource
     const updatedResource = await prisma.productionResource.update({
       where: { id: resourceId },
-      data: {
-        ...updateData,
-        status: status || undefined,
-        specifications: notes ? {
-          ...(typeof updateData.specifications === 'object' ? updateData.specifications : {}),
-          notes
-        } : updateData.specifications,
-        updatedAt: new Date()
-      }
+      data: body,
     })
 
     return NextResponse.json({
@@ -111,7 +88,35 @@ async function updateResource(
       message: 'Resource updated successfully'
     })
   } catch (error) {
-    console.error('Error updating resource:', error)
+    console.error('[RESOURCE_PUT]', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+// PATCH /api/production/resources/[id] - Update resource (partial)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const resourceId = id
+    const body = await request.json()
+
+    const updatedResource = await prisma.productionResource.update({
+      where: { id: resourceId },
+      data: body,
+    })
+
+    return NextResponse.json({
+      data: updatedResource,
+      message: 'Resource updated successfully'
+    })
+  } catch (error) {
+    console.error('[RESOURCE_PATCH]', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -122,10 +127,11 @@ async function updateResource(
 // DELETE /api/production/resources/[id] - Delete resource (soft delete)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const resourceId = params.id
+    const { id } = await params
+    const resourceId = id
 
     // Soft delete by updating a deletedAt field if it exists, 
     // or just update status to indicate it's inactive

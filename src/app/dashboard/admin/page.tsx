@@ -1,4 +1,5 @@
-import { auth } from "@/app/api/auth/[...nextauth]/route"
+import { auth } from "@/lib/auth"
+import { getPrimaryRole } from '@/lib/auth-utils'
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { 
@@ -61,7 +62,7 @@ export default async function AdminDashboard() {
   }
 
   // Check if user has admin access
-  const userRole = session.user?.role
+  const userRole = getPrimaryRole(session)
   const hasAdminAccess = userRole && ['ADMIN', 'KEPALA_SPPG'].includes(userRole)
 
   if (!hasAdminAccess) {
