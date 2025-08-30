@@ -10,22 +10,24 @@ export const PERMISSIONS = {
   
   // Menu Planning & Nutrition
   'menus.create': ['NUTRITIONIST', 'CHEF', 'SUPER_ADMIN'],
-  'menus.view': ['NUTRITIONIST', 'CHEF', 'ADMIN', 'SUPER_ADMIN'],
+  'menus.view': ['NUTRITIONIST', 'CHEF', 'QUALITY_CONTROLLER', 'ADMIN', 'SUPER_ADMIN'],
   'menus.edit': ['NUTRITIONIST', 'CHEF', 'SUPER_ADMIN'],
   'menus.approve': ['SUPER_ADMIN', 'ADMIN'],
   'nutrition.consult': ['NUTRITIONIST', 'HEALTH_WORKER'],
   
   // Inventory & Raw Materials
   'inventory.create': ['ADMIN', 'CHEF', 'SUPER_ADMIN'],
-  'inventory.view': ['ADMIN', 'CHEF', 'NUTRITIONIST', 'SUPER_ADMIN'],
+  'inventory.view': ['ADMIN', 'CHEF', 'NUTRITIONIST', 'QUALITY_CONTROLLER', 'SUPER_ADMIN'],
   'inventory.edit': ['ADMIN', 'CHEF', 'SUPER_ADMIN'],
   'suppliers.manage': ['ADMIN', 'SUPER_ADMIN'],
   
   // Production Management
   'production.create': ['CHEF', 'SUPER_ADMIN'],
-  'production.view': ['CHEF', 'NUTRITIONIST', 'ADMIN', 'SUPER_ADMIN'],
+  'production.view': ['CHEF', 'NUTRITIONIST', 'QUALITY_CONTROLLER', 'ADMIN', 'SUPER_ADMIN'],
   'production.manage': ['CHEF', 'SUPER_ADMIN'],
-  'quality.check': ['CHEF', 'NUTRITIONIST'],
+  'quality.check': ['CHEF', 'NUTRITIONIST', 'QUALITY_CONTROLLER'],
+  'quality.create': ['QUALITY_CONTROLLER', 'ADMIN', 'SUPER_ADMIN'],
+  'quality.edit': ['QUALITY_CONTROLLER', 'ADMIN', 'SUPER_ADMIN'],
   
   // Posyandu Management
   'posyandu.create': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR'],
@@ -54,7 +56,7 @@ export const PERMISSIONS = {
   // Health & Nutrition Data
   'health.read': ['HEALTH_WORKER', 'NUTRITIONIST', 'POSYANDU_COORDINATOR', 'ADMIN', 'SUPER_ADMIN'],
   'health.write': ['HEALTH_WORKER', 'NUTRITIONIST'],
-  'nutrition.read': ['NUTRITIONIST', 'HEALTH_WORKER', 'CHEF', 'ADMIN', 'SUPER_ADMIN'],
+  'nutrition.read': ['NUTRITIONIST', 'HEALTH_WORKER', 'CHEF', 'QUALITY_CONTROLLER', 'ADMIN', 'SUPER_ADMIN'],
   'nutrition.write': ['NUTRITIONIST', 'HEALTH_WORKER'],
   
   // Activities & Reports
@@ -69,16 +71,16 @@ export const PERMISSIONS = {
   'transactions.create': ['ADMIN'],
   
   // Reporting & Analytics
-  'reports.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER'],
+  'reports.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'QUALITY_CONTROLLER'],
   'analytics.view': ['SUPER_ADMIN', 'ADMIN'],
   
   // System Administration
   'system.config': ['SUPER_ADMIN'],
-  'audit.view': ['SUPER_ADMIN', 'ADMIN'],
+  'audit.view': ['SUPER_ADMIN', 'ADMIN', 'QUALITY_CONTROLLER'],
   
   // Feedback Management
-  'feedback.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER'],
-  'feedback.respond': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER'],
+  'feedback.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'QUALITY_CONTROLLER'],
+  'feedback.respond': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'QUALITY_CONTROLLER'],
 }
 
 export type Permission = keyof typeof PERMISSIONS
@@ -125,6 +127,12 @@ export const USER_ROLES = {
     description: 'Nutrition specialist with meal planning access',
     color: 'emerald',
     dashboard: '/dashboard/nutritionist'
+  },
+  QUALITY_CONTROLLER: {
+    name: 'Quality Controller',
+    description: 'Quality control manager with inspection oversight',
+    color: 'amber',
+    dashboard: '/dashboard/quality-controller'
   }
 } as const
 
@@ -161,6 +169,7 @@ export function getPrimaryRole(userRoles: string[]): UserRole | null {
     'POSYANDU_COORDINATOR',
     'NUTRITIONIST',
     'CHEF',
+    'QUALITY_CONTROLLER',
     'HEALTH_WORKER',
     'VOLUNTEER'
   ]
