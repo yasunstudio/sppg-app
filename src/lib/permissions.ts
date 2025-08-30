@@ -64,23 +64,35 @@ export const PERMISSIONS = {
   'activities.create': ['HEALTH_WORKER', 'POSYANDU_COORDINATOR', 'ADMIN', 'SUPER_ADMIN'],
   
   // Financial Management
-  'finance.view': ['ADMIN', 'SUPER_ADMIN'],
+  'finance.view': ['ADMIN', 'SUPER_ADMIN', 'FINANCIAL_ANALYST'],
   'finance.manage': ['ADMIN', 'SUPER_ADMIN'],
-  'budget.create': ['ADMIN', 'SUPER_ADMIN'],
+  'budget.create': ['ADMIN', 'SUPER_ADMIN', 'FINANCIAL_ANALYST'],
+  'budget.view': ['ADMIN', 'SUPER_ADMIN', 'FINANCIAL_ANALYST'],
   'budget.approve': ['SUPER_ADMIN'],
   'transactions.create': ['ADMIN'],
+  'transactions.view': ['ADMIN', 'SUPER_ADMIN', 'FINANCIAL_ANALYST'],
+  
+  // Delivery & Logistics
+  'delivery.manage': ['DELIVERY_MANAGER', 'SUPER_ADMIN'],
+  'delivery.view': ['DELIVERY_MANAGER', 'ADMIN', 'SUPER_ADMIN'],
+  'logistics.plan': ['DELIVERY_MANAGER', 'SUPER_ADMIN'],
+  'logistics.manage': ['DELIVERY_MANAGER', 'SUPER_ADMIN'],
+  
+  // Training & Compliance
+  'training.manage': ['SUPER_ADMIN', 'ADMIN'],
+  'compliance.audit': ['SUPER_ADMIN', 'QUALITY_CONTROLLER'],
   
   // Reporting & Analytics
-  'reports.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'QUALITY_CONTROLLER'],
-  'analytics.view': ['SUPER_ADMIN', 'ADMIN'],
+  'reports.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'QUALITY_CONTROLLER', 'DELIVERY_MANAGER', 'FINANCIAL_ANALYST', 'OPERATIONS_SUPERVISOR'],
+  'analytics.view': ['SUPER_ADMIN', 'ADMIN', 'FINANCIAL_ANALYST', 'OPERATIONS_SUPERVISOR'],
   
   // System Administration
   'system.config': ['SUPER_ADMIN'],
   'audit.view': ['SUPER_ADMIN', 'ADMIN', 'QUALITY_CONTROLLER'],
   
   // Feedback Management
-  'feedback.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'QUALITY_CONTROLLER'],
-  'feedback.respond': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'QUALITY_CONTROLLER'],
+  'feedback.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'QUALITY_CONTROLLER', 'OPERATIONS_SUPERVISOR'],
+  'feedback.respond': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR', 'HEALTH_WORKER', 'QUALITY_CONTROLLER', 'OPERATIONS_SUPERVISOR'],
 }
 
 export type Permission = keyof typeof PERMISSIONS
@@ -133,6 +145,24 @@ export const USER_ROLES = {
     description: 'Quality control manager with inspection oversight',
     color: 'amber',
     dashboard: '/dashboard/quality-controller'
+  },
+  DELIVERY_MANAGER: {
+    name: 'Delivery Manager',
+    description: 'Delivery and logistics operations manager',
+    color: 'indigo',
+    dashboard: '/dashboard/delivery-manager'
+  },
+  FINANCIAL_ANALYST: {
+    name: 'Financial Analyst',
+    description: 'Financial analysis and budget oversight specialist',
+    color: 'rose',
+    dashboard: '/dashboard/financial-analyst'
+  },
+  OPERATIONS_SUPERVISOR: {
+    name: 'Operations Supervisor',
+    description: 'Middle management for daily operations oversight',
+    color: 'slate',
+    dashboard: '/dashboard/operations-supervisor'
   }
 } as const
 
@@ -166,7 +196,10 @@ export function getPrimaryRole(userRoles: string[]): UserRole | null {
   const roleHierarchy: UserRole[] = [
     'SUPER_ADMIN',
     'ADMIN', 
+    'OPERATIONS_SUPERVISOR',
     'POSYANDU_COORDINATOR',
+    'FINANCIAL_ANALYST',
+    'DELIVERY_MANAGER',
     'NUTRITIONIST',
     'CHEF',
     'QUALITY_CONTROLLER',
