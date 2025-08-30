@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { isAdmin } from '@/lib/auth-utils'
+import { hasPermission } from '@/lib/permissions'
 import bcrypt from "bcryptjs"
 
 export async function getUsers() {
@@ -65,7 +65,12 @@ export async function createUser(formData: FormData) {
   try {
     const session = await auth()
     
-    if (!session || !isAdmin(session)) {
+    // Get user roles from session
+    const userRoles = session?.user?.roles 
+      ? session.user.roles.map((ur: any) => ur.role.name)
+      : [];
+    
+    if (!session || !hasPermission(userRoles, 'users.create')) {
       throw new Error("You are not authorized to perform this action")
     }
 
@@ -159,7 +164,12 @@ export async function updateUser(userId: string, formData: FormData) {
   try {
     const session = await auth()
     
-    if (!session || !isAdmin(session)) {
+    // Get user roles from session
+    const userRoles = session?.user?.roles 
+      ? session.user.roles.map((ur: any) => ur.role.name)
+      : [];
+    
+    if (!session || !hasPermission(userRoles, 'users.edit')) {
       throw new Error("You are not authorized to perform this action")
     }
 
@@ -276,7 +286,12 @@ export async function deleteUser(userId: string) {
   try {
     const session = await auth()
     
-    if (!session || !isAdmin(session)) {
+    // Get user roles from session
+    const userRoles = session?.user?.roles 
+      ? session.user.roles.map((ur: any) => ur.role.name)
+      : [];
+    
+    if (!session || !hasPermission(userRoles, 'users.delete')) {
       throw new Error("You are not authorized to perform this action")
     }
 

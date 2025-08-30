@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition, useState, useRef } from "react"
+import { useTransition, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Select,
   SelectContent,
@@ -29,10 +28,9 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { toast } from "sonner"
-import { Loader2, Eye, EyeOff, Upload, X } from "lucide-react"
+import { Loader2, Eye, EyeOff, UserPlus, Shield } from "lucide-react"
 import { createUser, updateUser } from "../actions"
 import { USER_ROLES } from "@/lib/permissions"
-import { validateFileClient } from "@/lib/upload-client"
 
 interface User {
   id: string
@@ -113,58 +111,25 @@ type UserFormValues = z.infer<typeof userFormSchema>
 
 export function UserForm({ user, onSuccess }: Props) {
   const [showPassword, setShowPassword] = useState(false)
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string>(user?.avatar || "")
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      name: user?.name || "",
-      email: user?.email || "",
-      username: user?.username || "",
-      phone: user?.phone || "",
-      address: user?.address || "",
-      role: (user?.role as keyof typeof USER_ROLES) || "VOLUNTEER",
+      name: user?.name ?? "",
+      email: user?.email ?? "",
+      username: user?.username ?? "",
+      phone: user?.phone ?? "",
+      address: user?.address ?? "",
+      role: (user?.role as keyof typeof USER_ROLES) ?? "VOLUNTEER",
       isActive: user?.isActive ?? true,
+      password: "", // Always start with empty string for controlled input
     },
     mode: "onChange",
   })
 
-  // Handle avatar file selection
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    // Validate file
-    const validation = validateFileClient(file)
-    if (!validation.valid) {
-      toast.error(validation.error || "Invalid file")
-      return
-    }
-
-    setAvatarFile(file)
-    
-    // Create preview URL
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setAvatarPreview(e.target?.result as string)
-    }
-    reader.readAsDataURL(file)
-  }
-
-  // Remove avatar
-  const handleRemoveAvatar = () => {
-    setAvatarFile(null)
-    setAvatarPreview("")
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
-  }
-
+  
   const handleSubmit = form.handleSubmit(async (data) => {
     // Validate password for new users
     if (!user?.id && !data.password) {
@@ -174,37 +139,15 @@ export function UserForm({ user, onSuccess }: Props) {
 
     startTransition(async () => {
       try {
-        let avatarUrl = user?.avatar || ""
-
-        // Upload avatar if a new file is selected
-        if (avatarFile) {
-          setUploadingAvatar(true)
-          const formData = new FormData()
-          formData.append('file', avatarFile)
-          formData.append('type', 'avatar')
-
-          const uploadResponse = await fetch('/api/upload/avatar', {
-            method: 'POST',
-            body: formData,
-          })
-
-          if (!uploadResponse.ok) {
-            throw new Error('Failed to upload avatar')
-          }
-
-          const uploadResult = await uploadResponse.json()
-          avatarUrl = uploadResult.url
-          setUploadingAvatar(false)
-        }
-
         const formData = new FormData()
         formData.append("name", data.name.trim())
         formData.append("email", data.email.trim().toLowerCase())
         formData.append("role", data.role)
         formData.append("isActive", data.isActive.toString())
         
-        if (avatarUrl) {
-          formData.append("avatar", avatarUrl)
+        // Keep existing avatar if user is being updated
+        if (user?.avatar) {
+          formData.append("avatar", user.avatar)
         }
         if (data.username) {
           formData.append("username", data.username.trim())
@@ -246,17 +189,28 @@ export function UserForm({ user, onSuccess }: Props) {
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid gap-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Basic Information</h3>
-            
+        {/* Profile Section */}
+        <div className="space-y-4">
+          <div className="pb-2 border-b">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <UserPlus className="h-4 w-4 text-blue-600" />
+              Basic Information
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Enter the user's personal and contact information.
+            </p>
+          </div>
+
+          {/* Basic Info Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name *</FormLabel>
+                  <FormLabel>
+                    Full Name <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="Enter full name" 
@@ -274,7 +228,9 @@ export function UserForm({ user, onSuccess }: Props) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address *</FormLabel>
+                  <FormLabel>
+                    Email Address <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input 
                       type="email"
@@ -297,11 +253,12 @@ export function UserForm({ user, onSuccess }: Props) {
                   <FormControl>
                     <Input 
                       placeholder="Enter username (optional)" 
-                      {...field} 
+                      {...field}
+                      value={field.value || ""} 
                       disabled={isPending}
                     />
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription className="text-xs">
                     Optional. Must be unique and contain only letters, numbers, and underscores.
                   </FormDescription>
                   <FormMessage />
@@ -309,90 +266,78 @@ export function UserForm({ user, onSuccess }: Props) {
               )}
             />
 
-            {/* Avatar Upload */}
-            <div className="space-y-2">
-              <Label>Profile Picture</Label>
-              <div className="flex items-center gap-4">
-                <Avatar className="h-20 w-20">
-                  {avatarPreview ? (
-                    <AvatarImage src={avatarPreview} alt="Avatar preview" />
-                  ) : (
-                    <AvatarFallback className="text-lg">
-                      {form.watch("name")?.charAt(0)?.toUpperCase() || 
-                       form.watch("email")?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                
-                <div className="flex flex-col gap-2">
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isPending || uploadingAvatar}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      {avatarPreview ? "Change" : "Upload"}
-                    </Button>
-                    
-                    {avatarPreview && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRemoveAvatar}
-                        disabled={isPending || uploadingAvatar}
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                  
-                  <p className="text-sm text-muted-foreground">
-                    Upload a profile picture (JPG, PNG, max 10MB)
-                  </p>
-                  
-                  {uploadingAvatar && (
-                    <p className="text-sm text-blue-600 flex items-center">
-                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      Uploading...
-                    </p>
-                  )}
-                </div>
-              </div>
-              
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="hidden"
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Enter phone number (optional)" 
+                      {...field}
+                      value={field.value || ""} 
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
-          {/* Security */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Security</h3>
-            
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Address</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Enter address (optional)" 
+                    {...field}
+                    value={field.value || ""} 
+                    disabled={isPending}
+                    rows={3}
+                    className="resize-none"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Security Section */}
+        <div className="space-y-4">
+          <div className="pb-2 border-b">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Shield className="h-4 w-4 text-green-600" />
+              Security & Access
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Configure login credentials and system permissions.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="password"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Password {!user?.id && "*"}
+                    Password {!user?.id && <span className="text-red-500">*</span>}
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input 
                         type={showPassword ? "text" : "password"}
                         placeholder={user?.id ? "Leave blank to keep current password" : "Enter password"}
-                        {...field} 
+                        {...field}
+                        value={field.value || ""} 
                         disabled={isPending}
+                        className="pr-10"
                       />
                       <Button
                         type="button"
@@ -403,14 +348,14 @@ export function UserForm({ user, onSuccess }: Props) {
                         disabled={isPending}
                       >
                         {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
+                          <EyeOff className="h-4 w-4 text-gray-400" />
                         ) : (
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-4 w-4 text-gray-400" />
                         )}
                       </Button>
                     </div>
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription className="text-xs">
                     {user?.id 
                       ? "Leave blank to keep the current password"
                       : "Must contain at least 6 characters with uppercase, lowercase, and numbers"
@@ -426,7 +371,9 @@ export function UserForm({ user, onSuccess }: Props) {
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role *</FormLabel>
+                  <FormLabel>
+                    Role <span className="text-red-500">*</span>
+                  </FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
@@ -440,9 +387,9 @@ export function UserForm({ user, onSuccess }: Props) {
                     <SelectContent>
                       {Object.entries(USER_ROLES).map(([key, role]) => (
                         <SelectItem key={key} value={key}>
-                          <div className="flex flex-col">
+                          <div className="flex flex-col py-1">
                             <span className="font-medium">{role.name}</span>
-                            <span className="text-sm text-muted-foreground">{role.description}</span>
+                            <span className="text-xs text-muted-foreground">{role.description}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -454,61 +401,17 @@ export function UserForm({ user, onSuccess }: Props) {
             />
           </div>
 
-          {/* Contact Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Contact Information</h3>
-            
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter phone number (optional)" 
-                      {...field} 
-                      disabled={isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Address</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter address (optional)" 
-                      {...field} 
-                      disabled={isPending}
-                      rows={3}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Status */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Account Status</h3>
-            
-            <FormField
-              control={form.control}
-              name="isActive"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+          {/* Account Status */}
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
                     <FormLabel>Active Account</FormLabel>
                     <FormDescription>
-                      When enabled, the user can access the system
+                      When enabled, the user can access the system and perform actions based on their role.
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -518,13 +421,14 @@ export function UserForm({ user, onSuccess }: Props) {
                       disabled={isPending}
                     />
                   </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
+                </div>
+              </FormItem>
+            )}
+          />
         </div>
 
-        <div className="flex justify-end gap-3">
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 pt-4 border-t">
           <Button
             type="button"
             variant="outline"
@@ -533,7 +437,10 @@ export function UserForm({ user, onSuccess }: Props) {
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isPending}>
+          <Button 
+            type="submit" 
+            disabled={isPending}
+          >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {user?.id ? "Update User" : "Create User"}
           </Button>

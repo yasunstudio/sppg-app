@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -94,6 +94,7 @@ export function UserManagement() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize] = useState(10)
+  const [totalUsers, setTotalUsers] = useState(0)
   const [stats, setStats] = useState<UserStats>({
     total: 0,
     active: 0,
@@ -109,10 +110,22 @@ export function UserManagement() {
   const [deleting, setDeleting] = useState(false)
 
   // Fetch users data
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/users/enhanced', {
+      
+      // Build query parameters for server-side pagination
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+        search: searchTerm,
+        role: roleFilter === 'all' ? '' : roleFilter,
+        status: statusFilter === 'all' ? '' : statusFilter,
+        sortBy: sortBy,
+        sortOrder: sortOrder
+      })
+      
+      const response = await fetch(`/api/users/enhanced?${params}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -125,54 +138,38 @@ export function UserManagement() {
 
       const data = await response.json()
       setUsers(data.users || [])
-      setStats(data.stats || stats)
+      
+      // Only update stats if it's different from current
+      if (data.stats) {
+        setStats(data.stats)
+      }
+      
+      // Update pagination info from server response
+      if (data.pagination) {
+        setTotalUsers(data.pagination.totalCount || data.pagination.total || 0)
+      } else {
+        // Fallback if pagination not provided
+        setTotalUsers(data.users?.length || 0)
+      }
     } catch (error) {
       toast.error("Failed to load users data")
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentPage, pageSize, searchTerm, roleFilter, statusFilter, sortBy, sortOrder])
 
-  // Load users on component mount
+  // Load users on component mount and when filters change
   useEffect(() => {
     fetchUsers()
-  }, [])
+  }, [fetchUsers])
 
-  // Filter and sort users
-  const filteredUsers = useMemo(() => {
-    const filtered = users.filter(user => {
-      const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           user.email.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesRole = roleFilter === "all" || user.role === roleFilter
-      const matchesStatus = statusFilter === "all" || user.status === statusFilter
-      
-      return matchesSearch && matchesRole && matchesStatus
-    })
+  // Reset to page 1 when filters change (except page change itself)
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, roleFilter, statusFilter, sortBy, sortOrder])
 
-    // Sort users
-    filtered.sort((a, b) => {
-      let aValue: any = a[sortBy as keyof User]
-      let bValue: any = b[sortBy as keyof User]
-      
-      if (aValue === null) aValue = ""
-      if (bValue === null) bValue = ""
-      
-      if (sortOrder === "asc") {
-        return aValue > bValue ? 1 : -1
-      } else {
-        return aValue < bValue ? 1 : -1
-      }
-    })
-
-    return filtered
-  }, [users, searchTerm, roleFilter, statusFilter, sortBy, sortOrder])
-
-  // Pagination
-  const totalPages = Math.ceil(filteredUsers.length / pageSize)
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  )
+  // Update pagination calculation to use server-side total
+  const totalPages = Math.ceil(totalUsers / pageSize)
 
   // Handle user deletion
   const handleDeleteUser = async () => {
@@ -180,7 +177,7 @@ export function UserManagement() {
 
     try {
       setDeleting(true)
-      const response = await fetch(`/api/users/enhanced/${selectedUser.id}`, {
+      const response = await fetch(`/api/users/${selectedUser.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -188,7 +185,20 @@ export function UserManagement() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to delete user')
+        const errorData = await response.json().catch(() => null)
+        const errorMessage = errorData?.message || `HTTP ${response.status}: ${response.statusText}`
+        
+        // Handle specific status codes
+        if (response.status === 409) {
+          toast.warning(errorMessage) // User was deactivated instead of deleted
+        } else {
+          throw new Error(errorMessage)
+        }
+        
+        await fetchUsers()
+        setShowDeleteDialog(false)
+        setSelectedUser(null)
+        return
       }
 
       await fetchUsers()
@@ -197,7 +207,8 @@ export function UserManagement() {
       
       toast.success("User deleted successfully")
     } catch (error) {
-      toast.error("Failed to delete user")
+      console.error('Failed to delete user:', error)
+      toast.error(`Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setDeleting(false)
     }
@@ -207,8 +218,8 @@ export function UserManagement() {
   const handleStatusToggle = async (user: User) => {
     try {
       const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
-      const response = await fetch(`/api/users/enhanced/${user.id}`, {
-        method: 'PUT',
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -216,13 +227,16 @@ export function UserManagement() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to update user status')
+        const errorData = await response.json().catch(() => null)
+        const errorMessage = errorData?.message || `HTTP ${response.status}: ${response.statusText}`
+        throw new Error(errorMessage)
       }
 
       await fetchUsers()
       toast.success(`User ${newStatus.toLowerCase()} successfully`)
     } catch (error) {
-      toast.error("Failed to update user status")
+      console.error('Failed to update user status:', error)
+      toast.error(`Failed to update user status: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -454,7 +468,7 @@ export function UserManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedUsers.map((user) => (
+              {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
                     <div className="flex items-center space-x-3">
@@ -539,7 +553,7 @@ export function UserManagement() {
             </TableBody>
           </Table>
           
-          {paginatedUsers.length === 0 && (
+          {users.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No users found matching your criteria.</p>
             </div>
@@ -551,7 +565,7 @@ export function UserManagement() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, filteredUsers.length)} of {filteredUsers.length} users
+            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalUsers)} of {totalUsers} users
           </p>
           <div className="flex items-center space-x-2">
             <Button
@@ -593,7 +607,8 @@ export function UserManagement() {
           <DialogHeader>
             <DialogTitle>Delete User</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this user? This action cannot be undone.
+              Are you sure you want to delete this user? If the user has associated data (menus, audit logs, etc.), 
+              they will be deactivated instead of permanently deleted to maintain data integrity.
             </DialogDescription>
           </DialogHeader>
           {selectedUser && (

@@ -31,7 +31,9 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     // Build where condition
-    const where: any = {}
+    const where: any = {
+      deletedAt: null // Exclude soft deleted users
+    }
     
     if (search) {
       where.OR = [
@@ -118,6 +120,13 @@ export async function GET(request: NextRequest) {
       },
     })
 
+    // Transform users data to include status field
+    const transformedUsers = users.map(user => ({
+      ...user,
+      status: user.isActive ? 'ACTIVE' : 'INACTIVE',
+      role: (user.roles as any)[0]?.role?.name || 'VOLUNTEER' // Get first role name
+    }))
+
     // Get stats
     const [
       totalUsers,
@@ -125,11 +134,12 @@ export async function GET(request: NextRequest) {
       verifiedUsers,
       recentSignups
     ] = await Promise.all([
-      prisma.user.count(),
-      prisma.user.count({ where: { isActive: true } }),
-      prisma.user.count({ where: { emailVerified: { not: null } } }),
+      prisma.user.count({ where: { deletedAt: null } }),
+      prisma.user.count({ where: { deletedAt: null, isActive: true } }),
+      prisma.user.count({ where: { deletedAt: null, emailVerified: { not: null } } }),
       prisma.user.count({
         where: {
+          deletedAt: null,
           createdAt: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
           }
@@ -173,7 +183,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      users,
+      users: transformedUsers,
       pagination,
       stats
     })
