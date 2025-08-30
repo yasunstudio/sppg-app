@@ -49,9 +49,13 @@ export async function getUser(userId: string) {
     id: user.id,
     name: user.name,
     email: user.email,
-    emailVerified: user.emailVerified,
-    image: user.avatar,
-    role: user.roles[0]?.role.name || "USER",
+    username: user.username,
+    phone: user.phone,
+    address: user.address,
+    avatar: user.avatar,
+    emailVerified: !!user.emailVerified,
+    isActive: user.isActive,
+    role: user.roles[0]?.role.name || "VOLUNTEER",
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
   }
@@ -67,13 +71,17 @@ export async function createUser(formData: FormData) {
 
     const name = formData.get("name")
     const email = formData.get("email")
+    const username = formData.get("username")
     const password = formData.get("password")
+    const phone = formData.get("phone")
+    const address = formData.get("address")
     const role = formData.get("role")
+    const isActive = formData.get("isActive") === "true"
 
     if (!name || typeof name !== "string") throw new Error("Name is required")
     if (!email || typeof email !== "string") throw new Error("Email is required")
     if (!password || typeof password !== "string") throw new Error("Password is required")
-    if (!role || (role !== "USER" && role !== "ADMIN")) throw new Error("Valid role is required")
+    if (!role || typeof role !== "string") throw new Error("Valid role is required")
 
     // Check if email exists
     const existingUser = await prisma.user.findUnique({
@@ -82,6 +90,17 @@ export async function createUser(formData: FormData) {
 
     if (existingUser) {
       throw new Error("A user with this email already exists")
+    }
+
+    // Check if username exists (if provided)
+    if (username && typeof username === "string" && username.trim()) {
+      const existingUsername = await prisma.user.findUnique({
+        where: { username: username.trim() },
+      })
+
+      if (existingUsername) {
+        throw new Error("A user with this username already exists")
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -100,7 +119,11 @@ export async function createUser(formData: FormData) {
       data: {
         name,
         email,
+        username: username && typeof username === "string" && username.trim() ? username.trim() : null,
         password: hashedPassword,
+        phone: phone && typeof phone === "string" && phone.trim() ? phone.trim() : null,
+        address: address && typeof address === "string" && address.trim() ? address.trim() : null,
+        isActive,
         roles: {
           create: {
             role: {
@@ -140,12 +163,16 @@ export async function updateUser(userId: string, formData: FormData) {
 
     const name = formData.get("name")
     const email = formData.get("email")
+    const username = formData.get("username")
     const role = formData.get("role")
     const password = formData.get("password")
+    const phone = formData.get("phone")
+    const address = formData.get("address")
+    const isActive = formData.get("isActive") === "true"
 
     if (!name || typeof name !== "string") throw new Error("Name is required")
     if (!email || typeof email !== "string") throw new Error("Email is required")
-    if (!role || (role !== "USER" && role !== "ADMIN")) throw new Error("Valid role is required")
+    if (!role || typeof role !== "string") throw new Error("Valid role is required")
 
     // Check if email exists and belongs to another user
     const existingUser = await prisma.user.findUnique({
@@ -161,10 +188,30 @@ export async function updateUser(userId: string, formData: FormData) {
       throw new Error("A user with this email already exists")
     }
 
+    // Check if username exists and belongs to another user (if provided)
+    if (username && typeof username === "string" && username.trim()) {
+      const existingUsername = await prisma.user.findUnique({
+        where: { 
+          username: username.trim(),
+          NOT: {
+            id: userId
+          }
+        },
+      })
+
+      if (existingUsername) {
+        throw new Error("A user with this username already exists")
+      }
+    }
+
     // Prepare update data
     const updateData: any = {
       name,
       email,
+      username: username && typeof username === "string" && username.trim() ? username.trim() : null,
+      phone: phone && typeof phone === "string" && phone.trim() ? phone.trim() : null,
+      address: address && typeof address === "string" && address.trim() ? address.trim() : null,
+      isActive,
     }
 
     // Only update password if provided
