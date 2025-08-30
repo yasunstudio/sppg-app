@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { createUser, updateUser } from "../actions"
 import type { User } from "@/lib/types/user"
@@ -66,7 +66,6 @@ export function UserForm({ user, onSuccess }: Props) {
 
   type UserFormValues = z.infer<typeof userFormSchema>
 
-  const { toast } = useToast()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   
@@ -97,14 +96,9 @@ export function UserForm({ user, onSuccess }: Props) {
           await createUser(formData)
         }
 
-        toast({
-          open: true,
-          onOpenChange: () => {},
-          title: "Success",
-          description: user
-            ? "User has been updated successfully."
-            : "User has been created successfully.",
-        })
+        toast.success(user
+          ? "User has been updated successfully."
+          : "User has been created successfully.")
 
         form.reset()
         
@@ -112,15 +106,10 @@ export function UserForm({ user, onSuccess }: Props) {
           onSuccess()
         } else {
           // Navigate back to users list
-          router.push("/users")
+          router.push("/dashboard/users")
         }
       } catch (error) {
-        toast({
-          open: true,
-          onOpenChange: () => {},
-          title: "Error",
-          description: error instanceof Error ? error.message : "Something went wrong",
-        })
+        toast.error(error instanceof Error ? error.message : "Something went wrong")
       }
     })
   })

@@ -37,13 +37,13 @@ export default async function EditUserPage({ params }: Props) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild className="hover:bg-muted">
-          <Link href="/users">
+        <Button variant="outline" size="icon" asChild>
+          <Link href="/dashboard/users">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Edit User</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Edit User</h1>
           <p className="text-muted-foreground">
             Update {user.name}'s account information
           </p>
@@ -51,14 +51,14 @@ export default async function EditUserPage({ params }: Props) {
       </div>
 
       {/* Form Card */}
-      <Card className="max-w-2xl bg-card border-border">
-        <CardHeader className="bg-card">
-          <CardTitle className="text-foreground">User Information</CardTitle>
-          <CardDescription className="text-muted-foreground">
+      <Card className="max-w-2xl">
+        <CardHeader>
+          <CardTitle>User Information</CardTitle>
+          <CardDescription>
             Update the user details below to modify the account.
           </CardDescription>
         </CardHeader>
-        <CardContent className="bg-card">
+        <CardContent>
           <UserForm user={user} />
         </CardContent>
       </Card>

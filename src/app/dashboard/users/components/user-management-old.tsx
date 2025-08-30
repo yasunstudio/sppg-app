@@ -40,22 +40,87 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { 
-  Users, 
-  UserPlus, 
-  Search, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
+import {
+  Search,
+  Plus,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  UserPlus,
+  Users,
+  Shield,
+  Activity,
   Download,
+  Upload,
+  Eye,
+  EyeOff,
+  Filter,
   RefreshCcw,
   CheckCircle,
   XCircle,
-  Shield,
-  Eye,
-  EyeOff
+  Clock,
+  Mail,
+  Phone,
+  Calendar,
+  MapPin,
+  Key,
+  Settings,
+  Ban,
+  FileText,
+  AlertTriangle,
+  Info
 } from "lucide-react"
-import { toast } from "sonner"
+
+// Custom Avatar component fallback
+const Avatar = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  <div className={`relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full ${className}`}>
+    {children}
+  </div>
+)
+
+const AvatarImage = ({ src, alt, className }: { src: string, alt: string, className?: string }) => (
+  <img className={`aspect-square h-full w-full ${className}`} src={src} alt={alt} />
+)
+
+const AvatarFallback = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  <div className={`flex h-full w-full items-center justify-center rounded-full bg-muted ${className}`}>
+    {children}
+  </div>
+)
+
+// Custom Switch component fallback
+const Switch = ({ 
+  checked, 
+  onCheckedChange, 
+  disabled,
+  className 
+}: { 
+  checked?: boolean
+  onCheckedChange?: (checked: boolean) => void
+  disabled?: boolean
+  className?: string 
+}) => (
+  <button
+    type="button"
+    role="switch"
+    aria-checked={checked}
+    disabled={disabled}
+    onClick={() => onCheckedChange?.(!checked)}
+    className={`
+      peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent 
+      transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring 
+      focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed 
+      disabled:opacity-50 ${checked ? 'bg-primary' : 'bg-input'} ${className}
+    `}
+  >
+    <span
+      className={`
+        pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform
+        ${checked ? 'translate-x-5' : 'translate-x-0'}
+      `}
+    />
+  </button>
+)
 
 interface User {
   id: string
@@ -82,7 +147,6 @@ interface UserStats {
 
 export function UserManagement() {
   const { data: session } = useSession()
-  const router = useRouter()
   
   // State management
   const [users, setUsers] = useState<User[]>([])
@@ -103,10 +167,22 @@ export function UserManagement() {
     verified: 0
   })
   
-  // Delete dialog state
+  // Dialog states
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [deleting, setDeleting] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    role: "USER",
+    status: "ACTIVE" as "ACTIVE" | "INACTIVE" | "SUSPENDED",
+    phone: "",
+    address: ""
+  })
 
   // Fetch users data
   const fetchUsers = async () => {
@@ -174,12 +250,77 @@ export function UserManagement() {
     currentPage * pageSize
   )
 
+  // Handle user creation
+  const handleCreateUser = async () => {
+    try {
+      setSaving(true)
+      const response = await fetch('/api/users/enhanced', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create user')
+      }
+
+      await fetchUsers()
+      setShowCreateDialog(false)
+      setFormData({
+        name: "",
+        email: "",
+        role: "USER",
+        status: "ACTIVE",
+        phone: "",
+        address: ""
+      })
+      
+      toast.success("User created successfully")
+    } catch (error) {
+      toast.error("Failed to create user")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Handle user update
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return
+
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/users/enhanced/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update user')
+      }
+
+      await fetchUsers()
+      setShowEditDialog(false)
+      setSelectedUser(null)
+      
+      toast.success("User updated successfully")
+    } catch (error) {
+      toast.error("Failed to update user")
+    } finally {
+      setSaving(false)
+    }
+  }
+
   // Handle user deletion
   const handleDeleteUser = async () => {
     if (!selectedUser) return
 
     try {
-      setDeleting(true)
+      setSaving(true)
       const response = await fetch(`/api/users/enhanced/${selectedUser.id}`, {
         method: 'DELETE',
         headers: {
@@ -199,7 +340,7 @@ export function UserManagement() {
     } catch (error) {
       toast.error("Failed to delete user")
     } finally {
-      setDeleting(false)
+      setSaving(false)
     }
   }
 
@@ -317,11 +458,9 @@ export function UserManagement() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button asChild>
-            <Link href="/dashboard/users/create">
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add User
-            </Link>
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add User
           </Button>
         </div>
       </div>
@@ -499,11 +638,22 @@ export function UserManagement() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/users/${user.id}/edit`}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit User
-                          </Link>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUser(user)
+                            setFormData({
+                              name: user.name || "",
+                              email: user.email,
+                              role: user.role,
+                              status: user.status,
+                              phone: user.phone || "",
+                              address: user.address || ""
+                            })
+                            setShowEditDialog(true)
+                          }}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit User
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleStatusToggle(user)}
@@ -587,6 +737,149 @@ export function UserManagement() {
         </div>
       )}
 
+      {/* Create User Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create New User</DialogTitle>
+            <DialogDescription>
+              Add a new user to the system. They will receive an email invitation.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter full name"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Enter email address"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="role">Role</Label>
+              <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USER">User</SelectItem>
+                  <SelectItem value="STAFF">Staff</SelectItem>
+                  <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
+                  <SelectItem value="MANAGER">Manager</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="Enter phone number"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateUser} disabled={saving}>
+              {saving ? "Creating..." : "Create User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user information and permissions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-name">Full Name</Label>
+              <Input
+                id="edit-name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter full name"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-email">Email Address</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Enter email address"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-role">Role</Label>
+              <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USER">User</SelectItem>
+                  <SelectItem value="STAFF">Staff</SelectItem>
+                  <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
+                  <SelectItem value="MANAGER">Manager</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as "ACTIVE" | "INACTIVE" | "SUSPENDED" }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="INACTIVE">Inactive</SelectItem>
+                  <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-phone">Phone Number</Label>
+              <Input
+                id="edit-phone"
+                value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="Enter phone number"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateUser} disabled={saving}>
+              {saving ? "Updating..." : "Update User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete User Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-[425px]">
@@ -620,8 +913,8 @@ export function UserManagement() {
             <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteUser} disabled={deleting}>
-              {deleting ? "Deleting..." : "Delete User"}
+            <Button variant="destructive" onClick={handleDeleteUser} disabled={saving}>
+              {saving ? "Deleting..." : "Delete User"}
             </Button>
           </DialogFooter>
         </DialogContent>
