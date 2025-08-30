@@ -83,5 +83,3 @@ export default async function EditUserPage({ params }: Props) {
     </PermissionGuard>
   )
 }
-}
-}
