@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { ArrowLeft, Save, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "@/lib/toast"
 
 const checkpointTypes = {
   "RAW_MATERIAL_INSPECTION": "Inspeksi Bahan Baku",
@@ -34,7 +34,6 @@ const qualityStatuses = {
 
 export default function CreateQualityCheckpointPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const queryClient = useQueryClient()
 
   const [formData, setFormData] = useState({
@@ -88,21 +87,11 @@ export default function CreateQualityCheckpointPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quality-checkpoints"] })
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Success",
-        description: "Quality checkpoint created successfully",
-      })
+      toast.success("Quality checkpoint created successfully")
       router.push("/dashboard/quality")
     },
     onError: (error: Error) => {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Error", 
-        description: error.message,
-      })
+      toast.error(error.message)
     }
   })
 
@@ -110,12 +99,7 @@ export default function CreateQualityCheckpointPage() {
     e.preventDefault()
     
     if (!formData.checkpointType || !formData.status) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Validation Error",
-        description: "Please fill in required fields: Checkpoint Type and Status",
-      })
+      toast.error("Please fill in required fields: Checkpoint Type and Status")
       return
     }
 

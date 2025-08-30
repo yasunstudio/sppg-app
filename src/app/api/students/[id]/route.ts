@@ -50,22 +50,17 @@ export async function PUT(
 
     const {
       name,
-      nis,
+      nisn,
       grade,
-      className,
-      birthDate,
+      age,
       gender,
       parentName,
-      parentPhone,
-      address,
-      allergies,
-      specialDiet,
-      status,
+      notes,
       schoolId
     } = data
 
     // Validate required fields
-    if (!name || !nis || !grade || !className || !birthDate || !gender || !status || !schoolId) {
+    if (!name || !nisn || !grade || !age || !gender || !parentName || !schoolId) {
       return NextResponse.json(
         { error: 'Semua field yang wajib harus diisi' },
         { status: 400 }
@@ -84,18 +79,17 @@ export async function PUT(
       )
     }
 
-    // Check if NIS already exists in the same school (excluding current student)
-    const nisConflict = await prisma.student.findFirst({
+    // Check if NISN already exists (excluding current student)
+    const nisnConflict = await prisma.student.findFirst({
       where: { 
-        nis,
-        schoolId,
+        nisn,
         id: { not: id }
       }
     })
 
-    if (nisConflict) {
+    if (nisnConflict) {
       return NextResponse.json(
-        { error: 'NIS sudah terdaftar di sekolah ini' },
+        { error: 'NISN sudah terdaftar' },
         { status: 400 }
       )
     }
@@ -104,17 +98,12 @@ export async function PUT(
       where: { id },
       data: {
         name: name.trim(),
-        nis: nis.trim(),
-        grade: parseInt(grade),
-        className: className.trim(),
-        birthDate: new Date(birthDate),
+        nisn: nisn.trim(),
+        grade: grade.trim(),
+        age: parseInt(age),
         gender,
-        parentName: parentName?.trim() || null,
-        parentPhone: parentPhone?.trim() || null,
-        address: address?.trim() || null,
-        allergies: allergies || [],
-        specialDiet: specialDiet?.trim() || null,
-        status,
+        parentName: parentName.trim(),
+        notes: notes?.trim() || null,
         schoolId
       },
       include: {

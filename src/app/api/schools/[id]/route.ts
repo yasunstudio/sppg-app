@@ -15,8 +15,8 @@ export async function GET(
       include: {
         _count: {
           select: {
-            students: { where: { status: 'ACTIVE' } },
-            classes: { where: { status: 'ACTIVE' } }
+            students: true,
+            classes: true
           }
         }
       }
@@ -32,15 +32,15 @@ export async function GET(
     const schoolWithCounts = {
       id: school.id,
       name: school.name,
-      type: school.type,
-      status: school.status,
-      address: school.address,
-      phone: school.phone,
-      email: school.email,
       principalName: school.principalName,
-      description: school.description,
-      totalStudents: school._count.students,
-      totalClasses: school._count.classes,
+      principalPhone: school.principalPhone,
+      address: school.address,
+      notes: school.notes,
+      latitude: school.latitude,
+      longitude: school.longitude,
+      studentsCount: school._count.students,
+      classesCount: school._count.classes,
+      totalStudents: school.totalStudents,
       registrationDate: school.createdAt.toISOString(),
       lastUpdated: school.updatedAt.toISOString()
     }
@@ -66,19 +66,19 @@ export async function PUT(
 
     const {
       name,
-      type,
-      status,
-      address,
-      phone,
-      email,
       principalName,
-      description
+      principalPhone,
+      address,
+      totalStudents,
+      notes,
+      latitude,
+      longitude
     } = data
 
     // Validate required fields
-    if (!name || !type || !status || !address) {
+    if (!name || !principalName || !principalPhone || !address) {
       return NextResponse.json(
-        { error: 'Nama, jenis, status, dan alamat sekolah harus diisi' },
+        { error: 'Nama sekolah, nama kepala sekolah, telepon, dan alamat harus diisi' },
         { status: 400 }
       )
     }
@@ -110,30 +110,30 @@ export async function PUT(
       )
     }
 
-    const school = await prisma.school.update({
+    const updatedSchool = await prisma.school.update({
       where: { id },
       data: {
         name: name.trim(),
-        type,
-        status,
         address: address.trim(),
-        phone: phone?.trim() || null,
-        email: email?.trim() || null,
-        principalName: principalName?.trim() || null,
-        description: description?.trim() || null
+        principalName: principalName.trim(),
+        principalPhone: principalPhone.trim(),
+        totalStudents: totalStudents || existingSchool.totalStudents,
+        notes: notes?.trim() || null,
+        latitude: latitude || existingSchool.latitude,
+        longitude: longitude || existingSchool.longitude
       }
     })
 
     return NextResponse.json({
-      id: school.id,
-      name: school.name,
-      type: school.type,
-      status: school.status,
-      address: school.address,
-      phone: school.phone,
-      email: school.email,
-      principalName: school.principalName,
-      description: school.description,
+      id: updatedSchool.id,
+      name: updatedSchool.name,
+      address: updatedSchool.address,
+      principalName: updatedSchool.principalName,
+      principalPhone: updatedSchool.principalPhone,
+      totalStudents: updatedSchool.totalStudents,
+      notes: updatedSchool.notes,
+      latitude: updatedSchool.latitude,
+      longitude: updatedSchool.longitude,
       message: 'Sekolah berhasil diperbarui'
     })
   } catch (error) {
@@ -145,48 +145,14 @@ export async function PUT(
   }
 }
 
-// PATCH /api/schools/[id] - Update school status
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-    const { status } = await request.json()
-
-    if (!status || !['ACTIVE', 'INACTIVE', 'PENDING'].includes(status)) {
-      return NextResponse.json(
-        { error: 'Status tidak valid' },
-        { status: 400 }
-      )
-    }
-
-    const school = await prisma.school.update({
-      where: { id },
-      data: { status }
-    })
-
-    return NextResponse.json({
-      id: school.id,
-      status: school.status,
-      message: 'Status sekolah berhasil diperbarui'
-    })
-  } catch (error) {
-    console.error('Error updating school status:', error)
-    return NextResponse.json(
-      { error: 'Gagal memperbarui status sekolah' },
-      { status: 500 }
-    )
-  }
-}
-
-// DELETE /api/schools/[id] - Delete school
+// DELETE /api/schools/[id] - Delete school (soft delete)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
+    
     // Check if school has students or classes
     const school = await prisma.school.findUnique({
       where: { id },
@@ -214,8 +180,10 @@ export async function DELETE(
       )
     }
 
-    await prisma.school.delete({
-      where: { id }
+    // Soft delete
+    await prisma.school.update({
+      where: { id },
+      data: { deletedAt: new Date() }
     })
 
     return NextResponse.json({

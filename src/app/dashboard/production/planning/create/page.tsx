@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -43,7 +43,7 @@ const availableKitchens = [
   { id: "kitchen-2", name: "Dapur Bantu", capacity: 1000 },
 ]
 
-export default function CreateProductionPlanPage() {
+function CreateProductionPlanContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const preselectedMenuId = searchParams.get("menuId")
@@ -388,5 +388,13 @@ export default function CreateProductionPlanPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CreateProductionPlanPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateProductionPlanContent />
+    </Suspense>
   )
 }

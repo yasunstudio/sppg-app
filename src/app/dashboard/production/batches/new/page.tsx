@@ -15,12 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/lib/toast";
 import Link from "next/link";
 
 export default function NewBatchPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({

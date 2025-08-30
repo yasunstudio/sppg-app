@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/lib/toast";
 import Link from "next/link";
 
 interface ProductionBatch {
@@ -56,7 +56,7 @@ interface ProductionBatch {
 }
 
 export default function ProductionBatchesPage() {
-  const { toast } = useToast();
+  
   const [loading, setLoading] = useState(true);
   const [batches, setBatches] = useState<ProductionBatch[]>([]);
   const [filteredBatches, setFilteredBatches] = useState<ProductionBatch[]>([]);

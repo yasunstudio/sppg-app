@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/lib/toast";
 import Link from "next/link";
 
 interface Recipe {
@@ -59,7 +59,6 @@ interface BatchCreationResult {
 
 export default function RecipeToBatchPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -119,12 +118,7 @@ export default function RecipeToBatchPage() {
 
   const handleCreateBatch = async () => {
     if (!selectedRecipe || !targetPortions || !scheduledDate) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Error",
-        description: "Mohon lengkapi semua field yang diperlukan",
-      });
+      toast.error("Mohon lengkapi semua field yang diperlukan");
       return;
     }
 
@@ -151,21 +145,11 @@ export default function RecipeToBatchPage() {
       const result: BatchCreationResult = await response.json();
       setBatchResult(result);
 
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Sukses",
-        description: "Production batch berhasil dibuat dari resep",
-      });
+      toast.success("Production batch berhasil dibuat dari resep");
 
     } catch (error: any) {
       console.error("Error creating batch:", error);
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Error",
-        description: error.message || "Gagal membuat batch produksi",
-      });
+      toast.error(error.message || "Gagal membuat batch produksi");
     } finally {
       setLoading(false);
     }

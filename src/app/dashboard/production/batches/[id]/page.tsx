@@ -29,7 +29,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/lib/toast";
 
 interface BatchDetails {
   id: string;
@@ -112,7 +112,7 @@ export default function BatchDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { toast } = useToast();
+  
   
   const [batch, setBatch] = useState<BatchDetails | null>(null);
   const [loading, setLoading] = useState(true);

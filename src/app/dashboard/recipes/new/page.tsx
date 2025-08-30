@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/lib/toast";
 import Link from "next/link";
 
 interface Item {
@@ -33,9 +33,10 @@ interface Ingredient {
   notes?: string;
 }
 
+export const dynamic = 'force-dynamic'
+
 export default function NewRecipePage() {
   const router = useRouter();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([

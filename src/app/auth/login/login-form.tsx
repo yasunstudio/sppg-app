@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
+import { signIn, getSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
+import { getDashboardRouteSync } from "@/lib/dashboard-routing"
 
 export function LoginForm() {
   const router = useRouter()
@@ -34,8 +35,23 @@ export function LoginForm() {
         return
       }
 
+      // Get updated session to access user roles
+      const session = await getSession()
+      console.log('🔍 DEBUG Login Session:', {
+        session: session,
+        user: session?.user,
+        roles: session?.user?.roles
+      })
+      
+      const userRoles = session?.user?.roles?.map((ur: any) => ur.role.name) || []
+      console.log('🔍 DEBUG User Roles:', userRoles)
+      
+      // Get appropriate dashboard route based on user roles
+      const dashboardRoute = getDashboardRouteSync(userRoles)
+      console.log('🔍 DEBUG Dashboard Route:', dashboardRoute)
+      
       router.refresh()
-      router.push("/dashboard")
+      router.push(dashboardRoute)
     } catch (error) {
       setError("Something went wrong")
     } finally {

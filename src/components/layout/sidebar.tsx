@@ -44,6 +44,7 @@ export function Sidebar({ className, ...props }: SidebarProps) {
     const [productionExpanded, setProductionExpanded] = useState(pathname.startsWith("/dashboard/production"))
   const [menuPlanningExpanded, setMenuPlanningExpanded] = useState(pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes"))
   const [monitoringExpanded, setMonitoringExpanded] = useState(pathname.startsWith("/dashboard/monitoring"))
+  const [posyanduExpanded, setPosyanduExpanded] = useState(pathname.startsWith("/dashboard/posyandu"))
 
   const navigation = [
     {
@@ -51,6 +52,12 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       href: "/dashboard",
       icon: LayoutGrid,
       current: pathname === "/dashboard",
+    },
+    {
+      name: "Dashboard Saya",
+      href: "/dashboard/basic",
+      icon: Activity,
+      current: pathname.startsWith("/dashboard/basic"),
     },
     // CORE OPERATIONS - Main workflow
     {
@@ -96,12 +103,6 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       href: "/dashboard/waste-management",
       icon: Trash,
       current: pathname.startsWith("/dashboard/waste-management"),
-    },
-    {
-      name: "Posyandu",
-      href: "/dashboard/posyandu",
-      icon: Heart,
-      current: pathname.startsWith("/dashboard/posyandu"),
     },
     // MANAGEMENT & ANALYTICS
     {
@@ -237,6 +238,57 @@ export function Sidebar({ className, ...props }: SidebarProps) {
     },
   ]
 
+  const posyanduSubMenus = [
+    {
+      name: "Overview",
+      href: "/dashboard/posyandu",
+      icon: LayoutGrid,
+      current: pathname === "/dashboard/posyandu",
+    },
+    {
+      name: "Data Peserta",
+      href: "/dashboard/posyandu/participants",
+      icon: Users,
+      current: pathname.startsWith("/dashboard/posyandu/participants"),
+    },
+    {
+      name: "Rekam Kesehatan",
+      href: "/dashboard/posyandu/health-records",
+      icon: Heart,
+      current: pathname.startsWith("/dashboard/posyandu/health-records"),
+    },
+    {
+      name: "Ibu Hamil",
+      href: "/dashboard/posyandu/pregnant-women",
+      icon: Users,
+      current: pathname.startsWith("/dashboard/posyandu/pregnant-women"),
+    },
+    {
+      name: "Ibu Menyusui",
+      href: "/dashboard/posyandu/lactating-mothers",
+      icon: Users,
+      current: pathname.startsWith("/dashboard/posyandu/lactating-mothers"),
+    },
+    {
+      name: "Balita",
+      href: "/dashboard/posyandu/toddlers",
+      icon: Users,
+      current: pathname.startsWith("/dashboard/posyandu/toddlers"),
+    },
+    {
+      name: "Rencana Nutrisi",
+      href: "/dashboard/posyandu/nutrition-plans",
+      icon: UtensilsCrossed,
+      current: pathname.startsWith("/dashboard/posyandu/nutrition-plans"),
+    },
+    {
+      name: "Aktivitas Posyandu",
+      href: "/dashboard/posyandu/activities",
+      icon: Calendar,
+      current: pathname.startsWith("/dashboard/posyandu/activities"),
+    },
+  ]
+
   return (
     <div className={cn("pb-12 min-h-screen w-64 border-r bg-background", className)} {...props}>
       <div className="space-y-4 py-4">
@@ -249,6 +301,10 @@ export function Sidebar({ className, ...props }: SidebarProps) {
               // Define permission requirements for each menu item
               const getMenuPermissions = (href: string): Permission[] | null => {
                 switch (href) {
+                  case '/dashboard':
+                    return ['system.config']; // Only for admin dashboards
+                  case '/dashboard/basic':
+                    return null; // Available for all authenticated users
                   case '/dashboard/schools':
                     return ['posyandu.view'];
                   case '/dashboard/inventory':
@@ -434,6 +490,47 @@ export function Sidebar({ className, ...props }: SidebarProps) {
                 </div>
               )}
             </div>
+
+            {/* Posyandu Menu with Submenu */}
+            <PermissionGuard permission={['posyandu.view']} requireAll={false}>
+              <div>
+                <button
+                  onClick={() => setPosyanduExpanded(!posyanduExpanded)}
+                  className={cn(
+                    "flex w-full items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                    pathname.startsWith("/dashboard/posyandu") ? "bg-accent" : "transparent",
+                    pathname.startsWith("/dashboard/posyandu") ? "text-accent-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  <Heart className="h-4 w-4" />
+                  Posyandu Management
+                  {posyanduExpanded ? (
+                    <ChevronDown className="ml-auto h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="ml-auto h-4 w-4" />
+                  )}
+                </button>
+                
+                {posyanduExpanded && (
+                  <div className="mt-1 space-y-1 pl-6">
+                    {posyanduSubMenus.map((subItem) => (
+                      <Link
+                        key={subItem.name}
+                        href={subItem.href}
+                        className={cn(
+                          "flex items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                          subItem.current ? "bg-accent" : "transparent",
+                          subItem.current ? "text-accent-foreground" : "text-muted-foreground"
+                        )}
+                      >
+                        <subItem.icon className="h-4 w-4" />
+                        {subItem.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </PermissionGuard>
           </div>
         </div>
       </div>

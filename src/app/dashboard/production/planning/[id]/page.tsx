@@ -41,7 +41,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/lib/toast";
 
 interface ProductionPlanDetails {
   id: string;
@@ -106,7 +106,7 @@ export default function ProductionPlanDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { toast } = useToast();
+  
   
   const [plan, setPlan] = useState<ProductionPlanDetails | null>(null);
   const [loading, setLoading] = useState(true);

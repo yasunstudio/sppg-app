@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -59,6 +59,14 @@ interface MenuRecipe {
 }
 
 export default function MenuPlanningPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MenuPlanningContent />
+    </Suspense>
+  )
+}
+
+function MenuPlanningContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('calendar')

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { hasPermission } from "@/lib/permissions"
+import { getDashboardRouteSync } from "@/lib/dashboard-routing"
 
 // Define route-to-permission mapping
 const PROTECTED_ROUTES = {
@@ -31,7 +32,9 @@ export async function middleware(request: NextRequest) {
   if (session) {
     // Redirect from auth pages if already logged in
     if (request.nextUrl.pathname.startsWith("/auth")) {
-      return NextResponse.redirect(new URL("/dashboard", request.url))
+      const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
+      const dashboardRoute = getDashboardRouteSync(userRoles)
+      return NextResponse.redirect(new URL(dashboardRoute, request.url))
     }
 
     // Role-based access control for protected routes
@@ -47,8 +50,10 @@ export async function middleware(request: NextRequest) {
         )
 
         if (!hasAccess) {
-          // Redirect to dashboard with error message
-          const url = new URL("/dashboard", request.url)
+          // Redirect to appropriate dashboard with error message
+          const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
+          const dashboardRoute = getDashboardRouteSync(userRoles)
+          const url = new URL(dashboardRoute, request.url)
           url.searchParams.set('error', 'access_denied')
           url.searchParams.set('message', 'You do not have permission to access this page')
           return NextResponse.redirect(url)
@@ -61,7 +66,8 @@ export async function middleware(request: NextRequest) {
     if (path.startsWith("/admin")) {
       const isAdmin = userRoles.some(role => ['SUPER_ADMIN', 'ADMIN'].includes(role))
       if (!isAdmin) {
-        return NextResponse.redirect(new URL("/dashboard", request.url))
+        const dashboardRoute = getDashboardRouteSync(userRoles)
+        return NextResponse.redirect(new URL(dashboardRoute, request.url))
       }
     }
   }

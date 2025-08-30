@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import Link from "next/link";
 
 interface Recipe {
@@ -84,7 +84,7 @@ export default function RecipesPage() {
     total: 0,
     pages: 0,
   });
-  const { toast } = useToast();
+  // Remove useToast hook since we're using sonner directly
 
   const categories = [
     { value: "MAIN_COURSE", label: "Makanan Utama" },
@@ -121,12 +121,7 @@ export default function RecipesPage() {
       setPagination(data.pagination);
     } catch (error) {
       console.error("Error fetching recipes:", error);
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Error",
-        description: "Gagal memuat data resep",
-      });
+      toast.error("Gagal memuat data resep");
     } finally {
       setLoading(false);
     }
@@ -147,22 +142,12 @@ export default function RecipesPage() {
         throw new Error(error.error || "Failed to delete recipe");
       }
 
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Sukses",
-        description: "Resep berhasil dihapus",
-      });
+      toast.success("Resep berhasil dihapus");
 
       fetchRecipes();
     } catch (error: any) {
       console.error("Error deleting recipe:", error);
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: "Error",
-        description: error.message || "Gagal menghapus resep",
-      });
+      toast.error(error.message || "Gagal menghapus resep");
     }
   };
 
