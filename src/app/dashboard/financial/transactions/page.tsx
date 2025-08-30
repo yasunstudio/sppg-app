@@ -171,18 +171,22 @@ export default function TransactionsList() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard/financial">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali
-            </Button>
-          </Link>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            asChild
+            className="h-10 w-10 rounded-full"
+          >
+            <Link href="/dashboard/financial">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Daftar Transaksi</h1>
             <p className="text-muted-foreground">
-              Kelola semua transaksi keuangan
+              Kelola dan pantau semua transaksi keuangan SPPG
             </p>
           </div>
         </div>
