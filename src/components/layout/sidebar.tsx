@@ -250,13 +250,19 @@ export function Sidebar({ className, ...props }: SidebarProps) {
               const getMenuPermissions = (href: string): Permission[] | null => {
                 switch (href) {
                   case '/dashboard/schools':
-                    return ['posyandu.view', 'activities.read'];
+                    return ['posyandu.view'];
                   case '/dashboard/inventory':
                     return ['inventory.view'];
                   case '/dashboard/distribution':
                     return ['production.view'];
+                  case '/dashboard/delivery-tracking':
+                    return ['production.view'];
                   case '/dashboard/quality':
                     return ['quality.check'];
+                  case '/dashboard/feedback':
+                    return ['feedback.view'];
+                  case '/dashboard/waste-management':
+                    return ['production.view'];
                   case '/dashboard/posyandu':
                     return ['posyandu.view'];
                   case '/dashboard/financial':
