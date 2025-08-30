@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,15 +16,10 @@ const transactionTypes = [
   { value: 'EXPENSE', label: 'Pengeluaran' },
 ];
 
-const transactionCategories = [
-  { value: 'RAW_MATERIALS', label: 'Bahan Baku' },
-  { value: 'TRANSPORTATION', label: 'Transportasi' },
-  { value: 'UTILITIES', label: 'Utilitas' },
-  { value: 'SALARIES', label: 'Gaji' },
-  { value: 'EQUIPMENT', label: 'Peralatan' },
-  { value: 'MAINTENANCE', label: 'Pemeliharaan' },
-  { value: 'OTHER', label: 'Lainnya' },
-];
+interface CategoryOption {
+  value: string;
+  label: string;
+}
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
@@ -61,6 +56,8 @@ function generatePeriodOptions(): Array<{ value: string; label: string }> {
 export default function CreateTransaction() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [formData, setFormData] = useState({
     type: '',
     category: '',
@@ -72,6 +69,35 @@ export default function CreateTransaction() {
   });
 
   const periodOptions = generatePeriodOptions();
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/financial/categories');
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data.categories);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // Fallback to hardcoded categories
+        setCategories([
+          { value: 'RAW_MATERIALS', label: 'Bahan Baku' },
+          { value: 'TRANSPORTATION', label: 'Transportasi' },
+          { value: 'UTILITIES', label: 'Utilitas' },
+          { value: 'SALARIES', label: 'Gaji' },
+          { value: 'EQUIPMENT', label: 'Peralatan' },
+          { value: 'MAINTENANCE', label: 'Pemeliharaan' },
+          { value: 'OTHER', label: 'Lainnya' },
+        ]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,18 +141,24 @@ export default function CreateTransaction() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/financial">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            asChild
+            className="h-10 w-10 rounded-full"
+          >
+            <Link href="/dashboard/financial">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
           </Button>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Transaksi Baru</h1>
-          <p className="text-muted-foreground">
-            Tambahkan transaksi keuangan baru ke sistem
-          </p>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Transaksi Baru</h1>
+            <p className="text-muted-foreground">
+              Tambahkan transaksi keuangan baru ke sistem SPPG
+            </p>
+          </div>
         </div>
       </div>
 
@@ -169,12 +201,13 @@ export default function CreateTransaction() {
                       value={formData.category}
                       onValueChange={(value) => handleInputChange('category', value)}
                       required
+                      disabled={loadingCategories}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih kategori" />
+                        <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Pilih kategori"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {transactionCategories.map((category) => (
+                        {categories.map((category: CategoryOption) => (
                           <SelectItem key={category.value} value={category.value}>
                             {category.label}
                           </SelectItem>
@@ -300,7 +333,7 @@ export default function CreateTransaction() {
                 <div className="text-sm text-muted-foreground">Kategori</div>
                 <div className="font-medium">
                   {formData.category ? 
-                    transactionCategories.find(c => c.value === formData.category)?.label : 
+                    categories.find((c: CategoryOption) => c.value === formData.category)?.label : 
                     '-'
                   }
                 </div>
