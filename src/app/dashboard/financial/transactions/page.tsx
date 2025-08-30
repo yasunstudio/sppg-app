@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Search, Filter, Download, Plus, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
-import { Pagination } from '@/components/ui/pagination';
 
 interface Transaction {
   id: string;
@@ -383,26 +382,39 @@ export default function TransactionsList() {
               {/* Pagination */}
               {data && data.pagination.pages > 1 && (
                 <div className="p-4 border-t">
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">
-                      Menampilkan {((data.pagination.page - 1) * 20) + 1} - {Math.min(data.pagination.page * 20, data.pagination.total)} dari {data.pagination.total} transaksi
-                    </div>
-                    <div className="flex gap-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      Showing {((data.pagination.page - 1) * 20) + 1} to {Math.min(data.pagination.page * 20, data.pagination.total)} of {data.pagination.total} transactions
+                    </p>
+                    <div className="flex items-center space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={data.pagination.page <= 1}
-                        onClick={() => handleFilterChange('page', data.pagination.page - 1)}
+                        onClick={() => handleFilterChange('page', Math.max(1, data.pagination.page - 1))}
+                        disabled={data.pagination.page === 1}
                       >
-                        Sebelumnya
+                        Previous
                       </Button>
+                      <div className="flex items-center space-x-1">
+                        {Array.from({ length: data.pagination.pages }, (_, i) => i + 1).map((page) => (
+                          <Button
+                            key={page}
+                            variant={data.pagination.page === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleFilterChange('page', page)}
+                            className="w-8"
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={data.pagination.page >= data.pagination.pages}
-                        onClick={() => handleFilterChange('page', data.pagination.page + 1)}
+                        onClick={() => handleFilterChange('page', Math.min(data.pagination.pages, data.pagination.page + 1))}
+                        disabled={data.pagination.page === data.pagination.pages}
                       >
-                        Selanjutnya
+                        Next
                       </Button>
                     </div>
                   </div>
