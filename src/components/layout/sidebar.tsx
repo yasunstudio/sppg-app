@@ -46,6 +46,11 @@ export function Sidebar({ className, ...props }: SidebarProps) {
   const [productionExpanded, setProductionExpanded] = useState(pathname.startsWith("/dashboard/production"))
   const [menuPlanningExpanded, setMenuPlanningExpanded] = useState(pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes"))
   const [monitoringExpanded, setMonitoringExpanded] = useState(pathname.startsWith("/dashboard/monitoring"))
+  const [qualityExpanded, setQualityExpanded] = useState(
+    pathname.startsWith("/dashboard/quality") || 
+    pathname.startsWith("/dashboard/food-samples") || 
+    pathname.startsWith("/dashboard/nutrition-consultations")
+  )
 
   const menuPlanningSubMenus = [
     {
@@ -98,6 +103,39 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       href: "/dashboard/production/quality",
       icon: ClipboardCheck,
       current: pathname.startsWith("/dashboard/production/quality"),
+    },
+  ]
+
+  const qualitySubMenus = [
+    {
+      name: "Overview",
+      href: "/dashboard/quality",
+      icon: LayoutGrid,
+      current: pathname === "/dashboard/quality",
+    },
+    {
+      name: "Quality Checkpoints",
+      href: "/dashboard/quality-checkpoints",
+      icon: ClipboardCheck,
+      current: pathname.startsWith("/dashboard/quality-checkpoints"),
+    },
+    {
+      name: "Quality Standards",
+      href: "/dashboard/quality-standards",
+      icon: Shield,
+      current: pathname.startsWith("/dashboard/quality-standards"),
+    },
+    {
+      name: "Food Samples",
+      href: "/dashboard/food-samples",
+      icon: TestTube,
+      current: pathname.startsWith("/dashboard/food-samples"),
+    },
+    {
+      name: "Nutrition Consultations",
+      href: "/dashboard/nutrition-consultations",
+      icon: Heart,
+      current: pathname.startsWith("/dashboard/nutrition-consultations"),
     },
   ]
 
@@ -225,39 +263,6 @@ export function Sidebar({ className, ...props }: SidebarProps) {
     },
   ]
 
-  const qualityManagement = [
-    {
-      name: "Quality Checkpoints",
-      href: "/dashboard/quality-checkpoints",
-      icon: ClipboardCheck,
-      current: pathname.startsWith("/dashboard/quality-checkpoints"),
-    },
-    {
-      name: "Kontrol Kualitas",
-      href: "/dashboard/quality",
-      icon: ClipboardCheck,
-      current: pathname.startsWith("/dashboard/quality"),
-    },
-    {
-      name: "Quality Standards",
-      href: "/dashboard/quality-standards",
-      icon: Shield,
-      current: pathname.startsWith("/dashboard/quality-standards"),
-    },
-    {
-      name: "Food Samples",
-      href: "/dashboard/food-samples",
-      icon: TestTube,
-      current: pathname.startsWith("/dashboard/food-samples"),
-    },
-    {
-      name: "Nutrition Consultations",
-      href: "/dashboard/nutrition-consultations",
-      icon: Heart,
-      current: pathname.startsWith("/dashboard/nutrition-consultations"),
-    },
-  ]
-
   const systemManagement = [
     {
       name: "Notifications",
@@ -325,11 +330,14 @@ export function Sidebar({ className, ...props }: SidebarProps) {
   ]
 
   const renderNavSection = (title: string, items: typeof coreNavigation, isMainSection = false) => (
-    <div className={cn("space-y-1", !isMainSection && "mt-6")}>
+    <div className={cn("space-y-1", !isMainSection && "mt-8")}>
       {!isMainSection && (
-        <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-          {title}
-        </h3>
+        <div className="px-3 mb-3">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">
+            {title}
+          </h3>
+          <div className="h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
+        </div>
       )}
       {items.map((item) => {
         // Define permission requirements for each menu item
@@ -401,12 +409,20 @@ export function Sidebar({ className, ...props }: SidebarProps) {
             key={item.name}
             href={item.href}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-              item.current ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+              "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 group hover:bg-white hover:shadow-sm border border-transparent",
+              item.current 
+                ? "bg-blue-50 text-blue-700 border-blue-100 shadow-sm font-semibold" 
+                : "text-gray-600 hover:text-gray-900"
             )}
           >
-            <item.icon className="h-4 w-4 flex-shrink-0" />
+            <item.icon className={cn(
+              "h-4 w-4 flex-shrink-0 transition-colors",
+              item.current ? "text-blue-600" : "text-gray-400 group-hover:text-gray-600"
+            )} />
             <span className="truncate">{item.name}</span>
+            {item.current && (
+              <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full"></div>
+            )}
           </Link>
         );
       })}
@@ -462,18 +478,28 @@ export function Sidebar({ className, ...props }: SidebarProps) {
   )
 
   return (
-    <div className={cn("fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 hidden lg:block", className)} {...props}>
+    <div className={cn("fixed left-0 top-0 z-40 h-screen w-64 border-r bg-white shadow-xl hidden lg:block", className)} {...props}>
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex h-16 items-center border-b px-6">
-          <h2 className="text-lg font-semibold tracking-tight">
-            SPPG Admin
-          </h2>
+        <div className="flex h-20 items-center border-b px-6 bg-gradient-to-r from-blue-600 to-blue-700 shadow-sm">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm border border-white/20">
+              <Shield className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-tight">
+                SPPG System
+              </h1>
+              <p className="text-xs text-blue-100 font-medium">
+                School Food Program Management
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Scrollable Navigation */}
-        <div className="flex-1 overflow-y-auto py-4 px-3">
-          <div className="space-y-1">
+        <div className="flex-1 overflow-y-auto py-6 px-4 bg-gray-50/50">
+          <div className="space-y-2">
             {/* Core Navigation - No section header */}
             {renderNavSection("", coreNavigation, true)}
 
@@ -486,8 +512,15 @@ export function Sidebar({ className, ...props }: SidebarProps) {
             {/* Inventory & Supply */}
             {renderNavSection("Inventory & Supply", inventoryManagement)}
 
-            {/* Quality Management */}
-            {renderNavSection("Quality Management", qualityManagement)}
+            {/* Quality Management with Submenu */}
+            {renderExpandableSection(
+              "Quality Management",
+              ClipboardCheck,
+              qualityExpanded,
+              setQualityExpanded,
+              qualitySubMenus,
+              "/dashboard/quality"
+            )}
 
             {/* Menu Planning with Submenu */}
             {renderExpandableSection(
