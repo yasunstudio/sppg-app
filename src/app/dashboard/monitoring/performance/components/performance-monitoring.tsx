@@ -82,7 +82,7 @@ interface PerformanceData {
       date: string
       status: string
       portionEfficiency: number
-      timeEfficiency: number | null
+      timeEfficiency: number
       totalPortions: number
       plannedPortions: number
       actualPortions: number
@@ -148,21 +148,29 @@ export function PerformanceMonitoring() {
     fetchData()
   }, [period])
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | null | undefined) => {
+    if (num === null || num === undefined || isNaN(num)) {
+      return "0"
+    }
     return new Intl.NumberFormat('id-ID').format(num)
   }
 
-  const formatPercentage = (num: number) => {
+  const formatPercentage = (num: number | null | undefined) => {
+    if (num === null || num === undefined || isNaN(num)) {
+      return "0.0%"
+    }
     return `${num.toFixed(1)}%`
   }
 
-  const getTrendIcon = (trend: number) => {
+  const getTrendIcon = (trend: number | null | undefined) => {
+    if (!trend || isNaN(trend)) return <Activity className="h-4 w-4 text-gray-600" />
     if (trend > 0) return <TrendingUp className="h-4 w-4 text-green-600" />
     if (trend < 0) return <TrendingDown className="h-4 w-4 text-red-600" />
     return <Activity className="h-4 w-4 text-gray-600" />
   }
 
-  const getTrendColor = (trend: number) => {
+  const getTrendColor = (trend: number | null | undefined) => {
+    if (!trend || isNaN(trend)) return "text-gray-600"
     if (trend > 0) return "text-green-600"
     if (trend < 0) return "text-red-600"
     return "text-gray-600"

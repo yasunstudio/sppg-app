@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@/generated/prisma'
 import { startOfDay, endOfDay, subDays, format } from 'date-fns'
 
 const prisma = new PrismaClient()
@@ -35,10 +35,9 @@ interface DistributionWithSchools {
 }
 
 interface WasteRecord {
-  date: Date
+  recordDate: Date
   wasteType: string
-  quantity: number
-  unit: string
+  weight: number
 }
 
 interface VehicleWithDistributions {
@@ -52,113 +51,6 @@ interface VehicleWithDistributions {
     totalPortions: number
     status: string
   }>
-}
-
-// Type definitions
-interface ProductionMetric {
-  id: string
-  date: Date
-  totalProduction: number
-  targetProduction: number
-  efficiency: number
-  qualityScore: number
-  wastageAmount: number
-  costPerPortion: number
-}
-
-interface GroupedCount {
-  status: string
-  _count: {
-    id: number
-  }
-}
-
-interface SchoolPortions {
-  plannedPortions: number
-  actualPortions: number | null
-}
-
-interface DistributionWithSchools {
-  id: string
-  status: string
-  totalPortions: number
-  estimatedDuration: number | null
-  actualDuration: number | null
-  distributionDate: Date
-  schools: SchoolPortions[]
-}
-
-interface WasteRecord {
-  date: Date
-  wasteType: string
-  quantity: number
-  unit: string
-}
-
-interface VehicleDistribution {
-  id: string
-  totalPortions: number
-  status: string
-}
-
-interface VehicleWithDistributions {
-  id: string
-  plateNumber: string
-  type: string
-  capacity: number
-  isActive: boolean
-  distributions: VehicleDistribution[]
-}
-
-// TypeScript interfaces for type safety
-interface DistributionWithSchools {
-  id: string
-  status: string
-  totalPortions: number
-  estimatedDuration: number | null
-  actualDuration: number | null
-  distributionDate: Date
-  schools: Array<{
-    plannedPortions: number
-    actualPortions: number | null
-  }>
-}
-
-interface VehicleWithDistributions {
-  id: string
-  plateNumber: string
-  type: string
-  capacity: number
-  isActive: boolean
-  distributions: Array<{
-    id: string
-    totalPortions: number
-    status: string
-  }>
-}
-
-interface ProductionMetric {
-  totalProduction: number
-  targetProduction: number
-  efficiency: number
-  qualityScore: number
-  wastageAmount: number
-  costPerPortion: number
-  date: Date
-}
-
-interface WasteRecord {
-  date: Date
-  wasteType: string
-  quantity: number
-  unit: string
-}
-
-interface GroupedCount {
-  status: string
-  _count: {
-    id: number
-  }
 }
 
 export async function GET(request: NextRequest) {
@@ -184,7 +76,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Get delivery performance
-    const deliveryPerformance: GroupedCount[] = await prisma.delivery.groupBy({
+    const deliveryPerformance = await prisma.delivery.groupBy({
       by: ['status'],
       _count: {
         id: true,
@@ -198,7 +90,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Get quality metrics
-    const qualityMetrics: GroupedCount[] = await prisma.qualityCheck.groupBy({
+    const qualityMetrics = await prisma.qualityCheck.groupBy({
       by: ['status'],
       _count: {
         id: true,
@@ -243,7 +135,7 @@ export async function GET(request: NextRequest) {
       
       const timeEfficiency = dist.estimatedDuration && dist.actualDuration 
         ? (dist.estimatedDuration / dist.actualDuration) * 100 
-        : null
+        : 0
 
       return {
         id: dist.id,
@@ -258,27 +150,26 @@ export async function GET(request: NextRequest) {
     })
 
     // Get waste data
-    const wasteRecords: WasteRecord[] = await prisma.wasteRecord.findMany({
+    const wasteRecords = await prisma.wasteRecord.findMany({
       where: {
-        date: {
+        recordDate: {
           gte: startOfDay(startDate),
           lte: endOfDay(endDate),
         },
       },
       select: {
-        date: true,
+        recordDate: true,
         wasteType: true,
-        quantity: true,
-        unit: true,
+        weight: true,
       },
     })
 
     // Aggregate waste by type and date
-    const wasteByType = wasteRecords.reduce((acc: Record<string, Record<string, number>>, record: WasteRecord) => {
-      const dateKey = format(new Date(record.date), 'yyyy-MM-dd')
+    const wasteByType = wasteRecords.reduce((acc: Record<string, Record<string, number>>, record) => {
+      const dateKey = format(new Date(record.recordDate), 'yyyy-MM-dd')
       if (!acc[dateKey]) acc[dateKey] = {}
       if (!acc[dateKey][record.wasteType]) acc[dateKey][record.wasteType] = 0
-      acc[dateKey][record.wasteType] += record.quantity
+      acc[dateKey][record.wasteType] += record.weight
       return acc
     }, {} as Record<string, Record<string, number>>)
 
@@ -311,7 +202,9 @@ export async function GET(request: NextRequest) {
       const completedTrips = vehicle.distributions.filter((d) => d.status === 'COMPLETED').length
       const totalPortions = vehicle.distributions.reduce((sum: number, d) => sum + d.totalPortions, 0)
       const utilizationRate = totalTrips > 0 ? (completedTrips / totalTrips) * 100 : 0
-      const capacityUtilization = vehicle.capacity > 0 ? (totalPortions / (vehicle.capacity * totalTrips)) * 100 : 0
+      const capacityUtilization = vehicle.capacity > 0 && totalTrips > 0 
+        ? (totalPortions / (vehicle.capacity * totalTrips)) * 100 
+        : 0
 
       return {
         id: vehicle.id,
@@ -322,7 +215,7 @@ export async function GET(request: NextRequest) {
         totalTrips,
         completedTrips,
         utilizationRate,
-        capacityUtilization: Math.min(capacityUtilization, 100), // Cap at 100%
+        capacityUtilization: Math.min(capacityUtilization || 0, 100), // Cap at 100% and handle NaN
       }
     })
 
