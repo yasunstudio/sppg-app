@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,7 +21,8 @@ import {
   RefreshCw,
   Settings,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from "lucide-react"
 import {
   Select,
@@ -44,96 +45,55 @@ import { formatDate, formatRelativeTime } from "@/lib/utils"
 import { useNotifications } from "@/hooks/use-notifications"
 import Link from "next/link"
 
-interface Notification {
-  id: string
-  title: string
-  message: string
-  type: string
-  priority: string
-  isRead: boolean
-  actionUrl?: string
-  createdAt: string
-}
-
 export function NotificationsManagement() {
   const [search, setSearch] = useState("")
-  const [typeFilter, setTypeFilter] = useState("all")
-  const [priorityFilter, setPriorityFilter] = useState("all")
-  const [readFilter, setReadFilter] = useState("all")
+  const [typeFilter, setTypeFilter] = useState("ALL")
+  const [priorityFilter, setPriorityFilter] = useState("ALL")
+  const [readFilter, setReadFilter] = useState("ALL")
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([])
   const [page, setPage] = useState(1)
 
-  // Mock data for now - will be replaced with real API
-  const [notifications] = useState<Notification[]>([
-    {
-      id: "1",
-      title: "Stok Bahan Baku Menipis",
-      message: "Stok beras di gudang tinggal 15kg, perlu segera diisi ulang untuk produksi besok.",
-      type: "INVENTORY_LOW",
-      priority: "HIGH",
-      isRead: false,
-      actionUrl: "/dashboard/inventory",
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: "2", 
-      title: "Kualitas Produksi Menurun",
-      message: "Batch produksi #2024-001 mendapat rating kualitas di bawah standar (6.5/10).",
-      type: "QUALITY_ALERT",
-      priority: "CRITICAL",
-      isRead: false,
-      actionUrl: "/dashboard/quality",
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: "3",
-      title: "Pengiriman Selesai",
-      message: "Pengiriman ke 15 sekolah telah berhasil diselesaikan dengan total 1,250 porsi.",
-      type: "DISTRIBUTION",
-      priority: "NORMAL",
-      isRead: true,
-      actionUrl: "/dashboard/delivery-tracking",
-      createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: "4",
-      title: "Anggaran Bulanan Terlampaui",
-      message: "Pengeluaran bulan ini telah mencapai 105% dari budget yang dialokasikan.",
-      type: "BUDGET_ALERT",
-      priority: "HIGH",
-      isRead: false,
-      actionUrl: "/dashboard/financial",
-      createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: "5",
-      title: "Feedback Baru dari Sekolah",
-      message: "SDN Mekar Jaya memberikan feedback positif untuk menu hari ini (rating: 4.5/5).",
-      type: "FEEDBACK",
-      priority: "LOW",
-      isRead: true,
-      actionUrl: "/dashboard/feedback",
-      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    }
-  ])
+  // Use real notifications hook instead of mock data
+  const {
+    notifications,
+    stats,
+    loading,
+    error,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    refresh
+  } = useNotifications()
 
-  const stats = {
-    total: notifications.length,
-    unread: notifications.filter(n => !n.isRead).length,
-    byType: {
-      INVENTORY_LOW: 1,
-      QUALITY_ALERT: 1,
-      DISTRIBUTION: 1,
-      BUDGET_ALERT: 1,
-      FEEDBACK: 1
-    },
-    byPriority: {
-      CRITICAL: 1,
-      HIGH: 2,
-      NORMAL: 1,
-      LOW: 1
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refresh()
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [refresh])
+
+  // Filter notifications locally since the API doesn't support query params yet
+  const filteredNotifications = notifications.filter(notification => {
+    if (search && !notification.title.toLowerCase().includes(search.toLowerCase()) && 
+        !notification.message.toLowerCase().includes(search.toLowerCase())) {
+      return false
     }
-  }
+    if (typeFilter !== "ALL" && notification.type !== typeFilter) {
+      return false
+    }
+    if (priorityFilter !== "ALL" && notification.priority !== priorityFilter) {
+      return false
+    }
+    if (readFilter === "read" && !notification.isRead) {
+      return false
+    }
+    if (readFilter === "unread" && notification.isRead) {
+      return false
+    }
+    return true
+  })
 
   const getTypeConfig = (type: string) => {
     const configs = {
@@ -158,26 +118,6 @@ export function NotificationsManagement() {
     return badges[priority as keyof typeof badges] || badges.NORMAL
   }
 
-  const filteredNotifications = notifications.filter(notification => {
-    if (search && !notification.title.toLowerCase().includes(search.toLowerCase()) && 
-        !notification.message.toLowerCase().includes(search.toLowerCase())) {
-      return false
-    }
-    if (typeFilter !== "all" && notification.type !== typeFilter) {
-      return false
-    }
-    if (priorityFilter !== "all" && notification.priority !== priorityFilter) {
-      return false
-    }
-    if (readFilter === "read" && !notification.isRead) {
-      return false
-    }
-    if (readFilter === "unread" && notification.isRead) {
-      return false
-    }
-    return true
-  })
-
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedNotifications(filteredNotifications.map(n => n.id))
@@ -194,15 +134,51 @@ export function NotificationsManagement() {
     }
   }
 
-  const handleMarkAsRead = () => {
-    // Implementation will be added when API is ready
-    toast.success(`${selectedNotifications.length} notifikasi ditandai sudah dibaca`)
-    setSelectedNotifications([])
+  const handleMarkAsRead = async () => {
+    if (selectedNotifications.length === 0) {
+      toast.error("Pilih notifikasi terlebih dahulu")
+      return
+    }
+    
+    try {
+      // Mark each selected notification as read
+      await Promise.all(
+        selectedNotifications.map(id => markAsRead(id))
+      )
+      setSelectedNotifications([])
+    } catch (error) {
+      console.error('Failed to mark notifications as read:', error)
+    }
   }
 
-  const handleMarkAllAsRead = () => {
-    // Implementation will be added when API is ready
-    toast.success("Semua notifikasi ditandai sudah dibaca")
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead()
+    } catch (error) {
+      console.error('Failed to mark all as read:', error)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (selectedNotifications.length === 0) {
+      toast.error("Pilih notifikasi terlebih dahulu")
+      return
+    }
+
+    try {
+      // Delete each selected notification
+      await Promise.all(
+        selectedNotifications.map(id => deleteNotification(id))
+      )
+      setSelectedNotifications([])
+    } catch (error) {
+      console.error('Failed to delete notifications:', error)
+    }
+  }
+
+  const handleRefresh = () => {
+    refresh()
+    toast.success("Data notifikasi diperbarui")
   }
 
   return (
@@ -216,12 +192,20 @@ export function NotificationsManagement() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleMarkAllAsRead}>
-            <CheckCircle className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={handleMarkAllAsRead} disabled={loading}>
+            {loading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <CheckCircle className="h-4 w-4 mr-2" />
+            )}
             Tandai Semua Dibaca
           </Button>
-          <Button variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+            {loading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
             Refresh
           </Button>
         </div>
@@ -301,7 +285,7 @@ export function NotificationsManagement() {
                 <SelectValue placeholder="Filter berdasarkan tipe" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Tipe</SelectItem>
+                <SelectItem value="ALL">Semua Tipe</SelectItem>
                 <SelectItem value="SYSTEM">Sistem</SelectItem>
                 <SelectItem value="PRODUCTION">Produksi</SelectItem>
                 <SelectItem value="DISTRIBUTION">Distribusi</SelectItem>
@@ -316,7 +300,7 @@ export function NotificationsManagement() {
                 <SelectValue placeholder="Prioritas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Prioritas</SelectItem>
+                <SelectItem value="ALL">Semua Prioritas</SelectItem>
                 <SelectItem value="CRITICAL">Kritis</SelectItem>
                 <SelectItem value="HIGH">Tinggi</SelectItem>
                 <SelectItem value="NORMAL">Normal</SelectItem>
@@ -328,7 +312,7 @@ export function NotificationsManagement() {
                 <SelectValue placeholder="Status baca" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua</SelectItem>
+                <SelectItem value="ALL">Semua</SelectItem>
                 <SelectItem value="unread">Belum Dibaca</SelectItem>
                 <SelectItem value="read">Sudah Dibaca</SelectItem>
               </SelectContent>
@@ -346,11 +330,11 @@ export function NotificationsManagement() {
                 {selectedNotifications.length} notifikasi dipilih
               </span>
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" onClick={handleMarkAsRead}>
+                <Button variant="outline" size="sm" onClick={handleMarkAsRead} disabled={loading}>
                   <Check className="h-4 w-4 mr-2" />
                   Tandai Dibaca
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleDelete} disabled={loading}>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Hapus
                 </Button>
@@ -369,103 +353,120 @@ export function NotificationsManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">
-                  <Checkbox
-                    checked={selectedNotifications.length === filteredNotifications.length && filteredNotifications.length > 0}
-                    onCheckedChange={handleSelectAll}
-                  />
-                </TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Notifikasi</TableHead>
-                <TableHead>Tipe</TableHead>
-                <TableHead>Prioritas</TableHead>
-                <TableHead>Waktu</TableHead>
-                <TableHead>Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredNotifications.map((notification) => {
-                const typeConfig = getTypeConfig(notification.type)
-                const TypeIcon = typeConfig.icon
-                
-                return (
-                  <TableRow 
-                    key={notification.id}
-                    className={!notification.isRead ? "bg-blue-50" : ""}
-                  >
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedNotifications.includes(notification.id)}
-                        onCheckedChange={(checked) => handleSelectNotification(notification.id, checked as boolean)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {notification.isRead ? (
-                        <Eye className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <EyeOff className="h-4 w-4 text-blue-600" />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <p className="font-medium">{notification.title}</p>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {notification.message}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={typeConfig.color}>
-                        <TypeIcon className="h-3 w-3 mr-1" />
-                        {typeConfig.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {getPriorityBadge(notification.priority)}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {formatRelativeTime(notification.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-1">
-                        {notification.actionUrl && (
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link href={notification.actionUrl}>
-                              <ExternalLink className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                        )}
-                        {!notification.isRead && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleMarkAsRead()}
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
+          {error && (
+            <div className="text-center py-8">
+              <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <p className="text-red-600">Error: {error}</p>
+              <Button variant="outline" onClick={handleRefresh} className="mt-4">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Coba Lagi
+              </Button>
+            </div>
+          )}
+          
+          {loading && !error && (
+            <div className="text-center py-8">
+              <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Memuat notifikasi...</p>
+            </div>
+          )}
+          
+          {!loading && !error && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={selectedNotifications.length === filteredNotifications.length && filteredNotifications.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Notifikasi</TableHead>
+                  <TableHead>Tipe</TableHead>
+                  <TableHead>Prioritas</TableHead>
+                  <TableHead>Waktu</TableHead>
+                  <TableHead>Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredNotifications.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">Tidak ada notifikasi yang ditemukan</p>
                     </TableCell>
                   </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-          
-          {filteredNotifications.length === 0 && (
-            <div className="text-center py-8">
-              <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg font-medium">Tidak ada notifikasi</p>
-              <p className="text-muted-foreground">
-                {search || typeFilter !== "all" || priorityFilter !== "all" || readFilter !== "all"
-                  ? "Tidak ditemukan notifikasi yang sesuai dengan filter"
-                  : "Belum ada notifikasi untuk ditampilkan"
-                }
-              </p>
-            </div>
+                ) : (
+                  filteredNotifications.map((notification) => {
+                    const typeConfig = getTypeConfig(notification.type)
+                    const TypeIcon = typeConfig.icon
+                    
+                    return (
+                      <TableRow 
+                        key={notification.id}
+                        className={!notification.isRead ? "bg-blue-50" : ""}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedNotifications.includes(notification.id)}
+                            onCheckedChange={(checked) => handleSelectNotification(notification.id, checked as boolean)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {notification.isRead ? (
+                            <Eye className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <EyeOff className="h-4 w-4 text-blue-600" />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <p className="font-medium">{notification.title}</p>
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {notification.message}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={typeConfig.color}>
+                            <TypeIcon className="h-3 w-3 mr-1" />
+                            {typeConfig.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {getPriorityBadge(notification.priority)}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatRelativeTime(notification.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            {notification.actionUrl && (
+                              <Button variant="ghost" size="sm" asChild>
+                                <Link href={notification.actionUrl}>
+                                  <ExternalLink className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            )}
+                            {!notification.isRead && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => markAsRead(notification.id)}
+                                disabled={loading}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                )}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
