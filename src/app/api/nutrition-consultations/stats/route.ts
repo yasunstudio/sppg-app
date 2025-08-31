@@ -65,15 +65,18 @@ export async function GET(request: NextRequest) {
       : '0'
 
     return NextResponse.json({
-      overview: {
-        total: totalConsultations,
-        pending: pendingConsultations,
-        answered: answeredConsultations,
-        closed: closedConsultations,
-        completionRate: parseFloat(completionRate)
-      },
-      recentConsultations,
-      generatedAt: new Date().toISOString()
+      success: true,
+      data: {
+        overview: {
+          total: totalConsultations,
+          pending: pendingConsultations,
+          answered: answeredConsultations,
+          closed: closedConsultations,
+          completionRate: parseFloat(completionRate)
+        },
+        recentConsultations,
+        generatedAt: new Date().toISOString()
+      }
     })
 
   } catch (error) {

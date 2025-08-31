@@ -29,9 +29,9 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { studentName: { contains: search, mode: 'insensitive' } },
-        { notes: { contains: search, mode: 'insensitive' } },
-        { recommendations: { contains: search, mode: 'insensitive' } }
+        { question: { contains: search, mode: 'insensitive' } },
+        { answer: { contains: search, mode: 'insensitive' } },
+        { student: { name: { contains: search, mode: 'insensitive' } } }
       ]
     }
 
@@ -39,14 +39,10 @@ export async function GET(request: NextRequest) {
       where.status = status
     }
 
-    if (type) {
-      where.type = type
-    }
-
     if (dateFrom || dateTo) {
-      where.consultationDate = {}
-      if (dateFrom) where.consultationDate.gte = new Date(dateFrom)
-      if (dateTo) where.consultationDate.lte = new Date(dateTo)
+      where.createdAt = {}
+      if (dateFrom) where.createdAt.gte = new Date(dateFrom)
+      if (dateTo) where.createdAt.lte = new Date(dateTo)
     }
 
     // Get consultations with pagination
@@ -68,7 +64,8 @@ export async function GET(request: NextRequest) {
     ])
 
     return NextResponse.json({
-      consultations,
+      success: true,
+      data: consultations,
       pagination: {
         page,
         limit,
