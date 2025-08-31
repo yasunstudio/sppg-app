@@ -219,7 +219,7 @@ export function NotificationsManagement() {
             <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-2xl font-bold">{stats.total || 0}</div>
           </CardContent>
         </Card>
         
@@ -229,7 +229,7 @@ export function NotificationsManagement() {
             <EyeOff className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.unread}</div>
+            <div className="text-2xl font-bold text-red-600">{stats.unread || 0}</div>
           </CardContent>
         </Card>
         
@@ -240,7 +240,7 @@ export function NotificationsManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              {stats.byPriority.HIGH + stats.byPriority.CRITICAL}
+              {(stats.byPriority.HIGH || 0) + (stats.byPriority.CRITICAL || 0)}
             </div>
           </CardContent>
         </Card>
@@ -252,7 +252,7 @@ export function NotificationsManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {notifications.filter(n => {
+              {(notifications || []).filter(n => {
                 const today = new Date()
                 const notifDate = new Date(n.createdAt)
                 return notifDate.toDateString() === today.toDateString()

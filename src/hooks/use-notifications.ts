@@ -138,13 +138,13 @@ export function useNotifications(): UseNotificationsReturn {
 
   // Calculate stats
   const stats = {
-    total: notifications.length,
-    unread: notifications.filter(n => !n.isRead).length,
-    byType: notifications.reduce((acc, notification) => {
+    total: notifications?.length || 0,
+    unread: notifications?.filter(n => !n.isRead).length || 0,
+    byType: (notifications || []).reduce((acc, notification) => {
       acc[notification.type] = (acc[notification.type] || 0) + 1
       return acc
     }, {} as Record<string, number>),
-    byPriority: notifications.reduce((acc, notification) => {
+    byPriority: (notifications || []).reduce((acc, notification) => {
       acc[notification.priority] = (acc[notification.priority] || 0) + 1
       return acc
     }, {} as Record<string, number>)
