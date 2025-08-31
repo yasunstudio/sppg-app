@@ -33,7 +33,8 @@ import {
   School,
   GraduationCap,
   TestTube,
-  Truck
+  Truck,
+  Bell
 } from "lucide-react"
 
 import type { Permission } from "@/lib/permissions"
@@ -115,9 +116,9 @@ export function Sidebar({ className, ...props }: SidebarProps) {
     },
     {
       name: "Performance",
-      href: "/dashboard/monitoring/performance",
+      href: "/dashboard/performance",
       icon: TrendingUp,
-      current: pathname.startsWith("/dashboard/monitoring/performance"),
+      current: pathname.startsWith("/dashboard/performance"),
     },
     {
       name: "Reports",
@@ -193,6 +194,12 @@ export function Sidebar({ className, ...props }: SidebarProps) {
 
   const inventoryManagement = [
     {
+      name: "Items Management",
+      href: "/dashboard/items",
+      icon: Package,
+      current: pathname.startsWith("/dashboard/items"),
+    },
+    {
       name: "Raw Materials",
       href: "/dashboard/raw-materials",
       icon: Package,
@@ -220,6 +227,12 @@ export function Sidebar({ className, ...props }: SidebarProps) {
 
   const qualityManagement = [
     {
+      name: "Quality Checkpoints",
+      href: "/dashboard/quality-checkpoints",
+      icon: ClipboardCheck,
+      current: pathname.startsWith("/dashboard/quality-checkpoints"),
+    },
+    {
       name: "Kontrol Kualitas",
       href: "/dashboard/quality",
       icon: ClipboardCheck,
@@ -246,6 +259,12 @@ export function Sidebar({ className, ...props }: SidebarProps) {
   ]
 
   const systemManagement = [
+    {
+      name: "Notifications",
+      href: "/dashboard/notifications",
+      icon: Bell,
+      current: pathname.startsWith("/dashboard/notifications"),
+    },
     {
       name: "Manajemen Pengguna",
       href: "/dashboard/users",
@@ -342,6 +361,8 @@ export function Sidebar({ className, ...props }: SidebarProps) {
               return ['production.view'];
             case '/dashboard/delivery-tracking':
               return ['production.view'];
+            case '/dashboard/quality-checkpoints':
+              return ['quality.check'];
             case '/dashboard/quality':
               return ['quality.check'];
             case '/dashboard/feedback':
