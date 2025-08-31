@@ -50,7 +50,7 @@ export function NutritionConsultationCreate() {
   
   // Search state
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedSchoolId, setSelectedSchoolId] = useState("")
+  const [selectedSchoolId, setSelectedSchoolId] = useState("all")
 
   // Fetch schools for filtering
   useEffect(() => {
@@ -75,7 +75,7 @@ export function NutritionConsultationCreate() {
       try {
         const params = new URLSearchParams()
         if (searchTerm) params.append('search', searchTerm)
-        if (selectedSchoolId) params.append('schoolId', selectedSchoolId)
+        if (selectedSchoolId && selectedSchoolId !== 'all') params.append('schoolId', selectedSchoolId)
         
         const response = await fetch(`/api/students?${params.toString()}`)
         const result = await response.json()
@@ -170,7 +170,7 @@ export function NutritionConsultationCreate() {
                     <SelectValue placeholder="Pilih sekolah..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Semua Sekolah</SelectItem>
+                    <SelectItem value="all">Semua Sekolah</SelectItem>
                     {schools.map((school) => (
                       <SelectItem key={school.id} value={school.id}>
                         {school.name}
@@ -214,7 +214,7 @@ export function NutritionConsultationCreate() {
                       </div>
                     ) : students.length === 0 ? (
                       <div className="p-4 text-center text-muted-foreground">
-                        {searchTerm || selectedSchoolId ? "Tidak ada siswa yang sesuai" : "Tidak ada data siswa"}
+                        {searchTerm || (selectedSchoolId && selectedSchoolId !== 'all') ? "Tidak ada siswa yang sesuai" : "Tidak ada data siswa"}
                       </div>
                     ) : (
                       students.map((student) => (
