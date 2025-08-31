@@ -30,7 +30,6 @@ interface MonitoringData {
     distribution: any;
     quality: any;
     inventory: any;
-    posyandu: any;
   };
   alerts: any[];
   recommendations: any[];
@@ -296,32 +295,6 @@ export default function RealTimeMonitoringPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Posyandu Metrics */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Heart className="h-5 w-5 mr-2" />
-            Posyandu Programs
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold">{data.metrics.posyandu.totalPosyandu}</div>
-              <p className="text-sm text-gray-600">Total Posyandu</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{data.metrics.posyandu.activePrograms}</div>
-              <p className="text-sm text-gray-600">Active Programs</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{data.metrics.posyandu.totalParticipants}</div>
-              <p className="text-sm text-gray-600">Total Participants</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Alerts and Recommendations */}
       <div className="grid gap-4 md:grid-cols-2">

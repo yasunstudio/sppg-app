@@ -2,59 +2,93 @@
 // UTILITY FUNCTIONS FOR CONSTANTS (src/lib/constants/utils.ts)
 // ============================================================================
 
-import { 
-  NUTRITION_TARGETS, 
-  PARTICIPANT_TYPE, 
-  NUTRITION_STATUS, 
-  MEAL_TYPE,
-  GENDER,
-  STATUS,
-  PRODUCTION_STATUS,
-  DISTRIBUTION_STATUS,
-  QC_STATUS,
-  type ParticipantType,
-  type NutritionStatus,
-  type MealType,
-  type Gender,
-  type Status,
-  type ProductionStatus,
-  type DistributionStatus,
-  type QCStatus
-} from '@/lib/constants'
+// Basic constants for SPPG system
+export const NUTRITION_STATUS = {
+  NORMAL: 'NORMAL',
+  UNDERWEIGHT: 'UNDERWEIGHT',
+  SEVERELY_UNDERWEIGHT: 'SEVERELY_UNDERWEIGHT',
+  OVERWEIGHT: 'OVERWEIGHT',
+  OBESE: 'OBESE',
+  STUNTED: 'STUNTED',
+  WASTED: 'WASTED'
+} as const
 
-// Participant type utilities
-export const getParticipantTypeLabel = (type: ParticipantType): string => {
-  const labels: Record<ParticipantType, string> = {
-    [PARTICIPANT_TYPE.PREGNANT_WOMAN]: 'Ibu Hamil',
-    [PARTICIPANT_TYPE.LACTATING_MOTHER]: 'Ibu Menyusui',
-    [PARTICIPANT_TYPE.TODDLER]: 'Balita',
-    [PARTICIPANT_TYPE.CHILD]: 'Anak',
-    [PARTICIPANT_TYPE.ELDERLY]: 'Lansia',
-  }
-  return labels[type] || type
-}
+export const MEAL_TYPE = {
+  BREAKFAST: 'BREAKFAST',
+  LUNCH: 'LUNCH',
+  SNACK: 'SNACK',
+  DINNER: 'DINNER'
+} as const
 
-export const getParticipantTypeColor = (type: ParticipantType): string => {
-  const colors: Record<ParticipantType, string> = {
-    [PARTICIPANT_TYPE.PREGNANT_WOMAN]: 'bg-pink-100 text-pink-800',
-    [PARTICIPANT_TYPE.LACTATING_MOTHER]: 'bg-purple-100 text-purple-800',
-    [PARTICIPANT_TYPE.TODDLER]: 'bg-blue-100 text-blue-800',
-    [PARTICIPANT_TYPE.CHILD]: 'bg-green-100 text-green-800',
-    [PARTICIPANT_TYPE.ELDERLY]: 'bg-gray-100 text-gray-800',
-  }
-  return colors[type] || 'bg-gray-100 text-gray-800'
-}
+export const GENDER = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE'
+} as const
+
+export const STATUS = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export const PRODUCTION_STATUS = {
+  PENDING: 'PENDING',
+  PLANNED: 'PLANNED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  ON_HOLD: 'ON_HOLD'
+} as const
+
+export const DISTRIBUTION_STATUS = {
+  PREPARING: 'PREPARING',
+  SCHEDULED: 'SCHEDULED',
+  IN_TRANSIT: 'IN_TRANSIT',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
+  RETURNED: 'RETURNED'
+} as const
+
+export const QC_STATUS = {
+  PENDING: 'PENDING',
+  PASSED: 'PASSED',
+  FAILED: 'FAILED',
+  NEEDS_REVIEW: 'NEEDS_REVIEW'
+} as const
+
+export const NUTRITION_TARGETS = {
+  ENERGY_PER_DAY: 2000, // kcal
+  PROTEIN_PER_DAY: 60,   // gram
+  CARBS_PER_DAY: 300,    // gram
+  FAT_PER_DAY: 67,       // gram
+  FIBER_PER_DAY: 25      // gram
+} as const
+
+// Types
+export type NutritionStatus = typeof NUTRITION_STATUS[keyof typeof NUTRITION_STATUS]
+export type MealType = typeof MEAL_TYPE[keyof typeof MEAL_TYPE]
+export type Gender = typeof GENDER[keyof typeof GENDER]
+export type Status = typeof STATUS[keyof typeof STATUS]
+export type ProductionStatus = typeof PRODUCTION_STATUS[keyof typeof PRODUCTION_STATUS]
+export type DistributionStatus = typeof DISTRIBUTION_STATUS[keyof typeof DISTRIBUTION_STATUS]
+export type QCStatus = typeof QC_STATUS[keyof typeof QC_STATUS]
 
 // Nutrition status utilities
 export const getNutritionStatusLabel = (status: NutritionStatus): string => {
   const labels: Record<NutritionStatus, string> = {
     [NUTRITION_STATUS.NORMAL]: 'Normal',
     [NUTRITION_STATUS.UNDERWEIGHT]: 'Berat Badan Kurang',
+    [NUTRITION_STATUS.SEVERELY_UNDERWEIGHT]: 'Gizi Buruk',
     [NUTRITION_STATUS.OVERWEIGHT]: 'Berat Badan Lebih',
     [NUTRITION_STATUS.OBESE]: 'Obesitas',
     [NUTRITION_STATUS.STUNTED]: 'Stunting',
     [NUTRITION_STATUS.WASTED]: 'Wasting',
-    [NUTRITION_STATUS.SEVERELY_UNDERWEIGHT]: 'Gizi Buruk',
   }
   return labels[status] || status
 }
@@ -63,11 +97,11 @@ export const getNutritionStatusColor = (status: NutritionStatus): string => {
   const colors: Record<NutritionStatus, string> = {
     [NUTRITION_STATUS.NORMAL]: 'bg-green-100 text-green-800',
     [NUTRITION_STATUS.UNDERWEIGHT]: 'bg-yellow-100 text-yellow-800',
+    [NUTRITION_STATUS.SEVERELY_UNDERWEIGHT]: 'bg-red-200 text-red-900',
     [NUTRITION_STATUS.OVERWEIGHT]: 'bg-orange-100 text-orange-800',
     [NUTRITION_STATUS.OBESE]: 'bg-red-100 text-red-800',
-    [NUTRITION_STATUS.STUNTED]: 'bg-red-100 text-red-800',
-    [NUTRITION_STATUS.WASTED]: 'bg-red-100 text-red-800',
-    [NUTRITION_STATUS.SEVERELY_UNDERWEIGHT]: 'bg-red-200 text-red-900',
+    [NUTRITION_STATUS.STUNTED]: 'bg-purple-100 text-purple-800',
+    [NUTRITION_STATUS.WASTED]: 'bg-pink-100 text-pink-800',
   }
   return colors[status] || 'bg-gray-100 text-gray-800'
 }
@@ -77,20 +111,10 @@ export const getMealTypeLabel = (mealType: MealType): string => {
   const labels: Record<MealType, string> = {
     [MEAL_TYPE.BREAKFAST]: 'Sarapan',
     [MEAL_TYPE.LUNCH]: 'Makan Siang',
+    [MEAL_TYPE.SNACK]: 'Snack',
     [MEAL_TYPE.DINNER]: 'Makan Malam',
-    [MEAL_TYPE.SNACK]: 'Camilan',
   }
   return labels[mealType] || mealType
-}
-
-export const getMealTypeColor = (mealType: MealType): string => {
-  const colors: Record<MealType, string> = {
-    [MEAL_TYPE.BREAKFAST]: 'bg-yellow-100 text-yellow-800',
-    [MEAL_TYPE.LUNCH]: 'bg-orange-100 text-orange-800',
-    [MEAL_TYPE.DINNER]: 'bg-blue-100 text-blue-800',
-    [MEAL_TYPE.SNACK]: 'bg-green-100 text-green-800',
-  }
-  return colors[mealType] || 'bg-gray-100 text-gray-800'
 }
 
 // Gender utilities
@@ -108,6 +132,7 @@ export const getStatusLabel = (status: Status): string => {
     [STATUS.ACTIVE]: 'Aktif',
     [STATUS.INACTIVE]: 'Tidak Aktif',
     [STATUS.PENDING]: 'Menunggu',
+    [STATUS.COMPLETED]: 'Selesai',
     [STATUS.APPROVED]: 'Disetujui',
     [STATUS.REJECTED]: 'Ditolak',
     [STATUS.DRAFT]: 'Draft',
@@ -122,6 +147,7 @@ export const getStatusColor = (status: Status): string => {
     [STATUS.ACTIVE]: 'bg-green-100 text-green-800',
     [STATUS.INACTIVE]: 'bg-gray-100 text-gray-800',
     [STATUS.PENDING]: 'bg-yellow-100 text-yellow-800',
+    [STATUS.COMPLETED]: 'bg-green-100 text-green-800',
     [STATUS.APPROVED]: 'bg-green-100 text-green-800',
     [STATUS.REJECTED]: 'bg-red-100 text-red-800',
     [STATUS.DRAFT]: 'bg-gray-100 text-gray-800',
@@ -134,8 +160,9 @@ export const getStatusColor = (status: Status): string => {
 // Production status utilities
 export const getProductionStatusLabel = (status: ProductionStatus): string => {
   const labels: Record<ProductionStatus, string> = {
+    [PRODUCTION_STATUS.PENDING]: 'Menunggu',
     [PRODUCTION_STATUS.PLANNED]: 'Direncanakan',
-    [PRODUCTION_STATUS.IN_PROGRESS]: 'Sedang Berlangsung',
+    [PRODUCTION_STATUS.IN_PROGRESS]: 'Dalam Proses',
     [PRODUCTION_STATUS.COMPLETED]: 'Selesai',
     [PRODUCTION_STATUS.CANCELLED]: 'Dibatalkan',
     [PRODUCTION_STATUS.ON_HOLD]: 'Ditahan',
@@ -145,6 +172,7 @@ export const getProductionStatusLabel = (status: ProductionStatus): string => {
 
 export const getProductionStatusColor = (status: ProductionStatus): string => {
   const colors: Record<ProductionStatus, string> = {
+    [PRODUCTION_STATUS.PENDING]: 'bg-yellow-100 text-yellow-800',
     [PRODUCTION_STATUS.PLANNED]: 'bg-blue-100 text-blue-800',
     [PRODUCTION_STATUS.IN_PROGRESS]: 'bg-orange-100 text-orange-800',
     [PRODUCTION_STATUS.COMPLETED]: 'bg-green-100 text-green-800',
@@ -157,6 +185,7 @@ export const getProductionStatusColor = (status: ProductionStatus): string => {
 // Distribution status utilities
 export const getDistributionStatusLabel = (status: DistributionStatus): string => {
   const labels: Record<DistributionStatus, string> = {
+    [DISTRIBUTION_STATUS.PREPARING]: 'Mempersiapkan',
     [DISTRIBUTION_STATUS.SCHEDULED]: 'Dijadwalkan',
     [DISTRIBUTION_STATUS.IN_TRANSIT]: 'Dalam Perjalanan',
     [DISTRIBUTION_STATUS.DELIVERED]: 'Terkirim',
@@ -168,6 +197,7 @@ export const getDistributionStatusLabel = (status: DistributionStatus): string =
 
 export const getDistributionStatusColor = (status: DistributionStatus): string => {
   const colors: Record<DistributionStatus, string> = {
+    [DISTRIBUTION_STATUS.PREPARING]: 'bg-blue-100 text-blue-800',
     [DISTRIBUTION_STATUS.SCHEDULED]: 'bg-blue-100 text-blue-800',
     [DISTRIBUTION_STATUS.IN_TRANSIT]: 'bg-orange-100 text-orange-800',
     [DISTRIBUTION_STATUS.DELIVERED]: 'bg-green-100 text-green-800',
@@ -180,64 +210,72 @@ export const getDistributionStatusColor = (status: DistributionStatus): string =
 // QC status utilities
 export const getQCStatusLabel = (status: QCStatus): string => {
   const labels: Record<QCStatus, string> = {
-    [QC_STATUS.PASS]: 'Lolos',
-    [QC_STATUS.FAIL]: 'Gagal',
     [QC_STATUS.PENDING]: 'Menunggu',
-    [QC_STATUS.REVIEW_REQUIRED]: 'Perlu Review',
+    [QC_STATUS.PASSED]: 'Lolos',
+    [QC_STATUS.FAILED]: 'Gagal',
+    [QC_STATUS.NEEDS_REVIEW]: 'Perlu Review',
   }
   return labels[status] || status
 }
 
 export const getQCStatusColor = (status: QCStatus): string => {
   const colors: Record<QCStatus, string> = {
-    [QC_STATUS.PASS]: 'bg-green-100 text-green-800',
-    [QC_STATUS.FAIL]: 'bg-red-100 text-red-800',
     [QC_STATUS.PENDING]: 'bg-yellow-100 text-yellow-800',
-    [QC_STATUS.REVIEW_REQUIRED]: 'bg-orange-100 text-orange-800',
+    [QC_STATUS.PASSED]: 'bg-green-100 text-green-800',
+    [QC_STATUS.FAILED]: 'bg-red-100 text-red-800',
+    [QC_STATUS.NEEDS_REVIEW]: 'bg-orange-100 text-orange-800',
   }
   return colors[status] || 'bg-gray-100 text-gray-800'
 }
 
-// Nutrition calculation utilities
+// Calculate nutrition percentage based on targets
 export const calculateNutritionPercentage = (
-  actual: number, 
+  actual: number,
   target: number
 ): number => {
+  if (target === 0) return 0
   return Math.round((actual / target) * 100)
 }
 
-export const getNutritionTargetByParticipantType = (
-  participantType: ParticipantType
-) => {
-  switch (participantType) {
-    case PARTICIPANT_TYPE.PREGNANT_WOMAN:
-      return NUTRITION_TARGETS.PREGNANT_WOMAN
-    case PARTICIPANT_TYPE.LACTATING_MOTHER:
-      return NUTRITION_TARGETS.LACTATING_MOTHER
-    case PARTICIPANT_TYPE.TODDLER:
-      return NUTRITION_TARGETS.TODDLER
-    case PARTICIPANT_TYPE.ELDERLY:
-      return NUTRITION_TARGETS.ELDERLY
-    case PARTICIPANT_TYPE.CHILD:
-      return NUTRITION_TARGETS.STUDENT
-    default:
-      return NUTRITION_TARGETS.STUDENT
+// Calculate BMI
+export const calculateBMI = (weight: number, height: number): number => {
+  if (height === 0) return 0
+  const heightInMeters = height / 100
+  return Number((weight / (heightInMeters * heightInMeters)).toFixed(1))
+}
+
+// Get BMI status based on WHO standards
+export const getBMIStatus = (bmi: number): NutritionStatus => {
+  if (bmi < 16) return NUTRITION_STATUS.SEVERELY_UNDERWEIGHT
+  if (bmi < 18.5) return NUTRITION_STATUS.UNDERWEIGHT
+  if (bmi < 25) return NUTRITION_STATUS.NORMAL
+  if (bmi < 30) return NUTRITION_STATUS.OVERWEIGHT
+  return NUTRITION_STATUS.OBESE
+}
+
+// Format nutrition value with unit
+export const formatNutritionValue = (
+  value: number,
+  unit: 'kcal' | 'gram' | 'mg' | 'mcg'
+): string => {
+  const unitLabels = {
+    kcal: 'kkal',
+    gram: 'g',
+    mg: 'mg',
+    mcg: 'mcg'
   }
+  return `${value} ${unitLabels[unit]}`
 }
 
-// Validation utilities
-export const isValidParticipantType = (type: string): type is ParticipantType => {
-  return Object.values(PARTICIPANT_TYPE).includes(type as ParticipantType)
-}
-
-export const isValidNutritionStatus = (status: string): status is NutritionStatus => {
-  return Object.values(NUTRITION_STATUS).includes(status as NutritionStatus)
-}
-
-export const isValidMealType = (mealType: string): mealType is MealType => {
-  return Object.values(MEAL_TYPE).includes(mealType as MealType)
-}
-
-export const isValidGender = (gender: string): gender is Gender => {
-  return Object.values(GENDER).includes(gender as Gender)
+// Calculate daily nutrition progress
+export const calculateDailyProgress = (
+  consumed: number,
+  target: number
+): { percentage: number; status: 'low' | 'normal' | 'high' | 'excess' } => {
+  const percentage = calculateNutritionPercentage(consumed, target)
+  
+  if (percentage < 50) return { percentage, status: 'low' }
+  if (percentage < 80) return { percentage, status: 'normal' }
+  if (percentage <= 120) return { percentage, status: 'high' }
+  return { percentage, status: 'excess' }
 }

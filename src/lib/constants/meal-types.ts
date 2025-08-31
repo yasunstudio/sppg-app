@@ -1,7 +1,7 @@
 // Meal Type Constants and Utilities
-// This file is now deprecated - use src/lib/constants.ts and src/lib/constants/utils.ts instead
+// This file is now deprecated - use src/lib/constants/utils.ts instead
 
-import { MEAL_TYPE } from '@/lib/constants'
+import { MEAL_TYPE } from '@/lib/constants/utils'
 
 // Legacy exports for backward compatibility
 export const MEAL_TYPES = MEAL_TYPE

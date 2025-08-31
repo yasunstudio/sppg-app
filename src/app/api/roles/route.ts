@@ -7,7 +7,7 @@ import { getAllRoles, getRoleByName, refreshRoleCache } from '@/lib/permissions/
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 
-// GET: Fetch all roles
+// GET: Fetch all roles with pagination
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
@@ -19,6 +19,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const role = searchParams.get('role')
     const refresh = searchParams.get('refresh') === 'true'
+    
+    // Pagination parameters
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const search = searchParams.get('search') || ''
+    const permissions = searchParams.get('permissions') || ''
     
     if (refresh) {
       refreshRoleCache()
@@ -53,11 +59,36 @@ export async function GET(request: NextRequest) {
         }
       })
     } else {
-      // Get all roles with user counts
+      // Get all roles with user counts and pagination
       const roles = await getAllRoles(!refresh)
       
+      // Filter roles based on search and permissions
+      let filteredRoles = roles.filter(role => {
+        const matchesSearch = !search || 
+          role.name.toLowerCase().includes(search.toLowerCase()) ||
+          role.description?.toLowerCase().includes(search.toLowerCase())
+        
+        let matchesPermissions = true
+        if (permissions === 'high') {
+          matchesPermissions = role.permissions.length >= 20
+        } else if (permissions === 'medium') {
+          matchesPermissions = role.permissions.length >= 10 && role.permissions.length < 20
+        } else if (permissions === 'low') {
+          matchesPermissions = role.permissions.length < 10
+        }
+        
+        return matchesSearch && matchesPermissions
+      })
+      
+      const total = filteredRoles.length
+      const totalPages = Math.ceil(total / limit)
+      const skip = (page - 1) * limit
+      
+      // Apply pagination
+      const paginatedRoles = filteredRoles.slice(skip, skip + limit)
+      
       const rolesWithCounts = await Promise.all(
-        roles.map(async (role) => {
+        paginatedRoles.map(async (role) => {
           const userCount = await prisma.user.count({
             where: { 
               roles: { 
@@ -79,7 +110,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: rolesWithCounts,
-        total: rolesWithCounts.length
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
       })
     }
   } catch (error) {

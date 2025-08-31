@@ -16,7 +16,6 @@ const PROTECTED_ROUTES = {
   '/dashboard/inventory': ['inventory.view'],
   '/dashboard/production': ['production.view'],
   '/dashboard/quality': ['quality.check'],
-  '/dashboard/posyandu': ['posyandu.view'],
   '/dashboard/menu-planning': ['menus.view', 'nutrition.read'],
   '/dashboard/recipes': ['menus.view', 'nutrition.read'],
 } as const

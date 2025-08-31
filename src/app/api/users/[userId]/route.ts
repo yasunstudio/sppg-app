@@ -22,6 +22,11 @@ export async function GET(
     }
 
     const { userId } = await params
+    const { searchParams } = new URL(request.url)
+    const include = searchParams.get("include") || ""
+    
+    const includeRoles = include.includes('roles')
+
     const user = await prisma.user.findUnique({
       where: {
         id: userId,
@@ -30,7 +35,22 @@ export async function GET(
         id: true,
         name: true,
         email: true,
-        roles: {
+        avatar: true,
+        createdAt: true,
+        updatedAt: true,
+        roles: includeRoles ? {
+          select: {
+            assignedAt: true,
+            role: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                permissions: true
+              }
+            }
+          }
+        } : {
           select: {
             role: {
               select: {
@@ -39,8 +59,6 @@ export async function GET(
             }
           }
         },
-        createdAt: true,
-        updatedAt: true,
       },
     })
 
@@ -48,7 +66,10 @@ export async function GET(
       return new NextResponse("User not found", { status: 404 })
     }
 
-    return NextResponse.json(user satisfies ApiUser)
+    return NextResponse.json({
+      user: user,
+      data: user
+    })
   } catch (error) {
     console.error("[USER_GET]", error)
     return new NextResponse("Internal error", { status: 500 })
@@ -132,7 +153,7 @@ export async function PATCH(
     return NextResponse.json({
       ...user,
       status: user.isActive ? 'ACTIVE' : 'INACTIVE',
-      role: (user.roles as any)[0]?.role?.name || 'VOLUNTEER'
+      role: (user.roles as any)[0]?.role?.name || 'VIEWER'
     })
   } catch (error) {
     console.error("[USER_PATCH]", error)
@@ -210,11 +231,6 @@ export async function DELETE(
 
         // Delete sessions (NextAuth)
         await tx.session.deleteMany({
-          where: { userId: userId }
-        })
-
-        // Delete volunteer profile if exists
-        await tx.posyanduVolunteer.deleteMany({
           where: { userId: userId }
         })
 

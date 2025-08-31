@@ -2,49 +2,49 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils/cn"
-import { PermissionGuard, RoleGuard } from "@/hooks/use-permissions"
-import { Permission } from "@/lib/permissions"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
 import {
   LayoutGrid,
   Users,
-  School,
   ShoppingCart,
-  UtensilsCrossed,
-  Truck,
-  ClipboardCheck,
-  Settings,
-  LogOut,
-  ChefHat,
   Package,
-  Calculator,
-  Factory,
-  Calendar,
-  PlayCircle,
-  BarChart3,
-  Wrench,
-  ChevronDown,
-  ChevronRight,
-  DollarSign,
-  Activity,
-  Heart,
+  ClipboardCheck,
   MessageSquare,
   Trash,
-  Bell,
+  DollarSign,
+  Activity,
+  Settings,
   Shield,
   UserCheck,
+  Wrench,
+  UtensilsCrossed,
+  ChefHat,
+  Calendar,
+  Heart,
+  PlayCircle,
+  BarChart,
+  TrendingUp,
+  Eye,
+  ChevronDown,
+  ChevronRight,
+  FileBarChart,
+  School,
+  GraduationCap,
+  TestTube,
+  Truck
 } from "lucide-react"
-import { signOut } from "next-auth/react"
-import { useState } from "react"
+
+import type { Permission } from "@/lib/permissions"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function Sidebar({ className, ...props }: SidebarProps) {
   const pathname = usePathname()
-    const [productionExpanded, setProductionExpanded] = useState(pathname.startsWith("/dashboard/production"))
+  const [productionExpanded, setProductionExpanded] = useState(pathname.startsWith("/dashboard/production"))
   const [menuPlanningExpanded, setMenuPlanningExpanded] = useState(pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes"))
   const [monitoringExpanded, setMonitoringExpanded] = useState(pathname.startsWith("/dashboard/monitoring"))
-  const [posyanduExpanded, setPosyanduExpanded] = useState(pathname.startsWith("/dashboard/posyandu"))
 
   const navigation = [
     {
@@ -59,25 +59,64 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       icon: Activity,
       current: pathname.startsWith("/dashboard/basic"),
     },
-    // CORE OPERATIONS - Main workflow
     {
-      name: "Data Sekolah",
+      name: "Schools",
       href: "/dashboard/schools",
       icon: School,
       current: pathname.startsWith("/dashboard/schools"),
     },
     {
-      name: "Inventaris & Stok",
-      href: "/dashboard/inventory",
+      name: "Students",
+      href: "/dashboard/students",
+      icon: GraduationCap,
+      current: pathname.startsWith("/dashboard/students"),
+    },
+    {
+      name: "Classes",
+      href: "/dashboard/classes",
+      icon: Users,
+      current: pathname.startsWith("/dashboard/classes"),
+    },
+    {
+      name: "Vehicles",
+      href: "/dashboard/vehicles",
+      icon: Truck,
+      current: pathname.startsWith("/dashboard/vehicles"),
+    },
+    {
+      name: "Drivers",
+      href: "/dashboard/drivers",
+      icon: UserCheck,
+      current: pathname.startsWith("/dashboard/drivers"),
+    },
+    {
+      name: "Raw Materials",
+      href: "/dashboard/raw-materials",
+      icon: Package,
+      current: pathname.startsWith("/dashboard/raw-materials"),
+    },
+    {
+      name: "Suppliers",
+      href: "/dashboard/suppliers",
       icon: ShoppingCart,
+      current: pathname.startsWith("/dashboard/suppliers"),
+    },
+    {
+      name: "Purchase Orders",
+      href: "/dashboard/purchase-orders",
+      icon: ClipboardCheck,
+      current: pathname.startsWith("/dashboard/purchase-orders"),
+    },
+    {
+      name: "Inventory Management",
+      href: "/dashboard/inventory",
+      icon: Package,
       current: pathname.startsWith("/dashboard/inventory"),
     },
-    // Menu Planning will be handled as submenu below
-    // Production will be handled as submenu below
     {
-      name: "Distribusi & Logistik",
+      name: "Distribution Management",
       href: "/dashboard/distribution",
-      icon: Truck,
+      icon: Package,
       current: pathname.startsWith("/dashboard/distribution"),
     },
     {
@@ -99,20 +138,35 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       current: pathname.startsWith("/dashboard/feedback"),
     },
     {
+      name: "Nutrition Consultations",
+      href: "/dashboard/nutrition-consultations",
+      icon: Heart,
+      current: pathname.startsWith("/dashboard/nutrition-consultations"),
+    },
+    {
+      name: "Food Samples",
+      href: "/dashboard/food-samples",
+      icon: TestTube,
+      current: pathname.startsWith("/dashboard/food-samples"),
+    },
+    {
+      name: "Quality Standards",
+      href: "/dashboard/quality-standards",
+      icon: Shield,
+      current: pathname.startsWith("/dashboard/quality-standards"),
+    },
+    {
       name: "Waste Management",
       href: "/dashboard/waste-management",
       icon: Trash,
       current: pathname.startsWith("/dashboard/waste-management"),
     },
-    // MANAGEMENT & ANALYTICS
     {
       name: "Manajemen Keuangan",
       href: "/dashboard/financial",
       icon: DollarSign,
       current: pathname.startsWith("/dashboard/financial"),
     },
-    // Monitoring will be handled as submenu below
-    // ADMINISTRATION (at the bottom)
     {
       name: "Manajemen Pengguna",
       href: "/dashboard/users",
@@ -203,89 +257,32 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       icon: ClipboardCheck,
       current: pathname.startsWith("/dashboard/production/quality"),
     },
-    {
-      name: "Resources",
-      href: "/dashboard/production/resources",
-      icon: Wrench,
-      current: pathname.startsWith("/dashboard/production/resources"),
-    },
-    {
-      name: "Analytics",
-      href: "/dashboard/production/analytics",
-      icon: BarChart3,
-      current: pathname.startsWith("/dashboard/production/analytics"),
-    },
   ]
 
   const monitoringSubMenus = [
     {
-      name: "Dashboard",
-      href: "/dashboard/monitoring",
-      icon: LayoutGrid,
-      current: pathname === "/dashboard/monitoring",
+      name: "Real-time Monitoring",
+      href: "/dashboard/monitoring/real-time",
+      icon: Activity,
+      current: pathname.startsWith("/dashboard/monitoring/real-time"),
     },
     {
       name: "Analytics",
       href: "/dashboard/monitoring/analytics",
-      icon: BarChart3,
+      icon: BarChart,
       current: pathname.startsWith("/dashboard/monitoring/analytics"),
+    },
+    {
+      name: "Performance",
+      href: "/dashboard/monitoring/performance",
+      icon: TrendingUp,
+      current: pathname.startsWith("/dashboard/monitoring/performance"),
     },
     {
       name: "Reports",
       href: "/dashboard/monitoring/reports",
-      icon: ClipboardCheck,
+      icon: FileBarChart,
       current: pathname.startsWith("/dashboard/monitoring/reports"),
-    },
-  ]
-
-  const posyanduSubMenus = [
-    {
-      name: "Overview",
-      href: "/dashboard/posyandu",
-      icon: LayoutGrid,
-      current: pathname === "/dashboard/posyandu",
-    },
-    {
-      name: "Data Peserta",
-      href: "/dashboard/posyandu/participants",
-      icon: Users,
-      current: pathname.startsWith("/dashboard/posyandu/participants"),
-    },
-    {
-      name: "Rekam Kesehatan",
-      href: "/dashboard/posyandu/health-records",
-      icon: Heart,
-      current: pathname.startsWith("/dashboard/posyandu/health-records"),
-    },
-    {
-      name: "Ibu Hamil",
-      href: "/dashboard/posyandu/pregnant-women",
-      icon: Users,
-      current: pathname.startsWith("/dashboard/posyandu/pregnant-women"),
-    },
-    {
-      name: "Ibu Menyusui",
-      href: "/dashboard/posyandu/lactating-mothers",
-      icon: Users,
-      current: pathname.startsWith("/dashboard/posyandu/lactating-mothers"),
-    },
-    {
-      name: "Balita",
-      href: "/dashboard/posyandu/toddlers",
-      icon: Users,
-      current: pathname.startsWith("/dashboard/posyandu/toddlers"),
-    },
-    {
-      name: "Rencana Nutrisi",
-      href: "/dashboard/posyandu/nutrition-plans",
-      icon: UtensilsCrossed,
-      current: pathname.startsWith("/dashboard/posyandu/nutrition-plans"),
-    },
-    {
-      name: "Aktivitas Posyandu",
-      href: "/dashboard/posyandu/activities",
-      icon: Calendar,
-      current: pathname.startsWith("/dashboard/posyandu/activities"),
     },
   ]
 
@@ -306,7 +303,21 @@ export function Sidebar({ className, ...props }: SidebarProps) {
                   case '/dashboard/basic':
                     return null; // Available for all authenticated users
                   case '/dashboard/schools':
-                    return ['posyandu.view'];
+                    return ['schools.view'];
+                  case '/dashboard/students':
+                    return ['students.view'];
+                  case '/dashboard/classes':
+                    return ['students.view']; // Using existing permission since classes don't have separate permission
+                  case '/dashboard/vehicles':
+                    return ['production.view']; // Using production permission for logistics management
+                  case '/dashboard/drivers':
+                    return ['production.view']; // Using production permission for driver management
+                  case '/dashboard/raw-materials':
+                    return ['inventory.view'];
+                  case '/dashboard/suppliers':
+                    return ['suppliers.view'];
+                  case '/dashboard/purchase-orders':
+                    return ['purchase_orders.view'];
                   case '/dashboard/inventory':
                     return ['inventory.view'];
                   case '/dashboard/distribution':
@@ -317,10 +328,14 @@ export function Sidebar({ className, ...props }: SidebarProps) {
                     return ['quality.check'];
                   case '/dashboard/feedback':
                     return ['feedback.view'];
+                  case '/dashboard/nutrition-consultations':
+                    return ['nutrition.consult'];
+                  case '/dashboard/food-samples':
+                    return ['quality.check'];
+                  case '/dashboard/quality-standards':
+                    return ['quality.check'];
                   case '/dashboard/waste-management':
                     return ['production.view'];
-                  case '/dashboard/posyandu':
-                    return ['posyandu.view'];
                   case '/dashboard/financial':
                     return ['finance.view'];
                   case '/dashboard/users':
@@ -340,9 +355,27 @@ export function Sidebar({ className, ...props }: SidebarProps) {
                 }
               };
 
-              const permissions = getMenuPermissions(item.href);
-              
-              const menuItem = (
+              const requiredPermissions = getMenuPermissions(item.href);
+
+              // If no permissions required (like basic dashboard), show for all authenticated users
+              if (!requiredPermissions) {
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                      item.current ? "bg-accent" : "transparent",
+                      item.current ? "text-accent-foreground" : "text-muted-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.name}
+                  </Link>
+                );
+              }
+
+              return (
                 <Link
                   key={item.name}
                   href={item.href}
@@ -356,80 +389,65 @@ export function Sidebar({ className, ...props }: SidebarProps) {
                   {item.name}
                 </Link>
               );
-
-              // If menu requires permissions, wrap with PermissionGuard
-              if (permissions) {
-                return (
-                  <PermissionGuard key={item.name} permission={permissions} requireAll={false}>
-                    {menuItem}
-                  </PermissionGuard>
-                );
-              }
-
-              // For public menu items (like Dashboard), render directly
-              return menuItem;
             })}
-            
-            {/* Menu Planning Menu with Submenu */}
-            <PermissionGuard permission={['menus.view', 'nutrition.read']} requireAll={false}>
-              <div>
-                <button
-                  onClick={() => setMenuPlanningExpanded(!menuPlanningExpanded)}
-                  className={cn(
-                    "flex w-full items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                    pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes") ? "bg-accent" : "transparent",
-                    pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes") ? "text-accent-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  <UtensilsCrossed className="h-4 w-4" />
-                  Perencanaan Menu
-                  {menuPlanningExpanded ? (
-                    <ChevronDown className="ml-auto h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="ml-auto h-4 w-4" />
-                  )}
-                </button>
-                
-                {menuPlanningExpanded && (
-                  <div className="mt-1 space-y-1 pl-6">
-                    {menuPlanningSubMenus.map((subItem) => (
-                      <Link
-                        key={subItem.name}
-                        href={subItem.href}
-                        className={cn(
-                          "flex items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                          subItem.current ? "bg-accent" : "transparent",
-                          subItem.current ? "text-accent-foreground" : "text-muted-foreground"
-                        )}
-                      >
-                        <subItem.icon className="h-4 w-4" />
-                        {subItem.name}
-                      </Link>
-                    ))}
-                  </div>
+
+            {/* Menu Planning with Submenu */}
+            <div>
+              <button
+                onClick={() => setMenuPlanningExpanded(!menuPlanningExpanded)}
+                className={cn(
+                  "flex w-full items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                  pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes") ? "bg-accent" : "transparent",
+                  pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes") ? "text-accent-foreground" : "text-muted-foreground"
                 )}
-              </div>
-            </PermissionGuard>
-            
-            {/* Production Menu with Submenu */}
-            <PermissionGuard permission={['production.view']} requireAll={false}>
-              <div>
-                <button
-                  onClick={() => setProductionExpanded(!productionExpanded)}
-                  className={cn(
-                    "flex w-full items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                    pathname.startsWith("/dashboard/production") ? "bg-accent" : "transparent",
-                    pathname.startsWith("/dashboard/production") ? "text-accent-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  <Factory className="h-4 w-4" />
-                  Produksi Makanan
-                  {productionExpanded ? (
-                    <ChevronDown className="ml-auto h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="ml-auto h-4 w-4" />
-                  )}
-                </button>
+              >
+                <UtensilsCrossed className="h-4 w-4" />
+                Menu Planning
+                {menuPlanningExpanded ? (
+                  <ChevronDown className="ml-auto h-4 w-4" />
+                ) : (
+                  <ChevronRight className="ml-auto h-4 w-4" />
+                )}
+              </button>
+              
+              {menuPlanningExpanded && (
+                <div className="mt-1 space-y-1 pl-6">
+                  {menuPlanningSubMenus.map((subItem) => (
+                    <Link
+                      key={subItem.name}
+                      href={subItem.href}
+                      className={cn(
+                        "flex items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                        subItem.current ? "bg-accent" : "transparent",
+                        subItem.current ? "text-accent-foreground" : "text-muted-foreground"
+                      )}
+                    >
+                      <subItem.icon className="h-4 w-4" />
+                      {subItem.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Production with Submenu */}
+            <div>
+              <button
+                onClick={() => setProductionExpanded(!productionExpanded)}
+                className={cn(
+                  "flex w-full items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                  pathname.startsWith("/dashboard/production") ? "bg-accent" : "transparent",
+                  pathname.startsWith("/dashboard/production") ? "text-accent-foreground" : "text-muted-foreground"
+                )}
+              >
+                <ChefHat className="h-4 w-4" />
+                Production Management
+                {productionExpanded ? (
+                  <ChevronDown className="ml-auto h-4 w-4" />
+                ) : (
+                  <ChevronRight className="ml-auto h-4 w-4" />
+                )}
+              </button>
               
               {productionExpanded && (
                 <div className="mt-1 space-y-1 pl-6">
@@ -449,10 +467,9 @@ export function Sidebar({ className, ...props }: SidebarProps) {
                   ))}
                 </div>
               )}
-              </div>
-            </PermissionGuard>
+            </div>
 
-            {/* Monitoring Menu with Submenu */}
+            {/* Monitoring Submenu */}
             <div>
               <button
                 onClick={() => setMonitoringExpanded(!monitoringExpanded)}
@@ -490,58 +507,8 @@ export function Sidebar({ className, ...props }: SidebarProps) {
                 </div>
               )}
             </div>
-
-            {/* Posyandu Menu with Submenu */}
-            <PermissionGuard permission={['posyandu.view']} requireAll={false}>
-              <div>
-                <button
-                  onClick={() => setPosyanduExpanded(!posyanduExpanded)}
-                  className={cn(
-                    "flex w-full items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                    pathname.startsWith("/dashboard/posyandu") ? "bg-accent" : "transparent",
-                    pathname.startsWith("/dashboard/posyandu") ? "text-accent-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  <Heart className="h-4 w-4" />
-                  Posyandu Management
-                  {posyanduExpanded ? (
-                    <ChevronDown className="ml-auto h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="ml-auto h-4 w-4" />
-                  )}
-                </button>
-                
-                {posyanduExpanded && (
-                  <div className="mt-1 space-y-1 pl-6">
-                    {posyanduSubMenus.map((subItem) => (
-                      <Link
-                        key={subItem.name}
-                        href={subItem.href}
-                        className={cn(
-                          "flex items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                          subItem.current ? "bg-accent" : "transparent",
-                          subItem.current ? "text-accent-foreground" : "text-muted-foreground"
-                        )}
-                      >
-                        <subItem.icon className="h-4 w-4" />
-                        {subItem.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </PermissionGuard>
           </div>
         </div>
-      </div>
-      <div className="px-3 py-2">
-        <button
-          onClick={() => signOut()}
-          className="flex w-full items-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
-        >
-          <LogOut className="h-4 w-4" />
-          Keluar
-        </button>
       </div>
     </div>
   )

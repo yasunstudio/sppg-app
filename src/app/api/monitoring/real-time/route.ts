@@ -31,20 +31,18 @@ export async function GET(request: NextRequest) {
         startDate.setHours(0, 0, 0, 0);
     }
 
-    // Get real-time metrics in parallel
+    // Get real-time metrics in parallel - Posyandu metrics removed
     const [
       productionMetrics,
       distributionMetrics,
       qualityMetrics,
       inventoryMetrics,
-      posyanduMetrics,
       systemAlerts,
     ] = await Promise.all([
       getProductionMetrics(startDate, now),
       getDistributionMetrics(startDate, now),
       getQualityMetrics(startDate, now),
       getInventoryMetrics(),
-      getPosyanduMetrics(startDate, now),
       getSystemAlerts(startDate, now),
     ]);
 
@@ -65,7 +63,6 @@ export async function GET(request: NextRequest) {
         distribution: distributionMetrics,
         quality: qualityMetrics,
         inventory: inventoryMetrics,
-        posyandu: posyanduMetrics,
       },
       alerts: systemAlerts,
       recommendations: generateSystemRecommendations({
@@ -280,24 +277,6 @@ async function getInventoryMetrics() {
       unit: item.rawMaterial.unit,
     })),
     status: stockStatus,
-  };
-}
-
-// Get posyandu metrics
-async function getPosyanduMetrics(startDate: Date, endDate: Date) {
-  const [totalPosyandu, activePrograms, totalParticipants] = await Promise.all([
-    prisma.posyandu.count(),
-    prisma.posyanduProgram.count({
-      where: { status: "ACTIVE" },
-    }),
-    prisma.posyanduParticipant.count(),
-  ]);
-
-  return {
-    totalPosyandu,
-    activePrograms,
-    totalParticipants,
-    status: activePrograms > 0 ? "good" : "needs_attention",
   };
 }
 

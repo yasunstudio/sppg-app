@@ -1,114 +1,257 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
 
-// POST /api/purchase-orders - Create new purchase order
-export async function POST(request: NextRequest) {
+// GET /api/purchase-orders - Get all purchase orders with pagination and filtering
+export async function GET(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { supplierId, orderDate, deliveryDate, notes, items, totalAmount } = body
-
-    // Validate required fields
-    if (!supplierId || !orderDate || !items || items.length === 0) {
-      return NextResponse.json(
-        { error: 'Missing required fields: supplierId, orderDate, and items are required' },
-        { status: 400 }
-      )
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // For now, simulate creating a purchase order
-    // In production, this would save to a database table
-    const purchaseOrder = {
-      id: `po-${Date.now()}`,
-      supplierId,
-      orderDate: new Date(orderDate),
-      deliveryDate: deliveryDate ? new Date(deliveryDate) : null,
-      totalAmount: totalAmount || 0,
-      notes: notes || null,
-      status: 'PENDING',
-      items: items.map((item: any, index: number) => ({
-        id: `item-${Date.now()}-${index}`,
-        materialName: item.materialName || '',
-        quantity: item.quantity || 0,
-        unitPrice: item.unitPrice || 0,
-        totalPrice: (item.quantity || 0) * (item.unitPrice || 0),
-        notes: item.notes || null
-      })),
-      createdAt: new Date()
+    const { searchParams } = new URL(request.url)
+    
+    // Pagination
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const skip = (page - 1) * limit
+
+    // Filters
+    const search = searchParams.get('search') || ''
+    const status = searchParams.get('status') || ''
+    const supplierId = searchParams.get('supplierId') || ''
+    const orderBy = searchParams.get('orderBy') || 'createdAt'
+    const orderDirection = searchParams.get('orderDirection') || 'desc'
+
+    // Build where clause
+    const where: any = {}
+
+    if (search) {
+      where.OR = [
+        { poNumber: { contains: search, mode: 'insensitive' } },
+        { supplier: { name: { contains: search, mode: 'insensitive' } } },
+        { notes: { contains: search, mode: 'insensitive' } },
+      ]
     }
 
-    // Simulate delay for realistic API behavior
-    await new Promise(resolve => setTimeout(resolve, 500))
+    if (status) {
+      where.status = status
+    }
+
+    if (supplierId) {
+      where.supplierId = supplierId
+    }
+
+    // Execute queries
+    const [purchaseOrders, total] = await Promise.all([
+      prisma.purchaseOrder.findMany({
+        where,
+        include: {
+          supplier: {
+            select: {
+              id: true,
+              name: true,
+              contactName: true,
+              email: true,
+              phone: true,
+            }
+          },
+          orderedByUser: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            }
+          },
+          receivedByUser: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            }
+          },
+          items: {
+            include: {
+              rawMaterial: {
+                select: {
+                  id: true,
+                  name: true,
+                  category: true,
+                  unit: true,
+                }
+              }
+            }
+          },
+          _count: {
+            select: {
+              items: true
+            }
+          }
+        },
+        skip,
+        take: limit,
+        orderBy: { [orderBy]: orderDirection },
+      }),
+      prisma.purchaseOrder.count({ where })
+    ])
+
+    const totalPages = Math.ceil(total / limit)
 
     return NextResponse.json({
-      data: purchaseOrder,
-      message: 'Purchase order created successfully'
+      success: true,
+      data: purchaseOrders,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
     })
   } catch (error) {
-    console.error('Error creating purchase order:', error)
+    console.error('GET /api/purchase-orders error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-// GET /api/purchase-orders - Get purchase orders (mock data for now)
-export async function GET(request: NextRequest) {
+// POST /api/purchase-orders - Create new purchase order
+export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
-    const limit = searchParams.get('limit')
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    // Mock purchase orders data
-    const mockPurchaseOrders = [
-      {
-        id: 'po-001',
-        supplierId: 'supplier-1',
-        supplier: { name: 'CV Sumber Rejeki' },
-        orderDate: new Date('2025-08-25'),
-        deliveryDate: new Date('2025-08-30'),
-        totalAmount: 5500000,
-        status: 'PENDING',
-        notes: 'Urgent order for weekly stock',
-        items: [
-          { materialName: 'Beras Premium', quantity: 100, unitPrice: 25000 },
-          { materialName: 'Minyak Goreng', quantity: 50, unitPrice: 55000 }
-        ],
-        createdAt: new Date('2025-08-25')
+    const body = await request.json()
+    const {
+      supplierId,
+      expectedDelivery,
+      notes,
+      items,
+      totalAmount,
+    } = body
+
+    // Validate required fields
+    if (!supplierId || !items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json(
+        { error: 'Supplier and at least one item are required' },
+        { status: 400 }
+      )
+    }
+
+    // Validate supplier exists
+    const supplier = await prisma.supplier.findUnique({
+      where: { id: supplierId }
+    })
+
+    if (!supplier) {
+      return NextResponse.json(
+        { error: 'Supplier not found' },
+        { status: 404 }
+      )
+    }
+
+    // Validate raw materials exist
+    const rawMaterialIds = items.map((item: any) => item.rawMaterialId)
+    const rawMaterials = await prisma.rawMaterial.findMany({
+      where: { id: { in: rawMaterialIds } }
+    })
+
+    if (rawMaterials.length !== rawMaterialIds.length) {
+      return NextResponse.json(
+        { error: 'One or more raw materials not found' },
+        { status: 404 }
+      )
+    }
+
+    // Generate PO number
+    const currentYear = new Date().getFullYear()
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0')
+    const prefix = `PO${currentYear}${currentMonth}`
+    
+    const lastPO = await prisma.purchaseOrder.findFirst({
+      where: {
+        poNumber: { startsWith: prefix }
       },
-      {
-        id: 'po-002',
-        supplierId: 'supplier-2',
-        supplier: { name: 'PT Sumber Pangan Sehat' },
-        orderDate: new Date('2025-08-20'),
-        deliveryDate: new Date('2025-08-25'),
-        totalAmount: 3200000,
-        status: 'DELIVERED',
-        notes: null,
-        items: [
-          { materialName: 'Daging Ayam', quantity: 80, unitPrice: 40000 }
-        ],
-        createdAt: new Date('2025-08-20')
+      orderBy: { poNumber: 'desc' }
+    })
+
+    let sequence = 1
+    if (lastPO) {
+      const lastSequence = parseInt(lastPO.poNumber.slice(-4))
+      sequence = lastSequence + 1
+    }
+
+    const poNumber = `${prefix}${String(sequence).padStart(4, '0')}`
+
+    // Create purchase order with items
+    const purchaseOrder = await prisma.purchaseOrder.create({
+      data: {
+        poNumber,
+        supplierId,
+        orderDate: new Date(),
+        expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : null,
+        status: 'PENDING',
+        totalAmount: totalAmount || 0,
+        notes,
+        orderedBy: session.user.id,
+        items: {
+          create: items.map((item: any) => ({
+            rawMaterialId: item.rawMaterialId,
+            quantity: item.quantity,
+            unit: item.unit,
+            unitPrice: item.unitPrice,
+            totalPrice: item.quantity * item.unitPrice,
+            notes: item.notes,
+          }))
+        }
+      },
+      include: {
+        supplier: {
+          select: {
+            id: true,
+            name: true,
+            contactName: true,
+            email: true,
+            phone: true,
+          }
+        },
+        orderedByUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        },
+        items: {
+          include: {
+            rawMaterial: {
+              select: {
+                id: true,
+                name: true,
+                category: true,
+                unit: true,
+              }
+            }
+          }
+        }
       }
-    ]
-
-    let filteredOrders = mockPurchaseOrders
-    if (status) {
-      filteredOrders = mockPurchaseOrders.filter(order => order.status === status)
-    }
-
-    if (limit) {
-      filteredOrders = filteredOrders.slice(0, parseInt(limit))
-    }
+    })
 
     return NextResponse.json({
-      data: filteredOrders,
-      total: filteredOrders.length,
-      message: 'Purchase orders fetched successfully'
+      success: true,
+      data: purchaseOrder,
+      message: 'Purchase order created successfully'
     })
   } catch (error) {
-    console.error('Error fetching purchase orders:', error)
+    console.error('POST /api/purchase-orders error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Failed to create purchase order' },
       { status: 500 }
     )
   }

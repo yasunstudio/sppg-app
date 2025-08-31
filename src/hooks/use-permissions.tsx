@@ -4,7 +4,7 @@
 
 'use client'
 
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 import { usePermission, useModuleAccess, useIsAdmin, useIsManager, useIsStaff } from './use-role-permissions'
 
 // Permission Guard Component

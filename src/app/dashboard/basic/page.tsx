@@ -140,7 +140,6 @@ export default function BasicDashboard() {
 
   const getEventIcon = (type: string) => {
     switch (type) {
-      case 'posyandu': return <Users className="h-4 w-4 text-blue-600" />
       case 'production': return <Calendar className="h-4 w-4 text-green-600" />
       case 'delivery': return <TrendingUp className="h-4 w-4 text-orange-600" />
       case 'quality': return <CheckCircle className="h-4 w-4 text-red-600" />

@@ -97,15 +97,6 @@ export async function GET(request: NextRequest) {
       includeOptions.profile = true
     }
 
-    if (include.includes("posyandus")) {
-      includeOptions.posyandus = {
-        select: {
-          id: true,
-          name: true
-        }
-      }
-    }
-
     // Get total count
     const totalCount = await prisma.user.count({ where })
 
@@ -124,7 +115,7 @@ export async function GET(request: NextRequest) {
     const transformedUsers = users.map(user => ({
       ...user,
       status: user.isActive ? 'ACTIVE' : 'INACTIVE',
-      role: (user.roles as any)[0]?.role?.name || 'VOLUNTEER' // Get first role name
+      role: (user.roles as any)[0]?.role?.name || 'VIEWER' // Get first role name
     }))
 
     // Get stats

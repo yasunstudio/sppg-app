@@ -65,11 +65,7 @@ async function generateDashboardData(roles: string[], userId: string, userName: 
       notifications: unreadNotifications
     }
 
-    // Data berdasarkan role
-    if (roles.includes('VOLUNTEER') || roles.includes('POSYANDU_COORDINATOR')) {
-      return await getPosyanduData(baseStats, userId, userName)
-    }
-    
+    // Data berdasarkan role - Posyandu functions removed
     if (roles.includes('CHEF') || roles.includes('KITCHEN_STAFF')) {
       return await getKitchenData(baseStats, userId, userName)
     }
@@ -101,106 +97,6 @@ async function generateDashboardData(roles: string[], userId: string, userName: 
       tasks: [],
       events: []
     }
-  }
-}
-
-async function getPosyanduData(stats: any, userId: string, userName: string) {
-  try {
-    // Ambil data posyandu yang benar-benar ada
-    const posyanduCount = await prisma.posyandu.count()
-    
-    // Ambil participant count yang real
-    const participantCount = await prisma.posyanduParticipant.count()
-    
-    // Ambil schools yang aktif
-    const schoolCount = await prisma.school.count()
-    
-    // Ambil recent posyandu activities jika ada
-    const recentActivities = await prisma.posyanduActivity.findMany({
-      take: 3,
-      orderBy: {
-        createdAt: 'desc'
-      },
-      include: {
-        posyandu: true
-      }
-    })
-
-    // Generate tasks berdasarkan data real
-    const tasks = []
-    
-    if (participantCount > 0) {
-      tasks.push({
-        id: 'posyandu-1',
-        title: `Monitoring ${participantCount} peserta posyandu`,
-        priority: 'high',
-        dueTime: '08:00',
-        completed: false,
-        type: 'monitoring'
-      })
-    }
-    
-    if (posyanduCount > 0) {
-      tasks.push({
-        id: 'posyandu-2',
-        title: `Koordinasi ${posyanduCount} lokasi posyandu`,
-        priority: 'medium',
-        dueTime: '10:00',
-        completed: false,
-        type: 'coordination'
-      })
-    }
-    
-    if (schoolCount > 0) {
-      tasks.push({
-        id: 'posyandu-3',
-        title: `Update data ${schoolCount} sekolah`,
-        priority: 'medium',
-        dueTime: '14:00',
-        completed: true,
-        type: 'data-entry'
-      })
-    }
-
-    // Generate events berdasarkan data real
-    const events = []
-    
-    if (recentActivities.length > 0) {
-      recentActivities.forEach((activity, idx) => {
-        events.push({
-          id: activity.id,
-          title: `${activity.activityType} - ${activity.posyandu.name}`,
-          time: `${9 + idx}:00`,
-          type: 'posyandu',
-          location: activity.posyandu.address
-        })
-      })
-    } else {
-      // Fallback jika tidak ada activity
-      if (posyanduCount > 0) {
-        events.push({
-          id: 'event-1',
-          title: `Kegiatan posyandu (${posyanduCount} lokasi)`,
-          time: '09:00',
-          type: 'posyandu',
-          location: 'Berbagai lokasi'
-        })
-      }
-    }
-
-    return {
-      stats: {
-        ...stats,
-        todayTasks: tasks.length,
-        completedTasks: tasks.filter(t => t.completed).length,
-        upcomingEvents: events.length
-      },
-      tasks,
-      events
-    }
-  } catch (error) {
-    console.error('Error in getPosyanduData:', error)
-    return getDefaultData(stats)
   }
 }
 

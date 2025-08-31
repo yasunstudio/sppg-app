@@ -108,9 +108,8 @@ export async function canAccessModule(roleName: string, module: string): Promise
     distribution: ['READ_DISTRIBUTION'],
     financial: ['READ_FINANCIAL'],
     quality: ['READ_QC'],
-    posyandu: ['READ_POSYANDU'],
-    participants: ['READ_PARTICIPANT'],
-    'health-records': ['READ_HEALTH_RECORD'],
+    schools: ['READ_SCHOOL'],
+    students: ['READ_STUDENT'],
     reports: ['VIEW_REPORTS'],
     admin: ['MANAGE_ROLES', 'SYSTEM_CONFIG'],
   }

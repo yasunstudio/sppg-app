@@ -9,27 +9,28 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  username      String?        @unique
-  name          String
-  password      String
-  phone         String?
-  address       String?
-  avatar        String?
-  isActive      Boolean        @default(true)
-  emailVerified DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  deletedAt     DateTime?
-  accounts      Account[]
-  auditLogs     AuditLog[]
-  createdMenus  Menu[]
-  notifications Notification[]
-  sessions      Session[]
-  roles         UserRole[]
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  username           String?             @unique
+  name               String
+  password           String
+  phone              String?
+  address            String?
+  avatar             String?
+  isActive           Boolean             @default(true)
+  emailVerified      DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  deletedAt          DateTime?
+  accounts           Account[]
+  auditLogs          AuditLog[]
+  createdMenus       Menu[]
+  notifications      Notification[]
+  sessions           Session[]
+  roles              UserRole[]
   qualityCheckpoints QualityCheckpoint[]
-  volunteerProfile PosyanduVolunteer? @relation("VolunteerUser")
+  orderedPurchases   PurchaseOrder[]     @relation("OrderedBy")
+  receivedPurchases  PurchaseOrder[]     @relation("ReceivedBy")
 
   @@map("users")
 }
@@ -140,379 +141,100 @@ model Student {
 }
 
 model Class {
-  id            String    @id @default(cuid())
-  name          String
-  grade         Int
-  capacity      Int
-  currentCount  Int       @default(0)
-  teacherName   String?
-  notes         String?
-  schoolId      String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
-  school        School    @relation(fields: [schoolId], references: [id])
+  id           String    @id @default(cuid())
+  name         String
+  grade        Int
+  capacity     Int
+  currentCount Int       @default(0)
+  teacherName  String?
+  notes        String?
+  schoolId     String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  school       School    @relation(fields: [schoolId], references: [id])
 
   @@map("classes")
 }
 
-model Posyandu {
-  id               String            @id @default(cuid())
-  name             String
-  headName         String
-  headPhone        String
-  address          String
-  notes            String?
-  latitude         Float?
-  longitude        Float?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  deletedAt        DateTime?
-  deliveries       Delivery[]
-  lactatingMothers LactatingMother[]
-  pregnantWomen    PregnantWoman[]
-  toddlers         Toddler[]
-  
-  // Enhanced Posyandu relationships
-  programs         PosyanduProgram[]      @relation("PosyanduPrograms")
-  participants     PosyanduParticipant[]  @relation("PosyanduParticipants")
-  activities       PosyanduActivity[]     @relation("PosyanduActivities")
-  volunteers       PosyanduVolunteer[]    @relation("PosyanduVolunteers")
-
-  @@map("posyandu")
-}
-
-model PregnantWoman {
-  id         String    @id @default(cuid())
-  nik        String    @unique
-  name       String
-  age        Int
-  posyanduId String?
-  notes      String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime?
-  posyandu   Posyandu? @relation(fields: [posyanduId], references: [id])
-
-  @@map("pregnant_women")
-}
-
-model LactatingMother {
-  id         String    @id @default(cuid())
-  nik        String    @unique
-  name       String
-  age        Int
-  posyanduId String?
-  notes      String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime?
-  posyandu   Posyandu? @relation(fields: [posyanduId], references: [id])
-
-  @@map("lactating_mothers")
-}
-
-model Toddler {
-  id         String    @id @default(cuid())
-  nik        String    @unique
-  name       String
-  age        Int
-  gender     Gender
-  parentName String
-  posyanduId String?
-  notes      String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime?
-  posyandu   Posyandu? @relation(fields: [posyanduId], references: [id])
-
-  @@map("toddlers")
-}
-
-// Enhanced Posyandu Management Models
-model PosyanduProgram {
-  id                   String                @id @default(cuid())
-  posyanduId           String
-  name                 String
-  description          String?
-  programType          ProgramType
-  targetBeneficiaries  Int
-  startDate            DateTime
-  endDate              DateTime?
-  status               ProgramStatus         @default(ACTIVE)
-  budget               Decimal?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  deletedAt            DateTime?
-  
-  // Relationships
-  posyandu             Posyandu              @relation("PosyanduPrograms", fields: [posyanduId], references: [id])
-  participants         PosyanduParticipant[]
-  activities           PosyanduActivity[]
-  nutritionPlans       NutritionPlan[]
-
-  @@map("posyandu_programs")
-}
-
-model PosyanduParticipant {
-  id               String               @id @default(cuid())
-  posyanduId       String
-  programId        String?
-  
-  // Personal Info
-  name             String
-  nik              String?              @unique
-  dateOfBirth      DateTime
-  gender           Gender
-  address          String
-  phoneNumber      String?
-  
-  // Participant Type
-  participantType  ParticipantType
-  
-  // Health Status
-  currentWeight    Decimal?
-  currentHeight    Decimal?
-  nutritionStatus  NutritionStatus?
-  healthCondition  String?
-  allergies        String?
-  
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  deletedAt        DateTime?
-  
-  // Relationships
-  posyandu         Posyandu             @relation("PosyanduParticipants", fields: [posyanduId], references: [id])
-  program          PosyanduProgram?     @relation(fields: [programId], references: [id])
-  healthRecords    HealthRecord[]
-  nutritionPlans   NutritionPlan[]
-
-  @@map("posyandu_participants")
-}
-
-model HealthRecord {
-  id                  String                @id @default(cuid())
-  participantId       String
-  recordDate          DateTime
-  
-  // Measurements
-  weight              Decimal?
-  height              Decimal?
-  headCircumference   Decimal?              // For toddlers
-  armCircumference    Decimal?              // MUAC
-  
-  // Health Indicators
-  bloodPressure       String?
-  hemoglobin          Decimal?
-  temperature         Decimal?
-  
-  // Growth Assessment
-  weightForAge        String?               // Z-score category
-  heightForAge        String?               // Z-score category
-  weightForHeight     String?               // Z-score category
-  
-  // Clinical Notes
-  symptoms            String?
-  diagnosis           String?
-  treatment           String?
-  notes               String?
-  
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  deletedAt           DateTime?
-  
-  // Relationships
-  participant         PosyanduParticipant   @relation(fields: [participantId], references: [id])
-
-  @@map("health_records")
-}
-
-model NutritionPlan {
-  id                  String                @id @default(cuid())
-  participantId       String
-  programId           String?
-  
-  planName            String
-  description         String?
-  targetCalories      Int?
-  targetProtein       Decimal?
-  targetFat           Decimal?
-  targetCarbs         Decimal?
-  
-  // Special Requirements
-  dietaryRestrictions String?
-  supplementation     String?
-  
-  startDate           DateTime
-  endDate             DateTime?
-  status              PlanStatus            @default(ACTIVE)
-  
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  deletedAt           DateTime?
-  
-  // Relationships
-  participant         PosyanduParticipant   @relation(fields: [participantId], references: [id])
-  program             PosyanduProgram?      @relation(fields: [programId], references: [id])
-  recipes             NutritionPlanRecipe[]
-
-  @@map("nutrition_plans")
-}
-
-model NutritionPlanRecipe {
-  id               String          @id @default(cuid())
-  nutritionPlanId  String
-  recipeId         String
-  
-  frequency        String          // Daily, Weekly, etc.
-  portionSize      Decimal
-  mealTime         MealTime
-  notes            String?
-  
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  deletedAt        DateTime?
-  
-  // Relationships
-  nutritionPlan    NutritionPlan   @relation(fields: [nutritionPlanId], references: [id])
-  recipe           Recipe          @relation("NutritionPlanRecipes", fields: [recipeId], references: [id])
-
-  @@map("nutrition_plan_recipes")
-}
-
-model PosyanduActivity {
-  id                  String           @id @default(cuid())
-  posyanduId          String
-  programId           String?
-  
-  activityName        String
-  activityType        ActivityType
-  description         String?
-  scheduledDate       DateTime
-  actualDate          DateTime?
-  duration            Int?             // minutes
-  
-  participantCount    Int?
-  targetParticipants  Int?
-  
-  status              ActivityStatus   @default(PLANNED)
-  notes               String?
-  
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  deletedAt           DateTime?
-  
-  // Relationships
-  posyandu            Posyandu         @relation("PosyanduActivities", fields: [posyanduId], references: [id])
-  program             PosyanduProgram? @relation(fields: [programId], references: [id])
-
-  @@map("posyandu_activities")
-}
-
-model PosyanduVolunteer {
-  id               String           @id @default(cuid())
-  posyanduId       String
-  userId           String?          @unique
-  
-  name             String
-  phone            String?
-  email            String?
-  address          String
-  
-  role             VolunteerRole
-  specialization   String?
-  trainingStatus   TrainingStatus   @default(BASIC)
-  activeStatus     Boolean          @default(true)
-  
-  joinDate         DateTime
-  
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  deletedAt        DateTime?
-  
-  // Relationships
-  posyandu         Posyandu         @relation("PosyanduVolunteers", fields: [posyanduId], references: [id])
-  user             User?            @relation("VolunteerUser", fields: [userId], references: [id])
-
-  @@map("posyandu_volunteers")
-}
-
 model RawMaterial {
-  id              String               @id @default(cuid())
-  name            String
-  category        MaterialCategory
-  unit            String
-  description     String?
-  caloriesPer100g Float?
-  proteinPer100g  Float?
-  fatPer100g      Float?
-  carbsPer100g    Float?
-  fiberPer100g    Float?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  deletedAt       DateTime?
-  inventory       InventoryItem[]
-  menuItems       MenuItemIngredient[]
+  id                 String               @id @default(cuid())
+  name               String
+  category           MaterialCategory
+  unit               String
+  description        String?
+  caloriesPer100g    Float?
+  proteinPer100g     Float?
+  fatPer100g         Float?
+  carbsPer100g       Float?
+  fiberPer100g       Float?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  deletedAt          DateTime?
+  inventory          InventoryItem[]
+  menuItems          MenuItemIngredient[]
+  purchaseOrderItems PurchaseOrderItem[]
 
   @@map("raw_materials")
 }
 
 model InventoryItem {
-  id              String                 @id @default(cuid())
-  rawMaterialId   String
-  quantity        Float
-  unitPrice       Float
-  totalPrice      Float
-  expiryDate      DateTime?
-  batchNumber     String?
-  supplierId      String?
-  qualityStatus   QualityStatus          @default(GOOD)
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
-  deletedAt       DateTime?
-  rawMaterial     RawMaterial            @relation(fields: [rawMaterialId], references: [id])
-  supplier        Supplier?              @relation(fields: [supplierId], references: [id])
+  id            String        @id @default(cuid())
+  rawMaterialId String
+  quantity      Float
+  unitPrice     Float
+  totalPrice    Float
+  expiryDate    DateTime?
+  batchNumber   String?
+  supplierId    String?
+  qualityStatus QualityStatus @default(GOOD)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?
+  rawMaterial   RawMaterial   @relation(fields: [rawMaterialId], references: [id])
+  supplier      Supplier?     @relation(fields: [supplierId], references: [id])
 
   @@map("inventory_items")
 }
 
 model Supplier {
-  id          String          @id @default(cuid())
-  name        String
-  contactName String
-  phone       String
-  email       String?
-  address     String
-  isActive    Boolean         @default(true)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  deletedAt   DateTime?
-  inventory   InventoryItem[]
-  items       Item[]
+  id             String          @id @default(cuid())
+  name           String
+  contactName    String
+  phone          String
+  email          String?
+  address        String
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+  inventory      InventoryItem[]
+  items          Item[]
+  purchaseOrders PurchaseOrder[]
 
   @@map("suppliers")
 }
 
 model Menu {
-  id            String       @id @default(cuid())
-  name          String
-  description   String?
-  menuDate      DateTime
-  mealType      MealType     @default(LUNCH)
-  targetGroup   TargetGroup  @default(STUDENT)
-  isActive      Boolean      @default(true)
-  createdById   String
-  totalCalories Float?
-  totalProtein  Float?
-  totalFat      Float?
-  totalCarbs    Float?
-  totalFiber    Float?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  deletedAt     DateTime?
-  menuItems     MenuItem[]
-  createdBy     User         @relation(fields: [createdById], references: [id])
-  recipes       Recipe[]
+  id              String           @id @default(cuid())
+  name            String
+  description     String?
+  menuDate        DateTime
+  mealType        MealType         @default(LUNCH)
+  targetGroup     TargetGroup      @default(STUDENT)
+  isActive        Boolean          @default(true)
+  createdById     String
+  totalCalories   Float?
+  totalProtein    Float?
+  totalFat        Float?
+  totalCarbs      Float?
+  totalFiber      Float?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
+  menuItems       MenuItem[]
+  createdBy       User             @relation(fields: [createdById], references: [id])
+  recipes         Recipe[]
   productionPlans ProductionPlan[]
 
   @@map("menus")
@@ -573,10 +295,10 @@ model QualityCheck {
   notes         String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
-  
+
   // Polymorphic relations - no hard foreign keys to allow flexibility
   // Relations are managed at application level based on referenceType
-  
+
   @@unique([referenceType, referenceId])
   @@index([referenceType, referenceId])
   @@map("quality_checks")
@@ -599,45 +321,45 @@ model FoodSample {
 }
 
 model Driver {
-  id              String        @id @default(cuid())
-  employeeId      String        @unique
-  name            String
-  phone           String
-  email           String?
-  licenseNumber   String        @unique
-  licenseExpiry   DateTime
-  address         String?
+  id               String         @id @default(cuid())
+  employeeId       String         @unique
+  name             String
+  phone            String
+  email            String?
+  licenseNumber    String         @unique
+  licenseExpiry    DateTime
+  address          String?
   emergencyContact String?
-  emergencyPhone  String?
-  isActive        Boolean       @default(true)
-  rating          Float?        @default(5.0)
-  totalDeliveries Int           @default(0)
-  notes           String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  deletedAt       DateTime?
-  distributions   Distribution[]
-  deliveries      Delivery[]
+  emergencyPhone   String?
+  isActive         Boolean        @default(true)
+  rating           Float?         @default(5.0)
+  totalDeliveries  Int            @default(0)
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  deletedAt        DateTime?
+  distributions    Distribution[]
+  deliveries       Delivery[]
 
   @@map("drivers")
 }
 
 model Distribution {
-  id                String                @id @default(cuid())
-  distributionDate  DateTime              @default(now())
+  id                String               @id @default(cuid())
+  distributionDate  DateTime             @default(now())
   driverId          String?
   vehicleId         String?
-  status            DistributionStatus    @default(PREPARING)
+  status            DistributionStatus   @default(PREPARING)
   totalPortions     Int
   notes             String?
   estimatedDuration Int?
   actualDuration    Int?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
   deliveries        Delivery[]
   schools           DistributionSchool[]
-  driver            Driver?               @relation(fields: [driverId], references: [id])
-  vehicle           Vehicle?              @relation(fields: [vehicleId], references: [id])
+  driver            Driver?              @relation(fields: [driverId], references: [id])
+  vehicle           Vehicle?             @relation(fields: [vehicleId], references: [id])
 
   @@map("distributions")
 }
@@ -677,7 +399,6 @@ model Delivery {
   id                String         @id @default(cuid())
   distributionId    String
   schoolId          String?
-  posyanduId        String?
   vehicleId         String?
   driverId          String?
   deliveryOrder     Int
@@ -692,7 +413,6 @@ model Delivery {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   distribution      Distribution   @relation(fields: [distributionId], references: [id])
-  posyandu          Posyandu?      @relation(fields: [posyanduId], references: [id])
   school            School?        @relation(fields: [schoolId], references: [id])
   vehicle           Vehicle?       @relation(fields: [vehicleId], references: [id])
   driver            Driver?        @relation(fields: [driverId], references: [id])
@@ -993,88 +713,87 @@ enum RecipeDifficulty {
 }
 
 enum ItemCategory {
-  STAPLE_FOOD         // Makanan pokok (beras, mie, roti)
-  PROTEIN             // Protein (daging, ikan, telur, tahu, tempe)
-  VEGETABLES          // Sayuran
-  FRUITS              // Buah-buahan
-  DAIRY               // Susu dan produk olahan susu
-  SPICES_SEASONING    // Bumbu dan penyedap
-  COOKING_OIL         // Minyak goreng
-  BEVERAGES           // Minuman
-  SNACKS              // Camilan
-  OTHERS              // Lainnya
+  STAPLE_FOOD // Makanan pokok (beras, mie, roti)
+  PROTEIN // Protein (daging, ikan, telur, tahu, tempe)
+  VEGETABLES // Sayuran
+  FRUITS // Buah-buahan
+  DAIRY // Susu dan produk olahan susu
+  SPICES_SEASONING // Bumbu dan penyedap
+  COOKING_OIL // Minyak goreng
+  BEVERAGES // Minuman
+  SNACKS // Camilan
+  OTHERS // Lainnya
 }
 
 enum ItemUnit {
-  KG                  // Kilogram
-  GRAM                // Gram
-  LITER               // Liter
-  ML                  // Mililiter
-  PCS                 // Pieces/Buah
-  PACK                // Pack/Kemasan
-  BOX                 // Box/Kotak
-  BOTTLE              // Botol
-  CAN                 // Kaleng
-  SACHET              // Sachet
+  KG // Kilogram
+  GRAM // Gram
+  LITER // Liter
+  ML // Mililiter
+  PCS // Pieces/Buah
+  PACK // Pack/Kemasan
+  BOX // Box/Kotak
+  BOTTLE // Botol
+  CAN // Kaleng
+  SACHET // Sachet
 }
 
 // Raw Materials and Items
 model Item {
-  id                    String                @id @default(cuid())
-  name                  String
-  description           String?
-  category              ItemCategory
-  unit                  ItemUnit
-  unitPrice             Float?
-  nutritionPer100g      Json?                 // Nutrition per 100g
-  allergens             String[]
-  shelfLife             Int?                  // days
-  storageRequirement    String?
-  supplierId            String?
-  isActive              Boolean               @default(true)
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  supplier              Supplier?             @relation(fields: [supplierId], references: [id])
-  recipeIngredients     RecipeIngredient[]
+  id                 String             @id @default(cuid())
+  name               String
+  description        String?
+  category           ItemCategory
+  unit               ItemUnit
+  unitPrice          Float?
+  nutritionPer100g   Json? // Nutrition per 100g
+  allergens          String[]
+  shelfLife          Int? // days
+  storageRequirement String?
+  supplierId         String?
+  isActive           Boolean            @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  supplier           Supplier?          @relation(fields: [supplierId], references: [id])
+  recipeIngredients  RecipeIngredient[]
 
   @@map("items")
 }
 
 // Recipe and Production Models
 model Recipe {
-  id                    String            @id @default(cuid())
-  name                  String
-  description           String?
-  category              RecipeCategory
-  servingSize           Int
-  prepTime              Int // minutes
-  cookTime              Int // minutes
-  difficulty            RecipeDifficulty
-  instructions          Json
-  nutritionInfo         Json?
-  allergenInfo          String[]
-  cost                  Float?
-  isActive              Boolean           @default(true)
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
-  ingredients           RecipeIngredient[]
-  menus                 Menu[]
-  productionBatches     ProductionBatch[]
-  nutritionPlans        NutritionPlanRecipe[] @relation("NutritionPlanRecipes")
+  id                String             @id @default(cuid())
+  name              String
+  description       String?
+  category          RecipeCategory
+  servingSize       Int
+  prepTime          Int // minutes
+  cookTime          Int // minutes
+  difficulty        RecipeDifficulty
+  instructions      Json
+  nutritionInfo     Json?
+  allergenInfo      String[]
+  cost              Float?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  ingredients       RecipeIngredient[]
+  menus             Menu[]
+  productionBatches ProductionBatch[]
 
   @@map("recipes")
 }
 
 model RecipeIngredient {
-  id         String   @id @default(cuid())
-  recipeId   String
-  itemId     String
-  quantity   Float
-  unit       String
-  notes      String?
-  createdAt  DateTime @default(now())
-  recipe     Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  item       Item     @relation(fields: [itemId], references: [id])
+  id        String   @id @default(cuid())
+  recipeId  String
+  itemId    String
+  quantity  Float
+  unit      String
+  notes     String?
+  createdAt DateTime @default(now())
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  item      Item     @relation(fields: [itemId], references: [id])
 
   @@map("recipe_ingredients")
 }
@@ -1082,22 +801,22 @@ model RecipeIngredient {
 // Production Management Models
 
 model ProductionPlan {
-  id                String               @id @default(cuid())
-  planDate          DateTime
-  targetPortions    Int
-  menuId            String?
-  kitchenId         String?
-  status            ProductionPlanStatus @default(PLANNED)
-  plannedStartTime  DateTime?
-  plannedEndTime    DateTime?
-  actualStartTime   DateTime?
-  actualEndTime     DateTime?
-  notes             String?
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  menu              Menu?                @relation(fields: [menuId], references: [id])
-  batches           ProductionBatch[]
-  qualityChecks     QualityCheckpoint[]
+  id               String               @id @default(cuid())
+  planDate         DateTime
+  targetPortions   Int
+  menuId           String?
+  kitchenId        String?
+  status           ProductionPlanStatus @default(PLANNED)
+  plannedStartTime DateTime?
+  plannedEndTime   DateTime?
+  actualStartTime  DateTime?
+  actualEndTime    DateTime?
+  notes            String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  menu             Menu?                @relation(fields: [menuId], references: [id])
+  batches          ProductionBatch[]
+  qualityChecks    QualityCheckpoint[]
 
   @@map("production_plans")
 }
@@ -1143,42 +862,42 @@ model ProductionResource {
 }
 
 model ResourceUsage {
-  id                String             @id @default(cuid())
-  batchId           String
-  resourceId        String
-  startTime         DateTime
-  endTime           DateTime?
-  plannedDuration   Int // minutes
-  actualDuration    Int? // minutes
-  efficiency        Float? // percentage
-  notes             String?
-  createdAt         DateTime           @default(now())
-  batch             ProductionBatch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  resource          ProductionResource @relation(fields: [resourceId], references: [id])
+  id              String             @id @default(cuid())
+  batchId         String
+  resourceId      String
+  startTime       DateTime
+  endTime         DateTime?
+  plannedDuration Int // minutes
+  actualDuration  Int? // minutes
+  efficiency      Float? // percentage
+  notes           String?
+  createdAt       DateTime           @default(now())
+  batch           ProductionBatch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  resource        ProductionResource @relation(fields: [resourceId], references: [id])
 
   @@map("resource_usage")
 }
 
 model QualityCheckpoint {
-  id                  String               @id @default(cuid())
-  productionPlanId    String?
-  batchId             String?
-  checkpointType      String
-  checkedAt           DateTime             @default(now())
-  checkedBy           String
-  status              QualityCheckStatus
-  temperature         Float?
-  visualInspection    String?
-  tasteTest           String?
-  textureEvaluation   String?
-  correctiveAction    String?
-  photos              String[]
-  metrics             Json?
-  notes               String?
-  createdAt           DateTime             @default(now())
-  productionPlan      ProductionPlan?      @relation(fields: [productionPlanId], references: [id])
-  batch               ProductionBatch?     @relation(fields: [batchId], references: [id])
-  checker             User                 @relation(fields: [checkedBy], references: [id])
+  id                String             @id @default(cuid())
+  productionPlanId  String?
+  batchId           String?
+  checkpointType    String
+  checkedAt         DateTime           @default(now())
+  checkedBy         String
+  status            QualityCheckStatus
+  temperature       Float?
+  visualInspection  String?
+  tasteTest         String?
+  textureEvaluation String?
+  correctiveAction  String?
+  photos            String[]
+  metrics           Json?
+  notes             String?
+  createdAt         DateTime           @default(now())
+  productionPlan    ProductionPlan?    @relation(fields: [productionPlanId], references: [id])
+  batch             ProductionBatch?   @relation(fields: [batchId], references: [id])
+  checker           User               @relation(fields: [checkedBy], references: [id])
 
   @@map("quality_checkpoints")
 }
@@ -1203,16 +922,16 @@ model ProductionMetrics {
 }
 
 model QualityStandard {
-  id              String   @id @default(cuid())
-  name            String
-  description     String
-  targetValue     Float
-  currentValue    Float
-  unit            String
-  category        QualityStandardCategory
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String                  @id @default(cuid())
+  name         String
+  description  String
+  targetValue  Float
+  currentValue Float?
+  unit         String
+  category     QualityStandardCategory
+  isActive     Boolean                 @default(true)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
 
   @@map("quality_standards")
 }
@@ -1269,95 +988,55 @@ enum QualityStandardCategory {
   SAFETY_STANDARDS
 }
 
-// Posyandu Management Enums
-enum ProgramType {
-  MATERNAL_HEALTH
-  CHILD_NUTRITION
-  IMMUNIZATION
-  FAMILY_PLANNING
-  HEALTH_EDUCATION
-  GROWTH_MONITORING
-  NUTRITION_COUNSELING
+// Purchase Management Models
+model PurchaseOrder {
+  id               String              @id @default(cuid())
+  poNumber         String              @unique
+  supplierId       String
+  orderDate        DateTime            @default(now())
+  expectedDelivery DateTime?
+  actualDelivery   DateTime?
+  status           PurchaseOrderStatus @default(PENDING)
+  totalAmount      Float?
+  notes            String?
+  orderedBy        String
+  receivedBy       String?
+  deliveredAt      DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  // Relationships
+  supplier       Supplier            @relation(fields: [supplierId], references: [id])
+  orderedByUser  User                @relation("OrderedBy", fields: [orderedBy], references: [id])
+  receivedByUser User?               @relation("ReceivedBy", fields: [receivedBy], references: [id])
+  items          PurchaseOrderItem[]
+
+  @@map("purchase_orders")
 }
 
-enum ProgramStatus {
-  ACTIVE
-  INACTIVE
-  COMPLETED
-  SUSPENDED
+model PurchaseOrderItem {
+  id              String   @id @default(cuid())
+  purchaseOrderId String
+  rawMaterialId   String
+  quantity        Float
+  unit            String
+  unitPrice       Float
+  totalPrice      Float
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  // Relationships
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  rawMaterial   RawMaterial   @relation(fields: [rawMaterialId], references: [id])
+
+  @@map("purchase_order_items")
+}
+
+enum PurchaseOrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
   CANCELLED
-}
-
-enum ParticipantType {
-  PREGNANT
-  LACTATING
-  TODDLER
-  ELDERLY
-  CHILD
-}
-
-enum NutritionStatus {
-  NORMAL
-  UNDERWEIGHT
-  OVERWEIGHT
-  STUNTED
-  WASTED
-  SEVERE_MALNUTRITION
-  OBESITY
-}
-
-enum PlanStatus {
-  ACTIVE
-  COMPLETED
-  PAUSED
-  CANCELLED
-  UNDER_REVIEW
-}
-
-enum MealTime {
-  BREAKFAST
-  LUNCH
-  DINNER
-  SNACK_MORNING
-  SNACK_AFTERNOON
-  SNACK_EVENING
-}
-
-enum ActivityType {
-  HEALTH_CHECK
-  NUTRITION_COUNSELING
-  COOKING_DEMONSTRATION
-  HEALTH_EDUCATION
-  IMMUNIZATION
-  GROWTH_MONITORING
-  WEIGHT_MEASUREMENT
-  HEIGHT_MEASUREMENT
-  BLOOD_PRESSURE_CHECK
-  HEMOGLOBIN_TEST
-}
-
-enum ActivityStatus {
-  PLANNED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-  POSTPONED
-}
-
-enum VolunteerRole {
-  CADRE_COORDINATOR
-  HEALTH_CADRE
-  NUTRITION_CADRE
-  DATA_RECORDER
-  COMMUNITY_MOBILIZER
-  TRAINING_COORDINATOR
-}
-
-enum TrainingStatus {
-  BASIC
-  INTERMEDIATE
-  ADVANCED
-  CERTIFIED
-  NEEDS_REFRESH
-  NOT_TRAINED
+  PARTIALLY_RECEIVED
 }
