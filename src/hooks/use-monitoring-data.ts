@@ -1,87 +1,80 @@
-import { useState, useEffect, useCallback } from 'react';
-import { MonitoringData } from '@/types/monitoring';
+'use client'
 
-export function useMonitoringData(initialPeriod: string = 'today') {
-  const [data, setData] = useState<MonitoringData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState(initialPeriod);
-  
-  // Load auto refresh settings from localStorage
-  const [autoRefresh, setAutoRefresh] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('monitoring-auto-refresh') === 'true';
-    }
-    return false;
-  });
-  
-  const [refreshInterval, setRefreshInterval] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('monitoring-refresh-interval');
-      return saved ? parseInt(saved) : 30000;
-    }
-    return 30000;
-  });
+import { useState, useEffect, useCallback } from 'react'
+import { MonitoringData } from '@/types/monitoring'
+import { authenticatedApiCall } from '@/lib/api-utils'
 
-  // Save settings to localStorage when they change
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('monitoring-auto-refresh', autoRefresh.toString());
-      console.log('Auto refresh setting saved:', autoRefresh);
-    }
-  }, [autoRefresh]);
+export function useMonitoringData() {
+  const [data, setData] = useState<MonitoringData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [period, setPeriod] = useState('7d')
+  const [autoRefresh, setAutoRefresh] = useState(false)
+  const [refreshInterval, setRefreshInterval] = useState(30000)
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('monitoring-refresh-interval', refreshInterval.toString());
-      console.log('Refresh interval setting saved:', refreshInterval);
-    }
-  }, [refreshInterval]);
-
-  const fetchData = useCallback(async () => {
+  // Fetch monitoring data from API
+  const fetchData = useCallback(async (selectedPeriod?: string) => {
+    setLoading(true)
+    setError(null)
+    
     try {
-      setLoading(true);
-      setError(null);
+      const currentPeriod = selectedPeriod || period
+      const result = await authenticatedApiCall<MonitoringData>(
+        `/api/monitoring?period=${currentPeriod}`
+      )
       
-      const response = await fetch(`/api/monitoring?period=${period}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch monitoring data: ${response.statusText}`);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch monitoring data')
       }
       
-      const result = await response.json();
-      setData(result);
+      setData(result.data || null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch monitoring data');
-      console.error('Error fetching monitoring data:', err);
+      console.error('Error fetching monitoring data:', err)
+      setError(err instanceof Error ? err.message : 'Failed to fetch monitoring data')
+      setData(null)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [period]);
+  }, [period])
 
-  // Fetch data when period changes
+  // Refresh function for manual refresh
+  const refresh = useCallback(() => {
+    fetchData()
+  }, [fetchData])
+
+  // Handle period change
+  const handlePeriodChange = useCallback((newPeriod: string) => {
+    setPeriod(newPeriod)
+    fetchData(newPeriod)
+  }, [fetchData])
+
+  // Initial data fetch
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData()
+  }, [fetchData])
 
-  // Auto-refresh only when enabled
+  // Auto refresh effect
   useEffect(() => {
-    if (autoRefresh) {
-      const interval = setInterval(fetchData, refreshInterval);
-      return () => clearInterval(interval);
-    }
-  }, [fetchData, autoRefresh, refreshInterval]);
+    if (!autoRefresh) return
 
-  return { 
-    data, 
-    loading, 
+    const interval = setInterval(() => {
+      fetchData()
+    }, refreshInterval)
+
+    return () => clearInterval(interval)
+  }, [autoRefresh, refreshInterval, fetchData])
+
+  return {
+    data,
+    loading,
     error,
-    period, 
-    setPeriod,
+    period,
+    setPeriod: handlePeriodChange,
     fetchData,
     autoRefresh,
     setAutoRefresh,
     refreshInterval,
-    setRefreshInterval
-  };
+    setRefreshInterval,
+    refresh
+  }
 }

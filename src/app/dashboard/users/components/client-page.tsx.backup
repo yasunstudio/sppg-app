@@ -1,12 +1,23 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useCallback } from "react"
+import { use  // Use our custom hook for data fetching
+  const { users, loading, error, pagination, fetchUsers } = useUsers()
+
+  // Debounce search input
+  useState(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+      setPage(1) // Reset to first page when searching
+    }, 500)
+    
+    return () => clearTimeout(timer) "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Pagination } from "@/components/ui/pagination"
+import { PermissionGuard, usePermissions } from "@/hooks/use-permissions"
 import {
   Select,
   SelectContent,
@@ -40,7 +51,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/components/ui/use-toast"
-import { useUsers, User } from "@/hooks/use-users"
+import { useUsers } from "@/hooks/use-users"
 import { deleteUser } from "../actions"
 import { 
   Plus, 
@@ -56,7 +67,16 @@ import {
   Loader2
 } from "lucide-react"
 
-export function ClientPage() {
+interface User {
+  id: string
+  name: string | null
+  email: string
+  role: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export function ClientPage({ users: initialUsers }: { users: User[] }) {
   const router = useRouter()
   const { toast } = useToast()
   
@@ -73,16 +93,18 @@ export function ClientPage() {
   
   // Use our custom hook for data fetching
   const { users, loading, error, pagination, fetchUsers } = useUsers()
+    sortOrder,
+  })
 
   // Debounce search input
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search)
       setPage(1) // Reset to first page when searching
     }, 500)
     
     return () => clearTimeout(timer)
-  })
+  }, [search])
 
   const handleDelete = async (userId: string) => {
     try {
@@ -93,7 +115,7 @@ export function ClientPage() {
         title: "Success",
         description: "User has been deleted successfully.",
       })
-      fetchUsers()
+      refetch()
     } catch (error) {
       toast({
         open: true,
@@ -132,8 +154,7 @@ export function ClientPage() {
     setPage(1)
   }
 
-  const getRoleBadgeColor = (roles: any[]) => {
-    const role = roles[0]?.role.name || 'USER'
+  const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "ADMIN":
         return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30"
@@ -144,14 +165,24 @@ export function ClientPage() {
     }
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("id-ID", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    }).format(new Date(dateString))
+    }).format(new Date(date))
+  }
+
+  const users = data?.users || []
+  const pagination = data?.pagination || {
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    limit: pageSize,
+    hasNextPage: false,
+    hasPreviousPage: false,
   }
 
   if (error) {
@@ -163,7 +194,7 @@ export function ClientPage() {
               <div>
                 <p className="text-destructive font-medium">Error loading users</p>
                 <p className="text-sm text-muted-foreground mt-1">{error}</p>
-                <Button onClick={() => fetchUsers()} className="mt-4">
+                <Button onClick={refetch} className="mt-4">
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Try Again
                 </Button>
@@ -176,25 +207,39 @@ export function ClientPage() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <UsersIcon className="w-8 h-8" />
-            Users Management
-          </h1>
-          <p className="text-muted-foreground">
-            Manage users and their permissions in the system.
-          </p>
+    <PermissionGuard 
+      permission={['users.view']} 
+      fallback={
+        <div className="container mx-auto py-6">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
+            <p className="text-muted-foreground">You don't have permission to view user management.</p>
+            <Button onClick={() => router.back()}>Go Back</Button>
+          </div>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/users/create">
-            <Plus className="w-4 h-4 mr-2" />
-            Add User
-          </Link>
-        </Button>
-      </div>
+      }
+    >
+      <div className="container mx-auto py-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <UsersIcon className="w-8 h-8" />
+              Users Management
+            </h1>
+            <p className="text-muted-foreground">
+              Manage users and their permissions in the system.
+            </p>
+          </div>
+          <PermissionGuard permission={['users.create']} fallback={null}>
+            <Button asChild>
+              <Link href="/dashboard/users/create">
+                <Plus className="w-4 h-4 mr-2" />
+                Add User
+              </Link>
+            </Button>
+          </PermissionGuard>
+        </div>
 
       {/* Filters */}
       <Card>
@@ -256,7 +301,7 @@ export function ClientPage() {
             {/* Refresh Button */}
             <Button 
               variant="outline" 
-              onClick={() => fetchUsers()}
+              onClick={refetch}
               disabled={loading}
             >
               {loading ? (
@@ -346,8 +391,8 @@ export function ClientPage() {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{user.email}</TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium border ${getRoleBadgeColor(user.roles)}`}>
-                          {user.roles[0]?.role.name || 'USER'}
+                        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
+                          {user.role}
                         </span>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
@@ -410,21 +455,22 @@ export function ClientPage() {
       </Card>
 
       {/* Pagination */}
-      {pagination.total > 0 && (
+      {pagination.totalCount > 0 && (
         <Card>
           <CardContent className="py-4">
             <Pagination
-              currentPage={pagination.page}
+              currentPage={pagination.currentPage}
               totalPages={pagination.totalPages}
-              totalCount={pagination.total}
+              totalCount={pagination.totalCount}
               limit={pagination.limit}
-              hasNextPage={pagination.page < pagination.totalPages}
-              hasPreviousPage={pagination.page > 1}
+              hasNextPage={pagination.hasNextPage}
+              hasPreviousPage={pagination.hasPreviousPage}
               onPageChange={handlePageChange}
             />
           </CardContent>
         </Card>
       )}
     </div>
+    </PermissionGuard>
   )
 }

@@ -152,8 +152,7 @@ export default function UserRoleAssignmentPage() {
 
   return (
     <PermissionGuard 
-      permission={['users.edit', 'system.config']} 
-      requireAll={false}
+      permission="users.edit"
       fallback={
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-4">

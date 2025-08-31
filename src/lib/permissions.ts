@@ -6,7 +6,7 @@ export const PERMISSIONS = {
   'users.create': ['SUPER_ADMIN', 'ADMIN'],
   'users.view': ['SUPER_ADMIN', 'ADMIN', 'POSYANDU_COORDINATOR'],
   'users.edit': ['SUPER_ADMIN', 'ADMIN'],
-  'users.delete': ['SUPER_ADMIN'],
+  'users.delete': ['SUPER_ADMIN', 'ADMIN'],
   
   // Menu Planning & Nutrition
   'menus.create': ['NUTRITIONIST', 'CHEF', 'SUPER_ADMIN'],
@@ -87,7 +87,7 @@ export const PERMISSIONS = {
   'analytics.view': ['SUPER_ADMIN', 'ADMIN', 'FINANCIAL_ANALYST', 'OPERATIONS_SUPERVISOR'],
   
   // System Administration
-  'system.config': ['SUPER_ADMIN'],
+  'system.config': ['SUPER_ADMIN', 'ADMIN'],
   'audit.view': ['SUPER_ADMIN', 'ADMIN', 'QUALITY_CONTROLLER'],
   
   // Feedback Management

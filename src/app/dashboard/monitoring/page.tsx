@@ -47,8 +47,9 @@ export default function MonitoringPage() {
     autoRefresh,
     setAutoRefresh,
     refreshInterval,
-    setRefreshInterval
-  } = useMonitoringData();
+    setRefreshInterval,
+    refresh
+  } = useMonitoringData()
 
   const [notification, setNotification] = useState<{
     message: string;
@@ -118,7 +119,7 @@ export default function MonitoringPage() {
           <CardContent>
             <p className="text-sm text-red-700 dark:text-red-300 mb-4">{error}</p>
             <button 
-              onClick={fetchData}
+              onClick={refresh}
               className="inline-flex items-center space-x-2 px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
             >
               <RefreshCw className="h-4 w-4" />
@@ -196,7 +197,7 @@ export default function MonitoringPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchData}
+            onClick={refresh}
             disabled={loading}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />

@@ -23,8 +23,13 @@ export function Header() {
   const { data: session } = useSession()
   const pathname = usePathname()
   const [searchQuery, setSearchQuery] = React.useState("")
-  const { notifications, count, loading } = useNotifications()
-  const { profile, getRoleDisplay } = useUserProfile()
+  const { notifications, loading } = useNotifications()
+  const count = notifications.length
+  const { profile } = useUserProfile()
+  
+  const getRoleDisplay = () => {
+    return profile?.roles?.[0]?.role?.name || 'User'
+  }
 
   // Get page title based on current path
   const getPageTitle = () => {
@@ -111,15 +116,9 @@ export function Header() {
                     Memuat notifikasi...
                   </div>
                 ) : notifications.length > 0 ? (
-                  notifications.map((notification) => (
-                    <DropdownMenuItem 
-                      key={notification.id} 
-                      className="flex flex-col items-start space-y-1 p-3 hover:bg-muted/50"
-                    >
-                      <div className="font-medium text-sm">{notification.title}</div>
-                      <div className="text-xs text-muted-foreground">{notification.time}</div>
-                    </DropdownMenuItem>
-                  ))
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    {notifications.length} notifikasi tersedia
+                  </div>
                 ) : (
                   <div className="p-4 text-center text-sm text-muted-foreground">
                     Tidak ada notifikasi baru

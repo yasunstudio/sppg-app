@@ -14,10 +14,9 @@ export async function GET(
     }
 
     const { id } = await params
-    const roleId = id
 
     const role = await prisma.role.findUnique({
-      where: { id: roleId },
+      where: { id },
       include: {
         users: {
           include: {
@@ -37,7 +36,15 @@ export async function GET(
       return NextResponse.json({ error: 'Role not found' }, { status: 404 })
     }
 
-    return NextResponse.json(role)
+    return NextResponse.json({
+      ...role,
+      userCount: role.users.length,
+      permissionCount: role.permissions.length,
+      isSystemRole: true,
+      computedPermissions: role.permissions,
+      effectivePermissions: role.permissions.length
+    })
+
   } catch (error) {
     console.error('Error fetching role:', error)
     return NextResponse.json(
@@ -59,20 +66,34 @@ export async function PUT(
     }
 
     const { id } = await params
-    const roleId = id
-
     const { name, description, permissions } = await request.json()
 
-    const role = await prisma.role.update({
-      where: { id: roleId },
+    if (!name) {
+      return NextResponse.json(
+        { error: 'Role name is required' },
+        { status: 400 }
+      )
+    }
+
+    const existingRole = await prisma.role.findUnique({
+      where: { id }
+    })
+
+    if (!existingRole) {
+      return NextResponse.json({ error: 'Role not found' }, { status: 404 })
+    }
+
+    const updatedRole = await prisma.role.update({
+      where: { id },
       data: {
         name,
         description,
-        permissions
+        permissions: permissions || existingRole.permissions
       }
     })
 
-    return NextResponse.json(role)
+    return NextResponse.json(updatedRole)
+
   } catch (error) {
     console.error('Error updating role:', error)
     return NextResponse.json(
@@ -94,36 +115,41 @@ export async function DELETE(
     }
 
     const { id } = await params
-    const roleId = id
 
-    // Check if role has users assigned
-    const roleWithUsers = await prisma.role.findUnique({
-      where: { id: roleId },
+    const role = await prisma.role.findUnique({
+      where: { id },
       include: {
-        _count: {
-          select: {
-            users: true
-          }
-        }
+        users: true
       }
     })
 
-    if (!roleWithUsers) {
+    if (!role) {
       return NextResponse.json({ error: 'Role not found' }, { status: 404 })
     }
 
-    if (roleWithUsers._count.users > 0) {
+    if (role.name === 'ADMIN') {
       return NextResponse.json(
-        { error: 'Cannot delete role with assigned users' },
-        { status: 400 }
+        { error: 'Cannot delete ADMIN role' },
+        { status: 403 }
+      )
+    }
+
+    if (role.users.length > 0) {
+      return NextResponse.json(
+        { error: `Cannot delete role. ${role.users.length} user(s) still have this role.` },
+        { status: 409 }
       )
     }
 
     await prisma.role.delete({
-      where: { id: roleId }
+      where: { id }
     })
 
-    return NextResponse.json({ message: 'Role deleted successfully' })
+    return NextResponse.json({
+      success: true,
+      message: 'Role deleted successfully'
+    })
+
   } catch (error) {
     console.error('Error deleting role:', error)
     return NextResponse.json(

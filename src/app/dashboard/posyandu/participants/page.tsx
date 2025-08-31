@@ -10,19 +10,34 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import { 
+  PARTICIPANT_TYPE, 
+  GENDER, 
+  NUTRITION_STATUS,
+  type ParticipantType,
+  type Gender,
+  type NutritionStatus 
+} from "@/lib/constants"
+import { 
+  getParticipantTypeLabel,
+  getParticipantTypeColor,
+  getGenderLabel,
+  getNutritionStatusLabel,
+  getNutritionStatusColor
+} from "@/lib/constants/utils"
 
 interface Participant {
   id: string
   name: string
   nik?: string
   dateOfBirth: string
-  gender: string
+  gender: Gender
   address: string
   phoneNumber?: string
-  participantType: string
+  participantType: ParticipantType
   currentWeight?: number
   currentHeight?: number
-  nutritionStatus?: string
+  nutritionStatus?: NutritionStatus
   posyandu: {
     id: string
     name: string
@@ -63,7 +78,7 @@ const columns: ColumnDef<Participant>[] = [
     header: "Jenis Kelamin",
     cell: ({ row }) => (
       <Badge variant="outline">
-        {row.getValue("gender") === "MALE" ? "Laki-laki" : "Perempuan"}
+        {getGenderLabel(row.getValue("gender"))}
       </Badge>
     ),
   },
@@ -71,15 +86,15 @@ const columns: ColumnDef<Participant>[] = [
     accessorKey: "participantType",
     header: "Tipe Peserta",
     cell: ({ row }) => {
-      const type = row.getValue("participantType") as string
-      const typeLabels: { [key: string]: string } = {
-        PREGNANT_WOMAN: "Ibu Hamil",
-        LACTATING_MOTHER: "Ibu Menyusui",
-        TODDLER: "Balita",
-        CHILD: "Anak",
-        ELDERLY: "Lansia"
-      }
-      return <StatusBadge status={typeLabels[type] || type} />
+      const type = row.getValue("participantType") as ParticipantType
+      return (
+        <Badge 
+          variant="outline" 
+          className={getParticipantTypeColor(type)}
+        >
+          {getParticipantTypeLabel(type)}
+        </Badge>
+      )
     },
   },
   {
@@ -94,8 +109,15 @@ const columns: ColumnDef<Participant>[] = [
     accessorKey: "nutritionStatus",
     header: "Status Nutrisi",
     cell: ({ row }) => {
-      const status = row.getValue("nutritionStatus") as string
-      return status ? <StatusBadge status={status} /> : "-"
+      const status = row.getValue("nutritionStatus") as NutritionStatus
+      return status ? (
+        <Badge 
+          variant="outline" 
+          className={getNutritionStatusColor(status)}
+        >
+          {getNutritionStatusLabel(status)}
+        </Badge>
+      ) : "-"
     },
   },
   {
