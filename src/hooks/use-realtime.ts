@@ -16,6 +16,7 @@ export interface UseRealtimeOptions {
   autoReconnect?: boolean
   reconnectDelay?: number
   maxReconnectAttempts?: number
+  disabled?: boolean // New option to disable WebSocket entirely
 }
 
 export function useRealtime(
@@ -36,7 +37,8 @@ export function useRealtime(
     onReconnect,
     autoReconnect = true,
     reconnectDelay = 3000,
-    maxReconnectAttempts = 5
+    maxReconnectAttempts = 5,
+    disabled = false
   } = options
 
   const connect = () => {
@@ -66,9 +68,15 @@ export function useRealtime(
         }
       }
 
-      wsRef.current.onclose = () => {
+      wsRef.current.onclose = (event) => {
         setConnected(false)
         onDisconnect?.()
+
+        // Check if it's a server error (WebSocket not supported)
+        if (event.code === 1006 || event.code === 1002) {
+          console.warn('WebSocket not supported by server, running in polling mode')
+          return // Don't attempt to reconnect for unsupported servers
+        }
 
         // Auto-reconnect if enabled and not manually closed
         if (autoReconnect && reconnectAttemptsRef.current < maxReconnectAttempts) {
@@ -78,18 +86,18 @@ export function useRealtime(
             connect()
           }, reconnectDelay)
         } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
-          toast.error('Failed to reconnect to real-time server')
+          console.warn('Real-time connection unavailable, using manual refresh')
         }
       }
 
       wsRef.current.onerror = (error) => {
-        console.error('WebSocket error:', error)
-        const wsError = new Error('WebSocket connection error')
-        onError?.(wsError)
+        // Silently handle WebSocket errors since server may not support WebSockets
+        console.warn('Real-time connection unavailable:', error)
+        // Don't call onError for unsupported WebSocket scenarios
       }
     } catch (error) {
-      console.error('Failed to create WebSocket connection:', error)
-      onError?.(error as Error)
+      console.warn('WebSocket not supported, using manual refresh mode:', error)
+      // Don't call onError for unsupported WebSocket scenarios
     }
   }
 
@@ -117,7 +125,8 @@ export function useRealtime(
       }
       wsRef.current.send(JSON.stringify(event))
     } else {
-      console.warn('Cannot send event: WebSocket not connected')
+      console.warn('Real-time not available: using manual refresh mode')
+      // Could implement fallback to HTTP API here if needed
     }
   }
 
@@ -127,12 +136,14 @@ export function useRealtime(
   }
 
   useEffect(() => {
-    connect()
+    if (!disabled) {
+      connect()
+    }
 
     return () => {
       disconnect()
     }
-  }, [url])
+  }, [url, disabled])
 
   return {
     connected,

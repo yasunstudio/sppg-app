@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Select,
   SelectContent,
@@ -25,6 +26,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { 
@@ -42,9 +44,14 @@ import {
   Clock,
   CheckCircle,
   Truck,
-  XCircle
+  XCircle,
+  BarChart3,
+  Download,
+  Settings
 } from "lucide-react"
 import { toast } from "sonner"
+import { PurchaseOrderExport } from "./purchase-order-export"
+import { BulkOperations } from "./bulk-operations"
 
 interface PurchaseOrder {
   id: string
@@ -93,12 +100,18 @@ export function PurchaseOrdersManagement() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([])
 
   const itemsPerPage = 10
 
   useEffect(() => {
     fetchPurchaseOrders()
     fetchSuppliers()
+  }, [currentPage, searchTerm, statusFilter, supplierFilter])
+
+  // Clear selections when page changes
+  useEffect(() => {
+    setSelectedOrders([])
   }, [currentPage, searchTerm, statusFilter, supplierFilter])
 
   const fetchPurchaseOrders = async () => {
@@ -181,6 +194,27 @@ export function PurchaseOrdersManagement() {
     setCurrentPage(1)
   }
 
+  const toggleOrderSelection = (orderId: string) => {
+    setSelectedOrders(prev => 
+      prev.includes(orderId)
+        ? prev.filter(id => id !== orderId)
+        : [...prev, orderId]
+    )
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedOrders.length === purchaseOrders.length) {
+      setSelectedOrders([])
+    } else {
+      setSelectedOrders(purchaseOrders.map(order => order.id))
+    }
+  }
+
+  const handleBulkOperationComplete = () => {
+    setSelectedOrders([])
+    fetchPurchaseOrders()
+  }
+
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('id-ID', {
       year: 'numeric',
@@ -220,10 +254,41 @@ export function PurchaseOrdersManagement() {
             Manage purchase orders for procurement and inventory management
           </p>
         </div>
-        <Button onClick={() => router.push('/dashboard/purchase-orders/create')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Purchase Order
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Analytics Button */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => router.push('/dashboard/purchase-orders/analytics')}
+          >
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Analytics
+          </Button>
+          
+          {/* Export Button */}
+          <PurchaseOrderExport 
+            trigger={
+              <Button variant="outline" size="sm">
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            }
+          />
+          
+          {/* Bulk Operations - only show when orders are selected */}
+          {selectedOrders.length > 0 && (
+            <BulkOperations 
+              selectedOrders={selectedOrders}
+              onOperationComplete={handleBulkOperationComplete}
+            />
+          )}
+          
+          {/* Create Button */}
+          <Button onClick={() => router.push('/dashboard/purchase-orders/create')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Purchase Order
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -338,16 +403,39 @@ export function PurchaseOrdersManagement() {
       {/* Purchase Orders Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Purchase Orders</CardTitle>
-          <CardDescription>
-            {totalCount} purchase order(s) found
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Purchase Orders</CardTitle>
+              <CardDescription>
+                {totalCount} purchase order(s) found
+                {selectedOrders.length > 0 && ` • ${selectedOrders.length} selected`}
+              </CardDescription>
+            </div>
+            {purchaseOrders.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleSelectAll}
+                >
+                  {selectedOrders.length === purchaseOrders.length ? 'Deselect All' : 'Select All'}
+                </Button>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={purchaseOrders.length > 0 && selectedOrders.length === purchaseOrders.length}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all orders"
+                    />
+                  </TableHead>
                   <TableHead>PO Number</TableHead>
                   <TableHead>Supplier</TableHead>
                   <TableHead>Order Date</TableHead>
@@ -361,7 +449,7 @@ export function PurchaseOrdersManagement() {
               <TableBody>
                 {purchaseOrders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={9} className="text-center py-8">
                       <div className="flex flex-col items-center gap-2">
                         <ShoppingCart className="h-8 w-8 text-muted-foreground" />
                         <p className="text-muted-foreground">No purchase orders found</p>
@@ -380,7 +468,17 @@ export function PurchaseOrdersManagement() {
                     const StatusIcon = status?.icon || Clock
 
                     return (
-                      <TableRow key={purchaseOrder.id}>
+                      <TableRow 
+                        key={purchaseOrder.id}
+                        className={selectedOrders.includes(purchaseOrder.id) ? 'bg-muted/50' : ''}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedOrders.includes(purchaseOrder.id)}
+                            onCheckedChange={() => toggleOrderSelection(purchaseOrder.id)}
+                            aria-label={`Select order ${purchaseOrder.poNumber}`}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           #{purchaseOrder.poNumber}
                         </TableCell>
@@ -476,20 +574,27 @@ export function PurchaseOrdersManagement() {
                 </Button>
                 
                 <div className="flex items-center space-x-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNumber = Math.max(1, Math.min(currentPage - 2 + i, totalPages - 4 + i))
-                    return (
-                      <Button
-                        key={pageNumber}
-                        variant={currentPage === pageNumber ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(pageNumber)}
-                        className="w-8 h-8 p-0"
-                      >
-                        {pageNumber}
-                      </Button>
-                    )
-                  })}
+                  {(() => {
+                    const pages = [];
+                    const startPage = Math.max(1, currentPage - 2);
+                    const endPage = Math.min(totalPages, startPage + 4);
+                    
+                    for (let i = startPage; i <= endPage; i++) {
+                      pages.push(
+                        <Button
+                          key={`page-${i}`}
+                          variant={currentPage === i ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(i)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {i}
+                        </Button>
+                      );
+                    }
+                    
+                    return pages;
+                  })()}
                 </div>
 
                 <Button

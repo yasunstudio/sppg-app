@@ -45,13 +45,18 @@ export default function PerformanceDashboard() {
 
   const performance = usePerformance()
   const cache = useCache()
-  const realtime = useRealtime()
+  const realtime = useRealtime('/api/realtime', { 
+    disabled: process.env.NODE_ENV === 'development' // Disable in development
+  })
 
   const fetchPerformanceData = async () => {
     try {
       const response = await performance.measureAPI('performance_data', async () => {
         const res = await fetch(`/api/performance?timeRange=${timeRange}`)
-        if (!res.ok) throw new Error('Failed to fetch performance data')
+        if (!res.ok) {
+          const errorText = await res.text()
+          throw new Error(`Failed to fetch performance data: ${res.status} ${errorText}`)
+        }
         return res.json()
       })
       
@@ -59,6 +64,40 @@ export default function PerformanceDashboard() {
       cache.set(`performance_${timeRange}`, response, 30000) // Cache for 30 seconds
     } catch (error) {
       console.error('Failed to fetch performance data:', error)
+      
+      // Try to load from cache as fallback
+      const cachedData = cache.get(`performance_${timeRange}`)
+      if (cachedData) {
+        console.log('Using cached performance data as fallback')
+        setPerformanceData(cachedData)
+      } else {
+        // Set minimal fallback data to prevent UI crashes
+        setPerformanceData({
+          database: {
+            recentActivity: 0,
+            totalRecords: 0,
+            tables: {},
+            queryTime: 0
+          },
+          api: {
+            totalRequests: 0,
+            averageResponseTime: 0,
+            errorRate: 0,
+            slowestEndpoint: 'N/A',
+            fastestEndpoint: 'N/A',
+            topEndpoints: []
+          },
+          system: {
+            memoryUsage: { used: 0, total: 0, percentage: 0 },
+            cpuUsage: 0,
+            diskUsage: { used: 0, total: 0, percentage: 0 },
+            uptime: 0,
+            activeConnections: 0
+          },
+          timestamp: new Date().toISOString(),
+          timeRange
+        })
+      }
     } finally {
       setLoading(false)
     }

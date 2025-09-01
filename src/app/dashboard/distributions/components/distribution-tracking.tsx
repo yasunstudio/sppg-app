@@ -34,18 +34,17 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import Link from 'next/link'
-import { toast } from 'sonner'
 
 interface Distribution {
   id: string
   distributionDate: string
   status: string
-  driver: {
+  driver?: {
     id: string
     name: string
     phone: string
   }
-  vehicle: {
+  vehicle?: {
     id: string
     plateNumber: string
     type: string
@@ -69,7 +68,7 @@ export function DistributionTracking() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [dateFilter, setDateFilter] = useState('today')
+  const [dateFilter, setDateFilter] = useState('all')
 
   useEffect(() => {
     fetchDistributions()
@@ -89,7 +88,7 @@ export function DistributionTracking() {
         throw new Error('Failed to fetch distributions')
       }
     } catch (error) {
-      toast.error('Failed to load distribution tracking data')
+      console.error('Failed to load distribution tracking data:', error)
     } finally {
       setIsLoading(false)
     }
@@ -101,8 +100,8 @@ export function DistributionTracking() {
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(item =>
-        item.driver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.driver?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.vehicle?.plateNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.schools.some(school => 
           school.school.name.toLowerCase().includes(searchTerm.toLowerCase())
         )
@@ -225,7 +224,7 @@ export function DistributionTracking() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredData.filter(d => d.status === 'in_progress').length}
+              {filteredData.filter(d => d.status === 'IN_TRANSIT').length}
             </div>
             <p className="text-xs text-muted-foreground">Currently on route</p>
           </CardContent>
@@ -238,7 +237,7 @@ export function DistributionTracking() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredData.filter(d => d.status === 'completed').length}
+              {filteredData.filter(d => d.status === 'COMPLETED').length}
             </div>
             <p className="text-xs text-muted-foreground">Deliveries finished</p>
           </CardContent>
@@ -251,7 +250,7 @@ export function DistributionTracking() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredData.filter(d => d.status === 'pending').length}
+              {filteredData.filter(d => d.status === 'PREPARING').length}
             </div>
             <p className="text-xs text-muted-foreground">Waiting to start</p>
           </CardContent>
@@ -377,13 +376,16 @@ export function DistributionTracking() {
                         <div className="space-y-1">
                           <div className="font-medium flex items-center">
                             <Truck className="h-4 w-4 mr-2 text-gray-500" />
-                            {distribution.driver.name}
+                            {distribution.driver?.name || 'No driver assigned'}
                           </div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">
-                            {distribution.vehicle.plateNumber} - {distribution.vehicle.type}
+                            {distribution.vehicle ? 
+                              `${distribution.vehicle.plateNumber} - ${distribution.vehicle.type}` : 
+                              'No vehicle assigned'
+                            }
                           </div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">
-                            {distribution.driver.phone}
+                            {distribution.driver?.phone || 'No phone'}
                           </div>
                         </div>
                       </TableCell>

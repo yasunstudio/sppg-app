@@ -31,6 +31,7 @@ import {
   Phone
 } from "lucide-react"
 import { toast } from "sonner"
+import { PurchaseOrderExporter } from "@/lib/export-utils"
 
 interface PurchaseOrderItem {
   id: string
@@ -149,6 +150,43 @@ export function PurchaseOrderDetails({ id }: PurchaseOrderDetailsProps) {
     })
   }
 
+  const handleExportPDF = () => {
+    if (!purchaseOrder) return
+
+    const exportData = {
+      id: purchaseOrder.id,
+      orderNumber: purchaseOrder.poNumber,
+      supplier: {
+        name: purchaseOrder.supplier.name,
+        contactName: purchaseOrder.supplier.contactName,
+        email: purchaseOrder.supplier.email,
+        phone: purchaseOrder.supplier.phone
+      },
+      totalAmount: purchaseOrder.totalAmount,
+      status: purchaseOrder.status,
+      expectedDelivery: purchaseOrder.expectedDelivery,
+      actualDelivery: purchaseOrder.actualDelivery,
+      createdAt: purchaseOrder.createdAt,
+      createdBy: purchaseOrder.orderedBy.name,
+      items: purchaseOrder.items.map(item => ({
+        rawMaterial: {
+          name: item.rawMaterial.name,
+          category: item.rawMaterial.category,
+          unit: item.rawMaterial.unit
+        },
+        quantity: item.quantity,
+        unit: item.unit,
+        unitPrice: item.unitPrice,
+        totalPrice: item.totalPrice,
+        notes: item.notes
+      })),
+      notes: purchaseOrder.notes
+    }
+
+    PurchaseOrderExporter.exportSinglePurchaseOrderToPDF(exportData)
+    toast.success('PDF exported successfully!')
+  }
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -216,6 +254,13 @@ export function PurchaseOrderDetails({ id }: PurchaseOrderDetailsProps) {
             <StatusIcon className="mr-1 h-3 w-3" />
             {status?.label}
           </Badge>
+          <Button 
+            variant="outline"
+            onClick={handleExportPDF}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Export PDF
+          </Button>
           <Button 
             onClick={() => router.push(`/dashboard/purchase-orders/${id}/edit`)}
             disabled={purchaseOrder.status === 'CANCELLED' || purchaseOrder.status === 'DELIVERED'}

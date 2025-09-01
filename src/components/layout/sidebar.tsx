@@ -60,6 +60,9 @@ export function Sidebar({ className, ...props }: SidebarProps) {
     pathname.startsWith("/dashboard/food-samples") || 
     pathname.startsWith("/dashboard/nutrition-consultations")
   )
+  const [purchaseOrdersExpanded, setPurchaseOrdersExpanded] = useState(
+    pathname.startsWith("/dashboard/purchase-orders")
+  )
 
   const menuPlanningSubMenus = [
     {
@@ -214,6 +217,21 @@ export function Sidebar({ className, ...props }: SidebarProps) {
     },
   ]
 
+  const purchaseOrdersSubMenus = [
+    {
+      name: "Overview",
+      href: "/dashboard/purchase-orders",
+      icon: ClipboardCheck,
+      current: pathname === "/dashboard/purchase-orders",
+    },
+    {
+      name: "Analytics",
+      href: "/dashboard/purchase-orders/analytics",
+      icon: BarChart,
+      current: pathname.startsWith("/dashboard/purchase-orders/analytics"),
+    },
+  ]
+
   // Group navigation items by logical sections
   const coreNavigation = [
     {
@@ -284,12 +302,6 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       href: "/dashboard/suppliers",
       icon: ShoppingCart,
       current: pathname.startsWith("/dashboard/suppliers"),
-    },
-    {
-      name: "Purchase Orders",
-      href: "/dashboard/purchase-orders",
-      icon: ClipboardCheck,
-      current: pathname.startsWith("/dashboard/purchase-orders"),
     },
     {
       name: "Inventory Management",
@@ -369,10 +381,10 @@ export function Sidebar({ className, ...props }: SidebarProps) {
     <div className={cn("space-y-1", !isMainSection && "mt-8")}>
       {!isMainSection && (
         <div className="px-3 mb-3">
-          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
             {title}
           </h3>
-          <div className="h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
+          <div className="h-px bg-border"></div>
         </div>
       )}
       {items.map((item) => {
@@ -398,6 +410,8 @@ export function Sidebar({ className, ...props }: SidebarProps) {
             case '/dashboard/suppliers':
               return ['suppliers.view'];
             case '/dashboard/purchase-orders':
+              return ['purchase_orders.view'];
+            case '/dashboard/purchase-orders/analytics':
               return ['purchase_orders.view'];
             case '/dashboard/inventory':
               return ['inventory.view'];
@@ -465,19 +479,21 @@ export function Sidebar({ className, ...props }: SidebarProps) {
             key={item.name}
             href={item.href}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 group hover:bg-white hover:shadow-sm border border-transparent",
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+              "hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+              "dark:focus:ring-offset-background group relative",
               item.current 
-                ? "bg-blue-50 text-blue-700 border-blue-100 shadow-sm font-semibold" 
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-accent text-accent-foreground shadow-sm border-l-2 border-primary ml-[-2px]" 
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <item.icon className={cn(
               "h-4 w-4 flex-shrink-0 transition-colors",
-              item.current ? "text-blue-600" : "text-gray-400 group-hover:text-gray-600"
+              item.current ? "text-accent-foreground" : "text-muted-foreground group-hover:text-foreground"
             )} />
             <span className="truncate">{item.name}</span>
             {item.current && (
-              <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="absolute inset-y-0 left-0 w-0.5 bg-primary rounded-r-full" />
             )}
           </Link>
         );
@@ -500,32 +516,43 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       <button
         onClick={() => setExpanded(!isExpanded)}
         className={cn(
-          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-          pathname.startsWith(pathMatch) ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+          "hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+          "dark:focus:ring-offset-background",
+          pathname.startsWith(pathMatch) 
+            ? "bg-accent text-accent-foreground shadow-sm" 
+            : "text-muted-foreground hover:text-foreground"
         )}
       >
         <IconComponent className="h-4 w-4 flex-shrink-0" />
         <span className="flex-1 text-left truncate">{title}</span>
         {isExpanded ? (
-          <ChevronDown className="h-4 w-4 flex-shrink-0" />
+          <ChevronDown className="h-4 w-4 flex-shrink-0 transition-transform duration-200" />
         ) : (
-          <ChevronRight className="h-4 w-4 flex-shrink-0" />
+          <ChevronRight className="h-4 w-4 flex-shrink-0 transition-transform duration-200" />
         )}
       </button>
       
       {isExpanded && (
-        <div className="mt-1 space-y-1 pl-6">
+        <div className="mt-2 space-y-1 pl-6 border-l border-border/40 ml-3">
           {subMenus.map((subItem) => (
             <Link
               key={subItem.name}
               href={subItem.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                subItem.current ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                "hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                "dark:focus:ring-offset-background relative",
+                subItem.current 
+                  ? "bg-accent text-accent-foreground shadow-sm border-l-2 border-primary ml-[-2px]" 
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               <subItem.icon className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">{subItem.name}</span>
+              {subItem.current && (
+                <div className="absolute inset-y-0 left-0 w-0.5 bg-primary rounded-r-full" />
+              )}
             </Link>
           ))}
         </div>
@@ -534,19 +561,23 @@ export function Sidebar({ className, ...props }: SidebarProps) {
   )
 
   return (
-    <div className={cn("fixed left-0 top-0 z-40 h-screen w-64 border-r bg-white shadow-xl hidden lg:block", className)} {...props}>
+    <div className={cn(
+      "fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background shadow-xl hidden lg:block",
+      "dark:shadow-2xl dark:border-border",
+      className
+    )} {...props}>
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex h-20 items-center border-b px-6 bg-gradient-to-r from-blue-600 to-blue-700 shadow-sm">
+        <div className="flex h-20 items-center border-b border-border px-6 bg-primary shadow-sm">
           <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm border border-white/20">
-              <Shield className="h-6 w-6 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-foreground/20 backdrop-blur-sm border border-primary-foreground/20">
+              <Shield className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">
+              <h1 className="text-xl font-bold text-primary-foreground tracking-tight">
                 SPPG System
               </h1>
-              <p className="text-xs text-blue-100 font-medium">
+              <p className="text-xs text-primary-foreground/80 font-medium">
                 School Food Program Management
               </p>
             </div>
@@ -554,9 +585,8 @@ export function Sidebar({ className, ...props }: SidebarProps) {
         </div>
 
         {/* Scrollable Navigation */}
-        <div className="flex-1 overflow-y-auto py-6 px-4 bg-gray-50/50">
-          <div className="space-y-2">
-            {/* Core Navigation - No section header */}
+        <div className="flex-1 overflow-y-auto py-6 px-4 bg-muted/30">
+          <div className="space-y-2">{/* Core Navigation - No section header */}
             {renderNavSection("", coreNavigation, true)}
 
             {/* School Management */}
@@ -577,6 +607,16 @@ export function Sidebar({ className, ...props }: SidebarProps) {
 
             {/* Inventory & Supply */}
             {renderNavSection("Inventory & Supply", inventoryManagement)}
+
+            {/* Purchase Orders with Submenu */}
+            {renderExpandableSection(
+              "Purchase Orders",
+              ClipboardCheck,
+              purchaseOrdersExpanded,
+              setPurchaseOrdersExpanded,
+              purchaseOrdersSubMenus,
+              "/dashboard/purchase-orders"
+            )}
 
             {/* Quality Management with Submenu */}
             {renderExpandableSection(
