@@ -1,5 +1,42 @@
-import { LucideProps, Loader2 } from "lucide-react"
+import { 
+  LucideProps, 
+  Loader2,
+  CheckCircle,
+  ThumbsUp,
+  Clock,
+  XCircle,
+  RotateCcw,
+  Plus,
+  X,
+  FileX,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  User,
+  AlertTriangle,
+  Thermometer
+} from "lucide-react"
 
 export const Icons = {
   spinner: Loader2,
+  CheckCircle,
+  ThumbsUp,
+  Clock,
+  XCircle,
+  RotateCcw,
+  Plus,
+  X,
+  FileX,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  User,
+  AlertTriangle,
+  Thermometer
 } as const
