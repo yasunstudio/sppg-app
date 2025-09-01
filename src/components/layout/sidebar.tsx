@@ -49,6 +49,10 @@ export function Sidebar({ className, ...props }: SidebarProps) {
     pathname.startsWith("/dashboard/resource-usage")
   )
   const [menuPlanningExpanded, setMenuPlanningExpanded] = useState(pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes"))
+  const [distributionExpanded, setDistributionExpanded] = useState(
+    pathname.startsWith("/dashboard/distributions") || 
+    pathname.startsWith("/dashboard/distribution")
+  )
   const [monitoringExpanded, setMonitoringExpanded] = useState(pathname.startsWith("/dashboard/monitoring"))
   const [qualityExpanded, setQualityExpanded] = useState(
     pathname.startsWith("/dashboard/quality") || 
@@ -183,6 +187,33 @@ export function Sidebar({ className, ...props }: SidebarProps) {
     },
   ]
 
+  const distributionSubMenus = [
+    {
+      name: "Overview",
+      href: "/dashboard/distributions",
+      icon: LayoutGrid,
+      current: pathname === "/dashboard/distributions",
+    },
+    {
+      name: "Distribution Schools",
+      href: "/dashboard/distributions/schools",
+      icon: School,
+      current: pathname.startsWith("/dashboard/distributions/schools"),
+    },
+    {
+      name: "Delivery Tracking",
+      href: "/dashboard/distributions/tracking",
+      icon: Eye,
+      current: pathname.startsWith("/dashboard/distributions/tracking"),
+    },
+    {
+      name: "Route Planning",
+      href: "/dashboard/distributions/routes",
+      icon: Truck,
+      current: pathname.startsWith("/dashboard/distributions/routes"),
+    },
+  ]
+
   // Group navigation items by logical sections
   const coreNavigation = [
     {
@@ -232,18 +263,6 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       href: "/dashboard/drivers",
       icon: UserCheck,
       current: pathname.startsWith("/dashboard/drivers"),
-    },
-    {
-      name: "Distribution Management",
-      href: "/dashboard/distribution",
-      icon: Package,
-      current: pathname.startsWith("/dashboard/distribution"),
-    },
-    {
-      name: "Delivery Tracking",
-      href: "/dashboard/delivery-tracking",
-      icon: Package,
-      current: pathname.startsWith("/dashboard/delivery-tracking"),
     },
   ]
 
@@ -384,6 +403,14 @@ export function Sidebar({ className, ...props }: SidebarProps) {
               return ['inventory.view'];
             case '/dashboard/distribution':
               return ['production.view'];
+            case '/dashboard/distributions':
+              return ['distribution_schools.view'];
+            case '/dashboard/distributions/schools':
+              return ['distribution_schools.view'];
+            case '/dashboard/distributions/tracking':
+              return ['delivery.view'];
+            case '/dashboard/distributions/routes':
+              return ['logistics.plan'];
             case '/dashboard/delivery-tracking':
               return ['production.view'];
             case '/dashboard/production':
@@ -537,6 +564,16 @@ export function Sidebar({ className, ...props }: SidebarProps) {
 
             {/* Logistics */}
             {renderNavSection("Logistics", logisticsManagement)}
+
+            {/* Distribution with Submenu */}
+            {renderExpandableSection(
+              "Distribution",
+              Package,
+              distributionExpanded,
+              setDistributionExpanded,
+              distributionSubMenus,
+              "/dashboard/distributions"
+            )}
 
             {/* Inventory & Supply */}
             {renderNavSection("Inventory & Supply", inventoryManagement)}

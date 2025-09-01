@@ -55,6 +55,12 @@ export const PERMISSIONS = {
   'logistics.plan': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN'],
   'logistics.manage': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN'],
   
+  // Distribution Schools
+  'distribution_schools.manage': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'distribution_schools.view': ['DISTRIBUTION_MANAGER', 'ADMIN', 'SUPER_ADMIN', 'DRIVER', 'SCHOOL_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'distribution_schools.create': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'distribution_schools.edit': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  
   // Training & Compliance
   'training.manage': ['SUPER_ADMIN', 'ADMIN'],
   'compliance.audit': ['SUPER_ADMIN', 'QUALITY_CONTROLLER'],
