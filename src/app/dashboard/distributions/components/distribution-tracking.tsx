@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { 
   Select,
   SelectContent,
@@ -144,13 +145,15 @@ export function DistributionTracking() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'COMPLETED':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-      case 'in_progress':
+      case 'DELIVERED':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
-      case 'pending':
+      case 'IN_TRANSIT':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
-      case 'cancelled':
+      case 'PREPARING':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100'
+      case 'CANCELLED':
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100'
@@ -159,13 +162,15 @@ export function DistributionTracking() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'COMPLETED':
         return <CheckCircle className="h-4 w-4" />
-      case 'in_progress':
+      case 'DELIVERED':
+        return <CheckCircle className="h-4 w-4" />
+      case 'IN_TRANSIT':
         return <Navigation className="h-4 w-4" />
-      case 'pending':
+      case 'PREPARING':
         return <Clock className="h-4 w-4" />
-      case 'cancelled':
+      case 'CANCELLED':
         return <AlertCircle className="h-4 w-4" />
       default:
         return <Package className="h-4 w-4" />
@@ -265,9 +270,9 @@ export function DistributionTracking() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Search</label>
+              <Label className="text-sm font-medium">Search</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   placeholder="Search driver, vehicle, school..."
                   value={searchTerm}
@@ -277,22 +282,23 @@ export function DistributionTracking() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
+              <Label className="text-sm font-medium">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="PREPARING">Preparing</SelectItem>
+                  <SelectItem value="IN_TRANSIT">In Transit</SelectItem>
+                  <SelectItem value="DELIVERED">Delivered</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Date</label>
+              <Label className="text-sm font-medium">Date</Label>
               <Select value={dateFilter} onValueChange={setDateFilter}>
                 <SelectTrigger>
                   <SelectValue />
@@ -373,9 +379,9 @@ export function DistributionTracking() {
                             <span>{progress.completed} of {progress.total} schools</span>
                             <span>{progress.percentage.toFixed(0)}%</span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                             <div 
-                              className="bg-blue-600 h-2 rounded-full transition-all"
+                              className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all"
                               style={{ width: `${progress.percentage}%` }}
                             />
                           </div>
@@ -384,7 +390,14 @@ export function DistributionTracking() {
                       <TableCell>
                         <Badge className={getStatusColor(distribution.status)}>
                           {getStatusIcon(distribution.status)}
-                          <span className="ml-1 capitalize">{distribution.status.replace('_', ' ')}</span>
+                          <span className="ml-1 capitalize">
+                            {distribution.status === 'IN_TRANSIT' ? 'In Transit' : 
+                             distribution.status === 'DELIVERED' ? 'Delivered' :
+                             distribution.status === 'COMPLETED' ? 'Completed' :
+                             distribution.status === 'PREPARING' ? 'Preparing' :
+                             distribution.status === 'CANCELLED' ? 'Cancelled' :
+                             distribution.status}
+                          </span>
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -395,7 +408,7 @@ export function DistributionTracking() {
                             </div>
                           ))}
                           {distribution.schools.length > 2 && (
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               +{distribution.schools.length - 2} more schools
                             </div>
                           )}

@@ -102,63 +102,12 @@ export function RoutePlanning() {
         const data = await response.json()
         setRoutes(data.data || [])
       } else {
-        // Mock data for demo since API might not exist yet
-        const mockRoutes: Route[] = [
-          {
-            id: 'route-1',
-            distributionId: 'dist-1',
-            driverId: 'driver-1',
-            vehicleId: 'vehicle-1',
-            status: 'planned',
-            estimatedDistance: 45.2,
-            estimatedDuration: 180,
-            driver: {
-              name: 'Ahmad Sutrisno',
-              phone: '+62812-3456-7890'
-            },
-            vehicle: {
-              plateNumber: 'B 1234 ABC',
-              type: 'Truck',
-              capacity: 500
-            },
-            schools: [
-              {
-                id: 'rs-1',
-                schoolId: 'school-1',
-                routeOrder: 1,
-                plannedPortions: 120,
-                estimatedDeliveryTime: '08:30',
-                school: {
-                  id: 'school-1',
-                  name: 'SD Negeri 01 Jakarta',
-                  address: 'Jl. Pendidikan No. 123, Jakarta Pusat',
-                  latitude: -6.2088,
-                  longitude: 106.8456,
-                  totalStudents: 120
-                }
-              },
-              {
-                id: 'rs-2',
-                schoolId: 'school-2',
-                routeOrder: 2,
-                plannedPortions: 95,
-                estimatedDeliveryTime: '09:15',
-                school: {
-                  id: 'school-2',
-                  name: 'SD Negeri 02 Jakarta',
-                  address: 'Jl. Belajar No. 456, Jakarta Pusat',
-                  latitude: -6.2145,
-                  longitude: 106.8512,
-                  totalStudents: 95
-                }
-              }
-            ]
-          }
-        ]
-        setRoutes(mockRoutes)
+        toast.error('Failed to load route planning data')
+        setRoutes([])
       }
     } catch (error) {
       toast.error('Failed to load route planning data')
+      setRoutes([])
     } finally {
       setIsLoading(false)
     }
@@ -391,13 +340,13 @@ export function RoutePlanning() {
                                     <Badge variant="outline">#{school.routeOrder}</Badge>
                                     <div>
                                       <p className="font-medium">{school.school.name}</p>
-                                      <p className="text-sm text-gray-500">{school.school.address}</p>
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">{school.school.address}</p>
                                     </div>
                                   </div>
                                   <div className="flex items-center space-x-4">
                                     <div className="text-right">
                                       <p className="text-sm font-medium">{school.plannedPortions} portions</p>
-                                      <p className="text-sm text-gray-500">ETA: {school.estimatedDeliveryTime}</p>
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">ETA: {school.estimatedDeliveryTime}</p>
                                     </div>
                                     <div className="flex flex-col space-y-1">
                                       <Button
@@ -443,12 +392,12 @@ export function RoutePlanning() {
                         <Badge variant="secondary">#{school.routeOrder}</Badge>
                         <div>
                           <p className="font-medium text-sm">{school.school.name}</p>
-                          <p className="text-xs text-gray-500">{school.school.address}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{school.school.address}</p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium">{school.plannedPortions} portions</p>
-                        <p className="text-xs text-gray-500">ETA: {school.estimatedDeliveryTime}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">ETA: {school.estimatedDeliveryTime}</p>
                       </div>
                     </div>
                   ))}
