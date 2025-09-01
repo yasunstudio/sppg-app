@@ -231,7 +231,7 @@ export function ProductionPlanManagement() {
   }
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('id-ID', {
+    return new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -241,7 +241,7 @@ export function ProductionPlanManagement() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -249,26 +249,25 @@ export function ProductionPlanManagement() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Production Plans</h2>
+          <h1 className="text-3xl font-bold tracking-tight">Production Plans Management</h1>
           <p className="text-muted-foreground">
-            Kelola dan pantau rencana produksi makanan
+            Manage and monitor food production plans
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={() => router.push('/dashboard/production-plans/create')}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Tambah Production Plan
-          </Button>
-        </div>
+        <Button
+          onClick={() => router.push('/dashboard/production-plans/create')}
+          className="gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Add Production Plan
+        </Button>
       </div>
 
-      {/* Metrics Cards */}
+      {/* Stats Cards */}
       {metrics && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -337,7 +336,7 @@ export function ProductionPlanManagement() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filter & Pencarian</CardTitle>
+          <CardTitle>Filter & Search</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -345,7 +344,7 @@ export function ProductionPlanManagement() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Cari berdasarkan menu atau notes..."
+                  placeholder="Search by menu or notes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -355,10 +354,10 @@ export function ProductionPlanManagement() {
             
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Pilih status" />
+                <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="PLANNED">Planned</SelectItem>
                 <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>
@@ -368,14 +367,14 @@ export function ProductionPlanManagement() {
             
             <Select value={selectedDateRange} onValueChange={setSelectedDateRange}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Pilih periode" />
+                <SelectValue placeholder="Select period" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Periode</SelectItem>
-                <SelectItem value="today">Hari Ini</SelectItem>
-                <SelectItem value="week">7 Hari Terakhir</SelectItem>
-                <SelectItem value="month">30 Hari Terakhir</SelectItem>
-                <SelectItem value="quarter">3 Bulan Terakhir</SelectItem>
+                <SelectItem value="all">All Periods</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">Last 7 Days</SelectItem>
+                <SelectItem value="month">Last 30 Days</SelectItem>
+                <SelectItem value="quarter">Last 3 Months</SelectItem>
               </SelectContent>
             </Select>
             
@@ -397,22 +396,22 @@ export function ProductionPlanManagement() {
       {/* Data Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Data Production Plans</CardTitle>
+          <CardTitle>Production Plans Data</CardTitle>
           <CardDescription>
-            Daftar rencana produksi makanan
+            List of food production plans
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : productionPlans.length === 0 ? (
             <div className="text-center py-8">
-              <ClipboardList className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-semibold text-gray-900">No production plans found</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Belum ada rencana produksi.
+              <ClipboardList className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-2 text-sm font-semibold">No production plans found</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                No production plans have been created yet.
               </p>
             </div>
           ) : (

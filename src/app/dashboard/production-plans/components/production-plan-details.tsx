@@ -212,7 +212,7 @@ export function ProductionPlanDetails() {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
     )
@@ -222,8 +222,8 @@ export function ProductionPlanDetails() {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="text-center py-8">
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">Production plan not found</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-semibold">Production plan not found</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             Data production plan yang dicari tidak ditemukan.
           </p>
           <Button className="mt-4" onClick={() => router.back()}>
@@ -236,29 +236,30 @@ export function ProductionPlanDetails() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             onClick={() => router.back()}
-            className="p-2"
+            size="icon"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Detail Production Plan</h2>
+            <h1 className="text-3xl font-bold tracking-tight">Production Plan Details</h1>
             <p className="text-muted-foreground">
-              Informasi lengkap rencana produksi makanan
+              Complete information about the food production plan
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
             onClick={() => router.push(`/dashboard/production-plans/${productionPlan.id}/edit`)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="gap-2"
           >
-            <Edit className="mr-2 h-4 w-4" />
+            <Edit className="h-4 w-4" />
             Edit
           </Button>
         </div>
@@ -270,13 +271,13 @@ export function ProductionPlanDetails() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ClipboardList className="h-5 w-5" />
-              Informasi Dasar
+              Basic Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Tanggal Rencana</label>
+                <label className="text-sm font-medium text-muted-foreground">Plan Date</label>
                 <div className="flex items-center gap-2 mt-1">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{formatDate(productionPlan.planDate)}</span>
@@ -284,11 +285,11 @@ export function ProductionPlanDetails() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Target Porsi</label>
+                <label className="text-sm font-medium text-muted-foreground">Target Portions</label>
                 <div className="flex items-center gap-2 mt-1">
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-2xl font-bold">{productionPlan.targetPortions.toLocaleString()}</span>
-                  <span className="text-muted-foreground">porsi</span>
+                  <span className="text-muted-foreground">portions</span>
                 </div>
               </div>
 
@@ -315,7 +316,7 @@ export function ProductionPlanDetails() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Informasi Menu
+                Menu Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -370,7 +371,7 @@ export function ProductionPlanDetails() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Jadwal Produksi
+              Production Schedule
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -449,14 +450,14 @@ export function ProductionPlanDetails() {
               {/* Batch completion percentage */}
               {productionPlan.batches.length > 0 && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Kemajuan Batches</label>
+                  <label className="text-sm font-medium text-muted-foreground">Batch Progress</label>
                   <div className="mt-1">
                     <div className="text-sm text-muted-foreground mb-1">
-                      {productionPlan.batches.filter(b => b.status === 'COMPLETED').length} dari {productionPlan.batches.length} selesai
+                      {productionPlan.batches.filter(b => b.status === 'COMPLETED').length} of {productionPlan.batches.length} completed
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
                       <div 
-                        className="bg-blue-600 h-2 rounded-full" 
+                        className="bg-primary h-2 rounded-full" 
                         style={{
                           width: `${(productionPlan.batches.filter(b => b.status === 'COMPLETED').length / productionPlan.batches.length) * 100}%`
                         }}
@@ -511,7 +512,7 @@ export function ProductionPlanDetails() {
         <Card>
           <CardHeader>
             <CardTitle>Production Batches</CardTitle>
-            <CardDescription>Daftar batch produksi untuk rencana ini</CardDescription>
+            <CardDescription>List of production batches for this plan</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -563,7 +564,7 @@ export function ProductionPlanDetails() {
         <Card>
           <CardHeader>
             <CardTitle>Quality Checks</CardTitle>
-            <CardDescription>Riwayat pemeriksaan kualitas</CardDescription>
+            <CardDescription>Quality inspection history</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -600,7 +601,7 @@ export function ProductionPlanDetails() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Catatan
+              Notes
             </CardTitle>
           </CardHeader>
           <CardContent>

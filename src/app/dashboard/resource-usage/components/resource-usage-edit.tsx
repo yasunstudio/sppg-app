@@ -206,9 +206,9 @@ export function ResourceUsageEdit() {
 
   if (loadingData) {
     return (
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="space-y-6">
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
     )
@@ -216,15 +216,15 @@ export function ResourceUsageEdit() {
 
   if (!originalData) {
     return (
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="space-y-6">
         <div className="text-center py-8">
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">Resource usage not found</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Data resource usage yang dicari tidak ditemukan.
+          <h3 className="mt-2 text-sm font-semibold">Resource usage not found</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The requested resource usage data was not found.
           </p>
           <Button className="mt-4" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Kembali
+            Go Back
           </Button>
         </div>
       </div>
@@ -232,7 +232,7 @@ export function ResourceUsageEdit() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -241,10 +241,10 @@ export function ResourceUsageEdit() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Edit Resource Usage</h2>
-          <p className="text-muted-foreground">
-            Perbarui data penggunaan sumber daya produksi
+        <div className="space-y-1">
+          <h2 className="text-2xl font-semibold tracking-tight">Edit Resource Usage</h2>
+          <p className="text-sm text-muted-foreground">
+            Update production resource usage record
           </p>
         </div>
       </div>
@@ -252,9 +252,9 @@ export function ResourceUsageEdit() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Informasi Dasar</CardTitle>
+            <CardTitle>Basic Information</CardTitle>
             <CardDescription>
-              Pilih production batch dan resource yang akan digunakan
+              Select production batch and resource to be used
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -263,7 +263,7 @@ export function ResourceUsageEdit() {
                 <Label htmlFor="batchId">Production Batch <span className="text-red-500">*</span></Label>
                 <Select value={formData.batchId} onValueChange={(value) => handleInputChange('batchId', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Pilih production batch" />
+                    <SelectValue placeholder="Select production batch" />
                   </SelectTrigger>
                   <SelectContent>
                     {batches.map((batch) => (
@@ -271,7 +271,7 @@ export function ResourceUsageEdit() {
                         <div className="flex flex-col">
                           <span className="font-medium">{batch.batchNumber}</span>
                           <span className="text-sm text-muted-foreground">
-                            {batch.productionPlan.menu?.name} - {batch.productionPlan.targetPortions} porsi
+                            {batch.productionPlan.menu?.name} - {batch.productionPlan.targetPortions} portions
                           </span>
                         </div>
                       </SelectItem>
@@ -284,7 +284,7 @@ export function ResourceUsageEdit() {
                 <Label htmlFor="resourceId">Production Resource <span className="text-red-500">*</span></Label>
                 <Select value={formData.resourceId} onValueChange={(value) => handleInputChange('resourceId', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Pilih resource" />
+                    <SelectValue placeholder="Select resource" />
                   </SelectTrigger>
                   <SelectContent>
                     {resources.map((resource) => (
@@ -306,15 +306,15 @@ export function ResourceUsageEdit() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Waktu Penggunaan</CardTitle>
+            <CardTitle>Usage Time</CardTitle>
             <CardDescription>
-              Atur waktu mulai dan selesai penggunaan resource
+              Set start and end time for resource usage
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="startTime">Waktu Mulai <span className="text-red-500">*</span></Label>
+                <Label htmlFor="startTime">Start Time <span className="text-red-500">*</span></Label>
                 <Input
                   id="startTime"
                   type="datetime-local"
@@ -324,7 +324,7 @@ export function ResourceUsageEdit() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="endTime">Waktu Selesai</Label>
+                <Label htmlFor="endTime">End Time</Label>
                 <Input
                   id="endTime"
                   type="datetime-local"
@@ -339,15 +339,15 @@ export function ResourceUsageEdit() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Durasi & Efisiensi</CardTitle>
+            <CardTitle>Duration & Efficiency</CardTitle>
             <CardDescription>
-              Masukkan durasi yang direncanakan dan aktual (dalam menit)
+              Enter planned and actual duration (in minutes)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="plannedDuration">Durasi Rencana (menit) <span className="text-red-500">*</span></Label>
+                <Label htmlFor="plannedDuration">Planned Duration (minutes) <span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <Clock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -363,7 +363,7 @@ export function ResourceUsageEdit() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="actualDuration">Durasi Aktual (menit)</Label>
+                <Label htmlFor="actualDuration">Actual Duration (minutes)</Label>
                 <div className="relative">
                   <Clock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -379,7 +379,7 @@ export function ResourceUsageEdit() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="efficiency">Efisiensi (%)</Label>
+                <Label htmlFor="efficiency">Efficiency (%)</Label>
                 <Input
                   id="efficiency"
                   type="number"
@@ -395,11 +395,11 @@ export function ResourceUsageEdit() {
             </div>
 
             {formData.plannedDuration && formData.actualDuration && (
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Perhitungan:</strong> Efisiensi = (Durasi Rencana ÷ Durasi Aktual) × 100%
+              <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Calculation:</strong> Efficiency = (Planned Duration ÷ Actual Duration) × 100%
                 </p>
-                <p className="text-sm text-blue-600 mt-1">
+                <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
                   ({formData.plannedDuration} ÷ {formData.actualDuration}) × 100% = {formData.efficiency}%
                 </p>
               </div>
@@ -409,19 +409,19 @@ export function ResourceUsageEdit() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Catatan Tambahan</CardTitle>
+            <CardTitle>Additional Notes</CardTitle>
             <CardDescription>
-              Tambahkan catatan atau observasi selama penggunaan resource
+              Add notes or observations during resource usage
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label htmlFor="notes">Catatan</Label>
+              <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
-                placeholder="Masukkan catatan penggunaan resource..."
+                placeholder="Enter resource usage notes..."
                 rows={4}
               />
             </div>
@@ -429,21 +429,21 @@ export function ResourceUsageEdit() {
         </Card>
 
         <div className="flex items-center gap-4">
-          <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
+          <Button type="submit" disabled={loading}>
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Menyimpan...
+                Saving...
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Simpan Perubahan
+                Save Changes
               </>
             )}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
-            Batal
+            Cancel
           </Button>
         </div>
       </form>

@@ -231,21 +231,20 @@ export function ResourceUsageManagement() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Resource Usage</h2>
-          <p className="text-muted-foreground">
-            Kelola dan pantau penggunaan sumber daya produksi
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-semibold tracking-tight">Resource Usage</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage and monitor production resource usage
           </p>
         </div>
         <div className="flex items-center space-x-2">
           <Button
             onClick={() => router.push('/dashboard/resource-usage/create')}
-            className="bg-blue-600 hover:bg-blue-700"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Tambah Resource Usage
+            Add Resource Usage
           </Button>
         </div>
       </div>
@@ -265,7 +264,7 @@ export function ResourceUsageManagement() {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rata-rata Efisiensi</CardTitle>
+              <CardTitle className="text-sm font-medium">Average Efficiency</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -275,7 +274,7 @@ export function ResourceUsageManagement() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Durasi Rencana</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Planned Duration</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -285,7 +284,7 @@ export function ResourceUsageManagement() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Durasi Aktual</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Actual Duration</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -295,7 +294,7 @@ export function ResourceUsageManagement() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rata-rata Durasi</CardTitle>
+              <CardTitle className="text-sm font-medium">Average Duration</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -308,7 +307,7 @@ export function ResourceUsageManagement() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filter & Pencarian</CardTitle>
+          <CardTitle>Filters & Search</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -316,7 +315,7 @@ export function ResourceUsageManagement() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Cari berdasarkan batch, resource, atau notes..."
+                  placeholder="Search by batch, resource, or notes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -326,14 +325,14 @@ export function ResourceUsageManagement() {
             
             <Select value={selectedDateRange} onValueChange={setSelectedDateRange}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Pilih periode" />
+                <SelectValue placeholder="Select period" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Periode</SelectItem>
-                <SelectItem value="today">Hari Ini</SelectItem>
-                <SelectItem value="week">7 Hari Terakhir</SelectItem>
-                <SelectItem value="month">30 Hari Terakhir</SelectItem>
-                <SelectItem value="quarter">3 Bulan Terakhir</SelectItem>
+                <SelectItem value="all">All Periods</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">Last 7 Days</SelectItem>
+                <SelectItem value="month">Last 30 Days</SelectItem>
+                <SelectItem value="quarter">Last 3 Months</SelectItem>
               </SelectContent>
             </Select>
             
@@ -355,22 +354,22 @@ export function ResourceUsageManagement() {
       {/* Data Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Data Resource Usage</CardTitle>
+          <CardTitle>Resource Usage Data</CardTitle>
           <CardDescription>
-            Daftar penggunaan sumber daya produksi
+            List of production resource usage records
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : resourceUsages.length === 0 ? (
             <div className="text-center py-8">
-              <Settings className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-semibold text-gray-900">No resource usage found</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Belum ada data penggunaan sumber daya.
+              <Settings className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-2 text-sm font-semibold">No resource usage found</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                No resource usage data available yet.
               </p>
             </div>
           ) : (
@@ -381,9 +380,9 @@ export function ResourceUsageManagement() {
                     <TableHead>Batch</TableHead>
                     <TableHead>Resource</TableHead>
                     <TableHead>Menu</TableHead>
-                    <TableHead>Waktu Mulai</TableHead>
-                    <TableHead>Durasi</TableHead>
-                    <TableHead>Efisiensi</TableHead>
+                    <TableHead>Start Time</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Efficiency</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -395,7 +394,7 @@ export function ResourceUsageManagement() {
                         <div className="flex flex-col">
                           <span className="font-medium">{usage.batch.batchNumber}</span>
                           <span className="text-sm text-muted-foreground">
-                            {usage.batch.productionPlan.targetPortions} porsi
+                            {usage.batch.productionPlan.targetPortions} portions
                           </span>
                         </div>
                       </TableCell>

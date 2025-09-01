@@ -45,16 +45,23 @@ export function ProductionPlanCreate() {
     fetchMenus()
   }, [])
 
+  useEffect(() => {
+    console.log('Menus state updated:', menus.length, 'menus')
+  }, [menus])
+
   const fetchMenus = async () => {
     try {
       const response = await fetch('/api/menus')
       if (response.ok) {
         const data = await response.json()
-        setMenus(data.data || [])
+        // API returns the array directly, not wrapped in a data property
+        setMenus(Array.isArray(data) ? data : data.data || [])
+      } else {
+        console.error('Failed to fetch menus:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('Error fetching menus:', error)
-      toast.error('Gagal memuat data menu')
+      toast.error('Failed to load menu data')
     }
   }
 
@@ -74,7 +81,7 @@ export function ProductionPlanCreate() {
     }
 
     if (Number(formData.targetPortions) <= 0) {
-      toast.error('Target porsi harus lebih dari 0')
+      toast.error('Target portions must be greater than 0')
       return
     }
 
@@ -105,30 +112,31 @@ export function ProductionPlanCreate() {
       }
 
       const result = await response.json()
-      toast.success('Production plan berhasil dibuat')
+      toast.success('Production plan created successfully')
       router.push(`/dashboard/production-plans/${result.id}`)
     } catch (error: any) {
       console.error('Error creating production plan:', error)
-      toast.error(error.message || 'Gagal membuat production plan')
+      toast.error(error.message || 'Failed to create production plan')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           onClick={() => router.back()}
-          className="p-2"
+          size="icon"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Buat Production Plan</h2>
+          <h1 className="text-3xl font-bold tracking-tight">Create Production Plan</h1>
           <p className="text-muted-foreground">
-            Buat rencana produksi makanan baru
+            Create a new food production plan
           </p>
         </div>
       </div>
@@ -136,15 +144,15 @@ export function ProductionPlanCreate() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Informasi Dasar</CardTitle>
+            <CardTitle>Basic Information</CardTitle>
             <CardDescription>
-              Masukkan informasi dasar untuk rencana produksi
+              Enter basic information for the production plan
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="planDate">Tanggal Rencana <span className="text-red-500">*</span></Label>
+                <Label htmlFor="planDate">Plan Date <span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <Calendar className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -159,7 +167,7 @@ export function ProductionPlanCreate() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="targetPortions">Target Porsi <span className="text-red-500">*</span></Label>
+                <Label htmlFor="targetPortions">Target Portions <span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <Users className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -179,21 +187,24 @@ export function ProductionPlanCreate() {
               <Label htmlFor="menuId">Menu</Label>
               <Select value={formData.menuId} onValueChange={(value) => handleInputChange('menuId', value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Pilih menu (opsional)" />
+                  <SelectValue placeholder="Select menu (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Tidak ada menu</SelectItem>
-                  {menus.map((menu) => (
-                    <SelectItem key={menu.id} value={menu.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{menu.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {menu.mealType} - {menu.targetGroup}
-                          {menu.totalCalories && ` (${menu.totalCalories} kcal)`}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="none">No menu</SelectItem>
+                  {menus.map((menu) => {
+                    console.log('Rendering menu:', menu.name);
+                    return (
+                      <SelectItem key={menu.id} value={menu.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{menu.name}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {menu.mealType} - {menu.targetGroup}
+                            {menu.totalCalories && ` (${menu.totalCalories} kcal)`}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -202,15 +213,15 @@ export function ProductionPlanCreate() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Jadwal Produksi</CardTitle>
+            <CardTitle>Production Schedule</CardTitle>
             <CardDescription>
-              Tentukan waktu mulai dan selesai produksi yang direncanakan
+              Set the planned start and end times for production
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="plannedStartTime">Waktu Mulai Rencana</Label>
+                <Label htmlFor="plannedStartTime">Planned Start Time</Label>
                 <div className="relative">
                   <Clock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -224,7 +235,7 @@ export function ProductionPlanCreate() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="plannedEndTime">Waktu Selesai Rencana</Label>
+                <Label htmlFor="plannedEndTime">Planned End Time</Label>
                 <div className="relative">
                   <Clock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -240,11 +251,11 @@ export function ProductionPlanCreate() {
             </div>
 
             {formData.plannedStartTime && formData.plannedEndTime && (
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Durasi Rencana:</strong> {
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Planned Duration:</strong> {
                     Math.round((new Date(formData.plannedEndTime).getTime() - new Date(formData.plannedStartTime).getTime()) / (1000 * 60 * 60 * 100)) / 10
-                  } jam
+                  } hours
                 </p>
               </div>
             )}
@@ -253,9 +264,9 @@ export function ProductionPlanCreate() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Informasi Tambahan</CardTitle>
+            <CardTitle>Additional Information</CardTitle>
             <CardDescription>
-              Tambahkan catatan atau informasi penting lainnya
+              Add notes or other important information
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -265,17 +276,17 @@ export function ProductionPlanCreate() {
                 id="kitchenId"
                 value={formData.kitchenId}
                 onChange={(e) => handleInputChange('kitchenId', e.target.value)}
-                placeholder="Masukkan ID dapur/kitchen"
+                placeholder="Enter kitchen ID"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Catatan</Label>
+              <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
-                placeholder="Masukkan catatan rencana produksi..."
+                placeholder="Enter production plan notes..."
                 rows={4}
               />
             </div>
@@ -283,21 +294,21 @@ export function ProductionPlanCreate() {
         </Card>
 
         <div className="flex items-center gap-4">
-          <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
+          <Button type="submit" disabled={loading}>
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Membuat...
+                Creating...
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Buat Production Plan
+                Create Production Plan
               </>
             )}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
-            Batal
+            Cancel
           </Button>
         </div>
       </form>

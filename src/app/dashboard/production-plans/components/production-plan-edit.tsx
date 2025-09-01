@@ -74,11 +74,14 @@ export function ProductionPlanEdit() {
       const menusResponse = await fetch('/api/menus')
       if (menusResponse.ok) {
         const menusData = await menusResponse.json()
-        setMenus(menusData.data || [])
+        // API returns the array directly, not wrapped in a data property
+        setMenus(Array.isArray(menusData) ? menusData : menusData.data || [])
+      } else {
+        console.error('Edit - Failed to fetch menus:', menusResponse.status, menusResponse.statusText)
       }
     } catch (error) {
       console.error('Error fetching data:', error)
-      toast.error('Gagal memuat data')
+      toast.error('Failed to load data')
     }
   }
 
@@ -138,7 +141,7 @@ export function ProductionPlanEdit() {
     }
 
     if (Number(formData.targetPortions) <= 0) {
-      toast.error('Target porsi harus lebih dari 0')
+      toast.error('Target portions must be greater than 0')
       return
     }
 
@@ -185,7 +188,7 @@ export function ProductionPlanEdit() {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
     )
@@ -195,8 +198,8 @@ export function ProductionPlanEdit() {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="text-center py-8">
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">Production plan not found</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-semibold">Production plan not found</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             Data production plan yang dicari tidak ditemukan.
           </p>
           <Button className="mt-4" onClick={() => router.back()}>
@@ -209,19 +212,20 @@ export function ProductionPlanEdit() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           onClick={() => router.back()}
-          className="p-2"
+          size="icon"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Edit Production Plan</h2>
+          <h1 className="text-3xl font-bold tracking-tight">Edit Production Plan</h1>
           <p className="text-muted-foreground">
-            Perbarui data rencana produksi makanan
+            Update food production plan data
           </p>
         </div>
       </div>
@@ -229,15 +233,15 @@ export function ProductionPlanEdit() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Informasi Dasar</CardTitle>
+            <CardTitle>Basic Information</CardTitle>
             <CardDescription>
-              Perbarui informasi dasar rencana produksi
+              Update basic production plan information
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="planDate">Tanggal Rencana <span className="text-red-500">*</span></Label>
+                <Label htmlFor="planDate">Plan Date <span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <Calendar className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -251,7 +255,7 @@ export function ProductionPlanEdit() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="targetPortions">Target Porsi <span className="text-red-500">*</span></Label>
+                <Label htmlFor="targetPortions">Target Portions <span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <Users className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -271,10 +275,10 @@ export function ProductionPlanEdit() {
                 <Label htmlFor="menuId">Menu</Label>
                 <Select value={formData.menuId} onValueChange={(value) => handleInputChange('menuId', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Pilih menu (opsional)" />
+                    <SelectValue placeholder="Select menu (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Tidak ada menu</SelectItem>
+                    <SelectItem value="none">No menu</SelectItem>
                     {menus.map((menu) => (
                       <SelectItem key={menu.id} value={menu.id}>
                         <div className="flex flex-col">
@@ -319,15 +323,15 @@ export function ProductionPlanEdit() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Jadwal Produksi Rencana</CardTitle>
+            <CardTitle>Planned Production Schedule</CardTitle>
             <CardDescription>
-              Perbarui waktu produksi yang direncanakan
+              Update planned production times
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="plannedStartTime">Waktu Mulai Rencana</Label>
+                <Label htmlFor="plannedStartTime">Planned Start Time</Label>
                 <div className="relative">
                   <Clock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -341,7 +345,7 @@ export function ProductionPlanEdit() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="plannedEndTime">Waktu Selesai Rencana</Label>
+                <Label htmlFor="plannedEndTime">Planned End Time</Label>
                 <div className="relative">
                   <Clock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -360,15 +364,15 @@ export function ProductionPlanEdit() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Jadwal Produksi Aktual</CardTitle>
+            <CardTitle>Actual Production Schedule</CardTitle>
             <CardDescription>
-              Perbarui waktu produksi yang sebenarnya terjadi
+              Update actual production times that occurred
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="actualStartTime">Waktu Mulai Aktual</Label>
+                <Label htmlFor="actualStartTime">Actual Start Time</Label>
                 <div className="relative">
                   <Clock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -382,7 +386,7 @@ export function ProductionPlanEdit() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="actualEndTime">Waktu Selesai Aktual</Label>
+                <Label htmlFor="actualEndTime">Actual End Time</Label>
                 <div className="relative">
                   <Clock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -399,14 +403,14 @@ export function ProductionPlanEdit() {
 
             {/* Duration calculation display */}
             {formData.plannedStartTime && formData.plannedEndTime && (
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">
                   <strong>Durasi Rencana:</strong> {
                     Math.round((new Date(formData.plannedEndTime).getTime() - new Date(formData.plannedStartTime).getTime()) / (1000 * 60 * 60 * 100)) / 10
                   } jam
                 </p>
                 {formData.actualStartTime && formData.actualEndTime && (
-                  <p className="text-sm text-blue-600 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     <strong>Durasi Aktual:</strong> {
                       Math.round((new Date(formData.actualEndTime).getTime() - new Date(formData.actualStartTime).getTime()) / (1000 * 60 * 60 * 100)) / 10
                     } jam
@@ -419,7 +423,7 @@ export function ProductionPlanEdit() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Catatan</CardTitle>
+            <CardTitle>Notes</CardTitle>
             <CardDescription>
               Perbarui catatan atau informasi penting
             </CardDescription>
@@ -439,21 +443,21 @@ export function ProductionPlanEdit() {
         </Card>
 
         <div className="flex items-center gap-4">
-          <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
+          <Button type="submit" disabled={loading}>
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Menyimpan...
+                Saving...
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Simpan Perubahan
+                Save Changes
               </>
             )}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
-            Batal
+            Cancel
           </Button>
         </div>
       </form>
