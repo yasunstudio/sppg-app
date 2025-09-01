@@ -118,8 +118,8 @@ export function ProductionPlanManagement() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [totalPages, setTotalPages] = useState(0)
-  const [selectedStatus, setSelectedStatus] = useState<string>("")
-  const [selectedDateRange, setSelectedDateRange] = useState<string>("")
+  const [selectedStatus, setSelectedStatus] = useState<string>("all")
+  const [selectedDateRange, setSelectedDateRange] = useState<string>("all")
 
   const fetchProductionPlans = async () => {
     try {
@@ -128,11 +128,11 @@ export function ProductionPlanManagement() {
         page: currentPage.toString(),
         limit: pageSize.toString(),
         ...(searchTerm && { search: searchTerm }),
-        ...(selectedStatus && { status: selectedStatus }),
+        ...(selectedStatus && selectedStatus !== "all" && { status: selectedStatus }),
       })
 
       // Add date range filter
-      if (selectedDateRange) {
+      if (selectedDateRange && selectedDateRange !== "all") {
         const endDate = new Date()
         let startDate = new Date()
         
@@ -358,7 +358,7 @@ export function ProductionPlanManagement() {
                 <SelectValue placeholder="Pilih status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Semua Status</SelectItem>
+                <SelectItem value="all">Semua Status</SelectItem>
                 <SelectItem value="PLANNED">Planned</SelectItem>
                 <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>
@@ -371,7 +371,7 @@ export function ProductionPlanManagement() {
                 <SelectValue placeholder="Pilih periode" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Semua Periode</SelectItem>
+                <SelectItem value="all">Semua Periode</SelectItem>
                 <SelectItem value="today">Hari Ini</SelectItem>
                 <SelectItem value="week">7 Hari Terakhir</SelectItem>
                 <SelectItem value="month">30 Hari Terakhir</SelectItem>

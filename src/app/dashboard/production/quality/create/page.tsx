@@ -32,7 +32,7 @@ const statusOptions = [
 ]
 
 async function fetchProductionPlans() {
-  const response = await fetch("/api/production/plans")
+  const response = await fetch("/api/production-plans")
   if (!response.ok) throw new Error("Failed to fetch production plans")
   const result = await response.json()
   return result.data || []

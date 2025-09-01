@@ -115,7 +115,7 @@ export function ResourceUsageManagement() {
   const [totalPages, setTotalPages] = useState(0)
   const [selectedBatch, setSelectedBatch] = useState<string>("")
   const [selectedResource, setSelectedResource] = useState<string>("")
-  const [selectedDateRange, setSelectedDateRange] = useState<string>("")
+  const [selectedDateRange, setSelectedDateRange] = useState<string>("all")
 
   const fetchResourceUsages = async () => {
     try {
@@ -129,7 +129,7 @@ export function ResourceUsageManagement() {
       })
 
       // Add date range filter
-      if (selectedDateRange) {
+      if (selectedDateRange && selectedDateRange !== "all") {
         const endDate = new Date()
         let startDate = new Date()
         
@@ -329,7 +329,7 @@ export function ResourceUsageManagement() {
                 <SelectValue placeholder="Pilih periode" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Semua Periode</SelectItem>
+                <SelectItem value="all">Semua Periode</SelectItem>
                 <SelectItem value="today">Hari Ini</SelectItem>
                 <SelectItem value="week">7 Hari Terakhir</SelectItem>
                 <SelectItem value="month">30 Hari Terakhir</SelectItem>

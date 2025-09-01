@@ -357,7 +357,7 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                       {plan.status}
                     </Badge>
                     <Button asChild size="sm" variant="outline">
-                      <Link href={`/dashboard/production/planning/${plan.id}`}>
+                      <Link href={`/dashboard/production-plans/${plan.id}`}>
                         View Details
                       </Link>
                     </Button>

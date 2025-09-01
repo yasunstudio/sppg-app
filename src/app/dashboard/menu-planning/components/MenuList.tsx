@@ -170,7 +170,7 @@ export function MenuList({
                             </div>
                           )}
                           {productionStatus.status === 'NO_PRODUCTION' && (
-                            <Link href={`/dashboard/production/planning/create?menuId=${menu.id}`}>
+                            <Link href={`/dashboard/production-plans/create?menuId=${menu.id}`}>
                               <Button size="sm" variant="outline" className="h-6 text-xs">
                                 <Factory className="w-3 h-3 mr-1" />
                                 Buat Produksi
@@ -178,7 +178,7 @@ export function MenuList({
                             </Link>
                           )}
                           {productionStatus.status !== 'NO_PRODUCTION' && (
-                            <Link href={`/dashboard/production/planning`}>
+                            <Link href={`/dashboard/production-plans`}>
                               <Button size="sm" variant="ghost" className="h-6 text-xs">
                                 <ArrowRight className="w-3 h-3 mr-1" />
                                 Lihat Produksi

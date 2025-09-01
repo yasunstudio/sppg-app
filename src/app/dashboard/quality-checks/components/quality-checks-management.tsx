@@ -70,8 +70,8 @@ export function QualityChecksManagement({
 }: QualityChecksManagementProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<QualityCheckType | ''>('');
-  const [selectedStatus, setSelectedStatus] = useState<QualityStatus | ''>('');
+  const [selectedType, setSelectedType] = useState<QualityCheckType | 'all'>('all');
+  const [selectedStatus, setSelectedStatus] = useState<QualityStatus | 'all'>('all');
   const [selectedReferenceType, setSelectedReferenceType] = useState('');
 
   const totalPages = Math.ceil(totalCount / limit);
@@ -81,20 +81,20 @@ export function QualityChecksManagement({
     onSearch(value);
   };
 
-  const handleTypeFilter = (type: QualityCheckType | '') => {
+  const handleTypeFilter = (type: QualityCheckType | 'all') => {
     setSelectedType(type);
     onFilterChange({
-      type: type || undefined,
-      status: selectedStatus || undefined,
+      type: type === 'all' ? undefined : type,
+      status: selectedStatus === 'all' ? undefined : selectedStatus,
       referenceType: selectedReferenceType || undefined
     });
   };
 
-  const handleStatusFilter = (status: QualityStatus | '') => {
+  const handleStatusFilter = (status: QualityStatus | 'all') => {
     setSelectedStatus(status);
     onFilterChange({
-      type: selectedType || undefined,
-      status: status || undefined,
+      type: selectedType === 'all' ? undefined : selectedType,
+      status: status === 'all' ? undefined : status,
       referenceType: selectedReferenceType || undefined
     });
   };
@@ -102,15 +102,15 @@ export function QualityChecksManagement({
   const handleReferenceTypeFilter = (referenceType: string) => {
     setSelectedReferenceType(referenceType);
     onFilterChange({
-      type: selectedType || undefined,
-      status: selectedStatus || undefined,
+      type: selectedType === 'all' ? undefined : selectedType,
+      status: selectedStatus === 'all' ? undefined : selectedStatus,
       referenceType: referenceType || undefined
     });
   };
 
   const clearFilters = () => {
-    setSelectedType('');
-    setSelectedStatus('');
+    setSelectedType('all');
+    setSelectedStatus('all');
     setSelectedReferenceType('');
     setSearchTerm('');
     onFilterChange({});
@@ -258,7 +258,7 @@ export function QualityChecksManagement({
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   {Object.entries(typeLabels).map(([value, label]) => (
                     <SelectItem key={value} value={value}>
                       {label}
@@ -272,7 +272,7 @@ export function QualityChecksManagement({
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Status</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   {Object.values(QualityStatus).map((status) => (
                     <SelectItem key={status} value={status}>
                       {status}

@@ -11,7 +11,7 @@ import Link from "next/link"
 // Fetch production overview data
 async function fetchProductionOverview() {
   const [plansRes, batchesRes, resourcesRes, qualityRes] = await Promise.all([
-    fetch("/api/production/plans?limit=5"),
+    fetch("/api/production-plans?limit=5"),
     fetch("/api/production/batches?limit=5"),
     fetch("/api/production/resources?limit=10"),
     fetch("/api/production/quality-checkpoints?limit=10")
@@ -115,7 +115,7 @@ export default function ProductionPage() {
               AI Recipe Optimizer
             </Button>
           </Link>
-          <Link href="/dashboard/production/planning/create">
+          <Link href="/dashboard/production-plans/create">
             <Button>
               <Factory className="mr-2 h-4 w-4" />
               New Production Plan
@@ -205,7 +205,7 @@ export default function ProductionPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Recent Production Plans</CardTitle>
-                <Link href="/dashboard/production/planning">
+                <Link href="/dashboard/production-plans">
                   <Button variant="outline" size="sm">
                     View All
                   </Button>
@@ -281,7 +281,7 @@ export default function ProductionPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
-                <Link href="/dashboard/production/planning/create">
+                <Link href="/dashboard/production-plans/create">
                   <Button variant="outline" className="w-full justify-start">
                     <Plus className="mr-2 h-4 w-4" />
                     Create Production Plan
@@ -314,7 +314,7 @@ export default function ProductionPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Production Plans</CardTitle>
-              <Link href="/dashboard/production/planning">
+              <Link href="/dashboard/production-plans">
                 <Button variant="outline" size="sm">
                   Manage All Plans
                 </Button>
@@ -339,7 +339,7 @@ export default function ProductionPage() {
                       <Badge className={getStatusColor(plan.status)}>
                         {plan.status}
                       </Badge>
-                      <Link href={`/dashboard/production/planning/${plan.id}`}>
+                      <Link href={`/dashboard/production-plans/${plan.id}`}>
                         <Button variant="ghost" size="sm">
                           View
                         </Button>

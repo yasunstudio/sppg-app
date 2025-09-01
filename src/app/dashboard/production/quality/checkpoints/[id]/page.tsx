@@ -260,7 +260,7 @@ export default function QualityCheckpointDetailPage({
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Production Plan</Label>
                     <div className="mt-1">
-                      <Link href={`/dashboard/production/planning/${checkpoint.productionPlan.id}`}>
+                      <Link href={`/dashboard/production-plans/${checkpoint.productionPlan.id}`}>
                         <Button variant="outline" size="sm" className="w-full justify-start">
                           {checkpoint.productionPlan.menu?.name || 'Production Plan'}
                         </Button>

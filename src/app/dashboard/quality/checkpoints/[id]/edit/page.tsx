@@ -67,7 +67,7 @@ export default function EditQualityCheckpointPage() {
   const { data: productionPlans = [] } = useQuery({
     queryKey: ["production-plans"],
     queryFn: async () => {
-      const response = await fetch("/api/production/plans")
+      const response = await fetch("/api/production-plans")
       if (!response.ok) throw new Error("Failed to fetch production plans")
       return response.json()
     }

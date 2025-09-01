@@ -560,7 +560,7 @@ export default function BatchDetailPage({
                 </div>
               </div>
               <Button variant="outline" asChild>
-                <Link href={`/dashboard/production/planning/${batch.productionPlan.id}`}>
+                <Link href={`/dashboard/production-plans/${batch.productionPlan.id}`}>
                   Lihat Plan
                 </Link>
               </Button>

@@ -98,12 +98,6 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       current: pathname.startsWith("/dashboard/production-plans"),
     },
     {
-      name: "Production Planning",
-      href: "/dashboard/production/planning",
-      icon: Calendar,
-      current: pathname.startsWith("/dashboard/production/planning"),
-    },
-    {
       name: "Execution",
       href: "/dashboard/production/execution",
       icon: PlayCircle,
@@ -397,8 +391,6 @@ export function Sidebar({ className, ...props }: SidebarProps) {
             case '/dashboard/production-plans':
               return ['production.view'];
             case '/dashboard/resource-usage':
-              return ['production.view'];
-            case '/dashboard/production/planning':
               return ['production.view'];
             case '/dashboard/production/execution':
               return ['production.view'];
