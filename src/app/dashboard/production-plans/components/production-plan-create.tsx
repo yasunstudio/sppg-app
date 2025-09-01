@@ -34,7 +34,7 @@ export function ProductionPlanCreate() {
   const [formData, setFormData] = useState({
     planDate: '',
     targetPortions: '',
-    menuId: '',
+    menuId: 'none',
     kitchenId: '',
     plannedStartTime: '',
     plannedEndTime: '',
@@ -84,7 +84,7 @@ export function ProductionPlanCreate() {
       const requestData = {
         planDate: new Date(formData.planDate).toISOString(),
         targetPortions: Number(formData.targetPortions),
-        ...(formData.menuId && { menuId: formData.menuId }),
+        ...(formData.menuId && formData.menuId !== 'none' && { menuId: formData.menuId }),
         ...(formData.kitchenId && { kitchenId: formData.kitchenId }),
         ...(formData.plannedStartTime && { plannedStartTime: new Date(formData.plannedStartTime).toISOString() }),
         ...(formData.plannedEndTime && { plannedEndTime: new Date(formData.plannedEndTime).toISOString() }),
@@ -182,7 +182,7 @@ export function ProductionPlanCreate() {
                   <SelectValue placeholder="Pilih menu (opsional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tidak ada menu</SelectItem>
+                  <SelectItem value="none">Tidak ada menu</SelectItem>
                   {menus.map((menu) => (
                     <SelectItem key={menu.id} value={menu.id}>
                       <div className="flex flex-col">

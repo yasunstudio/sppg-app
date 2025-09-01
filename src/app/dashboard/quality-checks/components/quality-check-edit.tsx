@@ -310,7 +310,7 @@ export function QualityCheckEdit({ qualityCheck, onSuccess }: QualityCheckEditPr
                           <SelectValue placeholder="Select color quality" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Not evaluated</SelectItem>
+                          <SelectItem value="not_evaluated">Not evaluated</SelectItem>
                           {qualityOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
@@ -330,7 +330,7 @@ export function QualityCheckEdit({ qualityCheck, onSuccess }: QualityCheckEditPr
                           <SelectValue placeholder="Select taste quality" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Not evaluated</SelectItem>
+                          <SelectItem value="not_evaluated">Not evaluated</SelectItem>
                           {qualityOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
@@ -350,7 +350,7 @@ export function QualityCheckEdit({ qualityCheck, onSuccess }: QualityCheckEditPr
                           <SelectValue placeholder="Select aroma quality" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Not evaluated</SelectItem>
+                          <SelectItem value="not_evaluated">Not evaluated</SelectItem>
                           {qualityOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
@@ -370,7 +370,7 @@ export function QualityCheckEdit({ qualityCheck, onSuccess }: QualityCheckEditPr
                           <SelectValue placeholder="Select texture quality" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Not evaluated</SelectItem>
+                          <SelectItem value="not_evaluated">Not evaluated</SelectItem>
                           {qualityOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
