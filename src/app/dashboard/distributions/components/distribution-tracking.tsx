@@ -205,7 +205,7 @@ export function DistributionTracking() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
@@ -330,6 +330,10 @@ export function DistributionTracking() {
 
       {/* Distribution Table */}
       <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Active Distributions</CardTitle>
+          <CardDescription>Real-time monitoring of delivery status and progress</CardDescription>
+        </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>

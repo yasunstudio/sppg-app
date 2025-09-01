@@ -210,7 +210,7 @@ export function RoutePlanning() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
