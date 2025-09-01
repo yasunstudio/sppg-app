@@ -43,11 +43,16 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function Sidebar({ className, ...props }: SidebarProps) {
   const pathname = usePathname()
-  const [productionExpanded, setProductionExpanded] = useState(pathname.startsWith("/dashboard/production"))
+  const [productionExpanded, setProductionExpanded] = useState(
+    pathname.startsWith("/dashboard/production") || 
+    pathname.startsWith("/dashboard/production-plans") || 
+    pathname.startsWith("/dashboard/resource-usage")
+  )
   const [menuPlanningExpanded, setMenuPlanningExpanded] = useState(pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes"))
   const [monitoringExpanded, setMonitoringExpanded] = useState(pathname.startsWith("/dashboard/monitoring"))
   const [qualityExpanded, setQualityExpanded] = useState(
     pathname.startsWith("/dashboard/quality") || 
+    pathname.startsWith("/dashboard/quality-checks") ||
     pathname.startsWith("/dashboard/food-samples") || 
     pathname.startsWith("/dashboard/nutrition-consultations")
   )
@@ -87,6 +92,12 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       current: pathname === "/dashboard/production",
     },
     {
+      name: "Production Plans",
+      href: "/dashboard/production-plans",
+      icon: Calendar,
+      current: pathname.startsWith("/dashboard/production-plans"),
+    },
+    {
       name: "Production Planning",
       href: "/dashboard/production/planning",
       icon: Calendar,
@@ -97,6 +108,12 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       href: "/dashboard/production/execution",
       icon: PlayCircle,
       current: pathname.startsWith("/dashboard/production/execution"),
+    },
+    {
+      name: "Resource Usage",
+      href: "/dashboard/resource-usage",
+      icon: Activity,
+      current: pathname.startsWith("/dashboard/resource-usage"),
     },
     {
       name: "Quality Control",
@@ -112,6 +129,12 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       href: "/dashboard/quality",
       icon: LayoutGrid,
       current: pathname === "/dashboard/quality",
+    },
+    {
+      name: "Quality Checks",
+      href: "/dashboard/quality-checks",
+      icon: ClipboardCheck,
+      current: pathname.startsWith("/dashboard/quality-checks"),
     },
     {
       name: "Quality Checkpoints",
@@ -369,6 +392,20 @@ export function Sidebar({ className, ...props }: SidebarProps) {
               return ['production.view'];
             case '/dashboard/delivery-tracking':
               return ['production.view'];
+            case '/dashboard/production':
+              return ['production.view'];
+            case '/dashboard/production-plans':
+              return ['production.view'];
+            case '/dashboard/resource-usage':
+              return ['production.view'];
+            case '/dashboard/production/planning':
+              return ['production.view'];
+            case '/dashboard/production/execution':
+              return ['production.view'];
+            case '/dashboard/production/quality':
+              return ['quality.check'];
+            case '/dashboard/quality-checks':
+              return ['quality.check'];
             case '/dashboard/quality-checkpoints':
               return ['quality.check'];
             case '/dashboard/quality':
