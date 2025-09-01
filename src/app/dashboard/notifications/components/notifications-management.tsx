@@ -97,23 +97,23 @@ export function NotificationsManagement() {
 
   const getTypeConfig = (type: string) => {
     const configs = {
-      SYSTEM: { label: "Sistem", icon: Settings, color: "bg-gray-100 text-gray-800" },
-      PRODUCTION: { label: "Produksi", icon: Zap, color: "bg-blue-100 text-blue-800" },
-      DISTRIBUTION: { label: "Distribusi", icon: CheckCircle, color: "bg-green-100 text-green-800" },
-      QUALITY_ALERT: { label: "Kualitas", icon: AlertTriangle, color: "bg-red-100 text-red-800" },
-      INVENTORY_LOW: { label: "Inventori", icon: Info, color: "bg-orange-100 text-orange-800" },
-      BUDGET_ALERT: { label: "Anggaran", icon: AlertTriangle, color: "bg-yellow-100 text-yellow-800" },
-      FEEDBACK: { label: "Feedback", icon: Info, color: "bg-purple-100 text-purple-800" }
+      SYSTEM: { label: "Sistem", icon: Settings, color: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200" },
+      PRODUCTION: { label: "Produksi", icon: Zap, color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
+      DISTRIBUTION: { label: "Distribusi", icon: CheckCircle, color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+      QUALITY_ALERT: { label: "Kualitas", icon: AlertTriangle, color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
+      INVENTORY_LOW: { label: "Inventori", icon: Info, color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
+      BUDGET_ALERT: { label: "Anggaran", icon: AlertTriangle, color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
+      FEEDBACK: { label: "Feedback", icon: Info, color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" }
     }
     return configs[type as keyof typeof configs] || configs.SYSTEM
   }
 
   const getPriorityBadge = (priority: string) => {
     const badges = {
-      LOW: <Badge variant="secondary" className="bg-gray-100 text-gray-800">Rendah</Badge>,
-      NORMAL: <Badge variant="secondary" className="bg-blue-100 text-blue-800">Normal</Badge>,
-      HIGH: <Badge variant="secondary" className="bg-orange-100 text-orange-800">Tinggi</Badge>,
-      CRITICAL: <Badge variant="destructive">Kritis</Badge>
+      LOW: <Badge variant="secondary" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">Rendah</Badge>,
+      NORMAL: <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Normal</Badge>,
+      HIGH: <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">Tinggi</Badge>,
+      CRITICAL: <Badge variant="destructive" className="bg-red-500 text-white dark:bg-red-600 dark:text-red-100">Kritis</Badge>
     }
     return badges[priority as keyof typeof badges] || badges.NORMAL
   }
@@ -229,7 +229,7 @@ export function NotificationsManagement() {
             <EyeOff className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.unread || 0}</div>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.unread || 0}</div>
           </CardContent>
         </Card>
         
@@ -239,7 +239,7 @@ export function NotificationsManagement() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
               {(stats.byPriority.HIGH || 0) + (stats.byPriority.CRITICAL || 0)}
             </div>
           </CardContent>
@@ -355,8 +355,8 @@ export function NotificationsManagement() {
         <CardContent>
           {error && (
             <div className="text-center py-8">
-              <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-              <p className="text-red-600">Error: {error}</p>
+              <AlertTriangle className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
+              <p className="text-red-600 dark:text-red-400">Error: {error}</p>
               <Button variant="outline" onClick={handleRefresh} className="mt-4">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Coba Lagi
@@ -405,7 +405,7 @@ export function NotificationsManagement() {
                     return (
                       <TableRow 
                         key={notification.id}
-                        className={!notification.isRead ? "bg-blue-50" : ""}
+                        className={!notification.isRead ? "bg-blue-50 dark:bg-blue-950/30" : ""}
                       >
                         <TableCell>
                           <Checkbox
@@ -415,9 +415,9 @@ export function NotificationsManagement() {
                         </TableCell>
                         <TableCell>
                           {notification.isRead ? (
-                            <Eye className="h-4 w-4 text-green-600" />
+                            <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />
                           ) : (
-                            <EyeOff className="h-4 w-4 text-blue-600" />
+                            <EyeOff className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                           )}
                         </TableCell>
                         <TableCell>
