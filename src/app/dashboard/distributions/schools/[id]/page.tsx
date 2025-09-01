@@ -8,15 +8,16 @@ export const metadata: Metadata = {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function DistributionSchoolDetailPage({ params }: PageProps) {
+export default async function DistributionSchoolDetailPage({ params }: PageProps) {
+  const { id } = await params
   return (
     <EnhancedPermissionGuard permission="distribution_schools.view">
-      <DistributionSchoolDetail id={params.id} />
+      <DistributionSchoolDetail id={id} />
     </EnhancedPermissionGuard>
   )
 }

@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const distributionSchool = await prisma.distributionSchool.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         distribution: {
           include: {
@@ -63,15 +64,16 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const body = await request.json()
     const { actualPortions, notes, deliveryStatus, deliveryTime } = body
 
     // Update distribution school
     const updatedDistributionSchool = await prisma.distributionSchool.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         actualPortions,
         // Add timestamp tracking in the future when we add delivery tracking fields
@@ -109,11 +111,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     await prisma.distributionSchool.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({

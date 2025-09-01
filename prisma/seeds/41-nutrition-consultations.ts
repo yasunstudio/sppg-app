@@ -12,7 +12,7 @@ export async function seedNutritionConsultations() {
 
   // Get nutritionist user
   const nutritionist = await prisma.user.findFirst({
-    where: { email: 'sari.nutrition@sppg-purwakarta.go.id' },
+    where: { email: 'sari.nutrition@sppg.com' },
     select: { id: true, name: true }
   })
 

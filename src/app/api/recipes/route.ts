@@ -58,11 +58,27 @@ export async function GET(request: NextRequest) {
       prisma.recipe.count({ where }),
     ]);
 
-    // Calculate total cost for each recipe
+    // Calculate total cost for each recipe with proper unit conversion
     const recipesWithCost = recipes.map((recipe) => {
       const totalCost = recipe.ingredients.reduce((sum: number, ingredient: any) => {
-        const cost = ingredient.item?.unitPrice || 0;
-        return sum + (cost * ingredient.quantity);
+        const unitPrice = ingredient.item?.unitPrice || 0;
+        const quantity = ingredient.quantity;
+        const unit = ingredient.unit.toLowerCase();
+        const itemUnit = ingredient.item?.unit?.toLowerCase() || 'kg';
+
+        // Convert quantity to match inventory unit pricing
+        let convertedQuantity = quantity;
+
+        // Handle unit conversions
+        if (itemUnit === 'kg' && (unit === 'gram' || unit === 'g')) {
+          convertedQuantity = quantity / 1000; // grams to kg
+        } else if (itemUnit === 'liter' && (unit === 'ml' || unit === 'milliliter')) {
+          convertedQuantity = quantity / 1000; // ml to liter
+        } else if (itemUnit === unit) {
+          convertedQuantity = quantity; // same unit
+        }
+
+        return sum + (unitPrice * convertedQuantity);
       }, 0);
 
       return {
@@ -122,6 +138,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Process instructions - convert string to array if needed
+    let processedInstructions = instructions;
+    if (instructions && typeof instructions === 'string') {
+      // Split by lines and clean up
+      processedInstructions = instructions
+        .split('\n')
+        .map((line: string) => line.trim())
+        .filter((line: string) => line.length > 0);
+    }
+
     // Create recipe with transaction
     const recipe = await prisma.$transaction(async (tx) => {
       // Create the recipe
@@ -134,7 +160,7 @@ export async function POST(request: NextRequest) {
           prepTime: prepTime || 0,
           cookTime: cookTime || 0,
           servingSize: servingSize || 1,
-          instructions,
+          instructions: processedInstructions,
           nutritionInfo,
           allergenInfo: allergenInfo || [],
           cost,

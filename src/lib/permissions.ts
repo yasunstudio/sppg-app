@@ -32,6 +32,13 @@ export const PERMISSIONS = {
   'purchase_orders.edit': ['ADMIN', 'CHEF', 'SUPER_ADMIN'],
   'purchase_orders.delete': ['ADMIN', 'SUPER_ADMIN'],
   
+  // Recipe Management
+  'recipes.create': ['CHEF', 'NUTRITIONIST', 'SUPER_ADMIN'],
+  'recipes.view': ['CHEF', 'NUTRITIONIST', 'QUALITY_CONTROL', 'ADMIN', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'recipes.edit': ['CHEF', 'NUTRITIONIST', 'SUPER_ADMIN'],
+  'recipes.delete': ['CHEF', 'SUPER_ADMIN'],
+  'recipes.manage': ['CHEF', 'NUTRITIONIST', 'SUPER_ADMIN'],
+
   // Production Management
   'production.create': ['CHEF', 'SUPER_ADMIN'],
   'production.view': ['CHEF', 'NUTRITIONIST', 'QUALITY_CONTROL', 'ADMIN', 'SUPER_ADMIN'],

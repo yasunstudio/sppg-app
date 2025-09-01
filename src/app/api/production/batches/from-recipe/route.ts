@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProductionBatchStatus, ProductionPlanStatus } from "@/generated/prisma";
+import {
+  checkInventoryAvailability,
+  calculateMaterialsForBatch,
+} from "@/lib/inventory-utils";
 
 // POST /api/production/batches/from-recipe - Create production batch from recipe
 export async function POST(request: NextRequest) {
@@ -57,46 +61,18 @@ export async function POST(request: NextRequest) {
     // Calculate scaling factor
     const scalingFactor = targetPortions / recipe.servingSize;
 
-    // Check inventory availability for all ingredients
-    const inventoryCheck = await Promise.all(
-      recipe.ingredients.map(async (ingredient) => {
-        const scaledQuantity = ingredient.quantity * scalingFactor;
-        
-        // Get current inventory
-        const inventory = await prisma.inventoryItem.findFirst({
-          where: { rawMaterialId: ingredient.itemId },
-        });
+    // Calculate required materials using the utility function
+    const requiredMaterials = await calculateMaterialsForBatch(recipeId, targetPortions);
 
-        const availableQuantity = inventory?.quantity || 0;
-        const isAvailable = availableQuantity >= scaledQuantity;
-        
-        return {
-          ingredient,
-          scaledQuantity,
-          availableQuantity,
-          isAvailable,
-          shortfall: isAvailable ? 0 : scaledQuantity - availableQuantity,
-        };
-      })
-    );
-
-    // Check if all ingredients are available
-    const insufficientIngredients = inventoryCheck.filter(item => !item.isAvailable);
+    // Check inventory availability using the utility function
+    const availabilityCheck = await checkInventoryAvailability(requiredMaterials);
     
-    if (insufficientIngredients.length > 0) {
+    if (!availabilityCheck.success) {
       return NextResponse.json({
-        error: "Insufficient inventory for production",
-        insufficientIngredients: insufficientIngredients.map(item => ({
-          itemName: item.ingredient.item?.name,
-          required: item.scaledQuantity,
-          available: item.availableQuantity,
-          shortfall: item.shortfall,
-          unit: item.ingredient.unit,
-        })),
+        error: availabilityCheck.error,
+        insufficientItems: availabilityCheck.insufficientItems,
       }, { status: 400 });
-    }
-
-    // Calculate total ingredient cost for the batch
+    }    // Calculate total ingredient cost for the batch
     const totalIngredientCost = recipe.ingredients.reduce((sum, ingredient) => {
       const itemCost = ingredient.item?.unitPrice || 0;
       const scaledQuantity = ingredient.quantity * scalingFactor;

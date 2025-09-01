@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Clock, Users, DollarSign, ChefHat, TrendingUp, Edit, Save, X } from "lucide-react";
+import { ArrowLeft, Clock, Users, DollarSign, ChefHat, TrendingUp, Edit, Save, X, Package, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -29,6 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { InventoryConsumptionHistory } from "@/components/production/inventory-consumption-history";
 import { toast } from "@/lib/toast";
 
 interface BatchDetails {
@@ -335,6 +337,25 @@ export default function BatchDetailPage({
         </div>
       </div>
 
+      {/* Tabs */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="recipe" className="flex items-center gap-2">
+            <ChefHat className="h-4 w-4" />
+            Recipe & Ingredients
+          </TabsTrigger>
+          <TabsTrigger value="inventory" className="flex items-center gap-2">
+            <History className="h-4 w-4" />
+            Inventory Impact
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
       {/* Status & Basic Info */}
       <Card>
         <CardHeader>
@@ -589,6 +610,72 @@ export default function BatchDetailPage({
           </CardContent>
         </Card>
       )}
+        </TabsContent>
+
+        {/* Recipe Tab */}
+        <TabsContent value="recipe" className="space-y-6">
+          {batch.recipe && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ChefHat className="h-5 w-5" />
+                  Recipe: {batch.recipe.name}
+                </CardTitle>
+                <CardDescription>Resep dan breakdown bahan untuk batch ini</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-3 border rounded">
+                      <div className="text-lg font-bold">{batch.recipe.category}</div>
+                      <div className="text-sm text-muted-foreground">Kategori</div>
+                    </div>
+                    <div className="text-center p-3 border rounded">
+                      <div className="text-lg font-bold">{batch.recipe.servingSize}</div>
+                      <div className="text-sm text-muted-foreground">Base Serving Size</div>
+                    </div>
+                    <div className="text-center p-3 border rounded">
+                      <div className="text-lg font-bold">{batch.recipe.prepTime + batch.recipe.cookTime} min</div>
+                      <div className="text-sm text-muted-foreground">Total Cook Time</div>
+                    </div>
+                  </div>
+
+                  {/* Ingredients List */}
+                  {batch.ingredientBreakdown && batch.ingredientBreakdown.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-3">Breakdown Bahan ({batch.ingredientBreakdown.length} items):</h4>
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {batch.ingredientBreakdown.map((ingredient: any, index: number) => (
+                          <div key={index} className="flex justify-between items-center p-3 border rounded">
+                            <div>
+                              <span className="font-medium">{ingredient.item?.name || 'Unknown Item'}</span>
+                              <div className="text-sm text-muted-foreground">
+                                Original: {ingredient.originalQuantity} {ingredient.unit} → 
+                                Scaled: {ingredient.scaledQuantity.toFixed(1)} {ingredient.unit}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-medium">{formatCurrency(ingredient.totalCost)}</div>
+                              <div className="text-sm text-muted-foreground">
+                                @{formatCurrency(ingredient.unitCost || 0)}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Inventory Impact Tab */}
+        <TabsContent value="inventory" className="space-y-6">
+          <InventoryConsumptionHistory batchId={batch.id} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

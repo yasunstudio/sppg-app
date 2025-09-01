@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProductionBatchStatus } from "@/generated/prisma";
+import {
+  checkInventoryAvailability,
+  deductInventoryForProduction,
+  rollbackInventoryDeductions,
+  calculateMaterialsForBatch,
+} from "@/lib/inventory-utils";
 
 // GET /api/production/batches/[id] - Get specific production batch
 export async function GET(
@@ -155,6 +161,18 @@ export async function PUT(
     // Check if batch exists
     const existingBatch = await prisma.productionBatch.findUnique({
       where: { id: id },
+      include: {
+        recipe: {
+          include: {
+            ingredients: {
+              include: {
+                item: true,
+              },
+            },
+          },
+        },
+        productionPlan: true,
+      },
     });
 
     if (!existingBatch) {
@@ -162,6 +180,57 @@ export async function PUT(
         { error: "Production batch not found" },
         { status: 404 }
       );
+    }
+
+    // Handle inventory deduction when status changes to IN_PROGRESS
+    if (status === ProductionBatchStatus.IN_PROGRESS && 
+        existingBatch.status !== ProductionBatchStatus.IN_PROGRESS &&
+        existingBatch.recipe) {
+      
+      // Calculate required materials
+      const requiredMaterials = await calculateMaterialsForBatch(
+        existingBatch.recipe.id,
+        existingBatch.plannedQuantity
+      );
+
+      // Check inventory availability
+      const availabilityCheck = await checkInventoryAvailability(requiredMaterials);
+      
+      if (!availabilityCheck.success) {
+        return NextResponse.json(
+          {
+            error: availabilityCheck.error,
+            insufficientItems: availabilityCheck.insufficientItems,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Deduct inventory
+      const deductionResult = await deductInventoryForProduction(
+        requiredMaterials,
+        id,
+        session.user.id
+      );
+
+      if (!deductionResult.success) {
+        return NextResponse.json(
+          { error: deductionResult.error },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Handle inventory rollback when status changes from IN_PROGRESS to PENDING/CANCELLED
+    if ((status === ProductionBatchStatus.PENDING || status === ProductionBatchStatus.REJECTED) &&
+        existingBatch.status === ProductionBatchStatus.IN_PROGRESS) {
+      
+      const rollbackResult = await rollbackInventoryDeductions(id, session.user.id);
+      
+      if (!rollbackResult.success) {
+        console.error('Failed to rollback inventory:', rollbackResult.error);
+        // Don't fail the request, but log the error
+      }
     }
 
     // Prepare update data

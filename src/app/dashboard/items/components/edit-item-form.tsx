@@ -460,7 +460,6 @@ export function EditItemForm({ itemId }: EditItemFormProps) {
                     </p>
                   </div>
                   <Switch
-                    id="active"
                     checked={formData.isActive}
                     onCheckedChange={(checked) => handleInputChange("isActive", checked)}
                   />

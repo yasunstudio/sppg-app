@@ -16,67 +16,67 @@ export async function seedUserRoles() {
   
   const userRoles = [
     {
-      id: 'ur-super-admin',
-      userId: userMap.get('super.admin@sppg-purwakarta.go.id') || 'user-super-admin',
+      id: 'user-role-super-admin',
+      userId: userMap.get('super.admin@sppg.com') || 'user-super-admin',
       roleId: roleMap.get('SUPER_ADMIN') || 'role-super-admin'
     },
     {
-      id: 'ur-admin',
-      userId: userMap.get('admin@sppg-purwakarta.go.id') || 'user-admin',
+      id: 'user-role-admin',
+      userId: userMap.get('admin@sppg.com') || 'user-admin',
       roleId: roleMap.get('ADMIN') || 'role-admin'
     },
     {
-      id: 'ur-nutritionist-1',
-      userId: userMap.get('sari.nutrition@sppg-purwakarta.go.id') || 'user-nutritionist-1',
+      id: 'user-role-nutritionist-1',
+      userId: userMap.get('sari.nutrition@sppg.com') || 'user-nutritionist-1',
       roleId: roleMap.get('NUTRITIONIST') || 'role-nutritionist'
     },
     {
-      id: 'ur-chef-1',
-      userId: userMap.get('budi.chef@sppg-purwakarta.go.id') || 'user-chef-1',
+      id: 'user-role-chef-1',
+      userId: userMap.get('budi.chef@sppg.com') || 'user-chef-1',
       roleId: roleMap.get('CHEF') || 'role-chef'
     },
     {
-      id: 'ur-production-1',
-      userId: userMap.get('andi.production@sppg-purwakarta.go.id') || 'user-production-1',
+      id: 'user-role-production-1',
+      userId: userMap.get('andi.production@sppg.com') || 'user-production-1',
       roleId: roleMap.get('PRODUCTION_STAFF') || 'role-production-staff'
     },
     {
-      id: 'ur-qc-1',
-      userId: userMap.get('maya.qc@sppg-purwakarta.go.id') || 'user-qc-1',
+      id: 'user-role-qc-1',
+      userId: userMap.get('maya.qc@sppg.com') || 'user-qc-1',
       roleId: roleMap.get('QUALITY_CONTROL') || 'role-qc'
     },
     {
-      id: 'ur-warehouse-1',
-      userId: userMap.get('dedi.warehouse@sppg-purwakarta.go.id') || 'user-warehouse-1',
+      id: 'user-role-warehouse-1',
+      userId: userMap.get('dedi.warehouse@sppg.com') || 'user-warehouse-1',
       roleId: roleMap.get('WAREHOUSE_MANAGER') || 'role-warehouse'
     },
     {
-      id: 'ur-distribution-1',
-      userId: userMap.get('rina.distribution@sppg-purwakarta.go.id') || 'user-distribution-1',
+      id: 'user-role-distribution-1',
+      userId: userMap.get('rina.distribution@sppg.com') || 'user-distribution-1',
       roleId: roleMap.get('DISTRIBUTION_MANAGER') || 'role-distribution'
     },
     {
-      id: 'ur-driver-1',
-      userId: userMap.get('asep.driver@sppg-purwakarta.go.id') || 'user-driver-1',
+      id: 'user-role-driver-1',
+      userId: userMap.get('asep.driver@sppg.com') || 'user-driver-1',
       roleId: roleMap.get('DRIVER') || 'role-driver'
     },
     {
-      id: 'ur-driver-2',
-      userId: userMap.get('ujang.driver@sppg-purwakarta.go.id') || 'user-driver-2',
+      id: 'user-role-driver-2',
+      userId: userMap.get('ujang.driver@sppg.com') || 'user-driver-2',
       roleId: roleMap.get('DRIVER') || 'role-driver'
     },
     {
-      id: 'ur-financial-analyst',
-      userId: userMap.get('nina.finance@sppg-purwakarta.go.id') || 'user-financial-analyst',
+      id: 'user-role-financial-analyst',
+      userId: userMap.get('nina.finance@sppg.com') || 'user-financial-analyst',
       roleId: roleMap.get('FINANCIAL_ANALYST') || 'role-financial-analyst'
     },
     {
-      id: 'ur-operations-supervisor',
-      userId: userMap.get('supervisor.ops@sppg-purwakarta.go.id') || 'user-operations-supervisor',
+      id: 'user-role-operations-supervisor',
+      userId: userMap.get('supervisor.ops@sppg.com') || 'user-operations-supervisor',
       roleId: roleMap.get('OPERATIONS_SUPERVISOR') || 'role-operations-supervisor'
     },
     {
-      id: 'ur-school-admin-1',
+      id: 'user-role-school-admin-1',
       userId: userMap.get('kepsek.sdn1@purwakarta.go.id') || 'user-school-admin-1',
       roleId: roleMap.get('SCHOOL_ADMIN') || 'role-school-admin'
     }

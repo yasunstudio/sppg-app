@@ -748,7 +748,7 @@ CREATE TABLE "public"."quality_standards" (
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "targetValue" DOUBLE PRECISION NOT NULL,
-    "currentValue" DOUBLE PRECISION NOT NULL,
+    "currentValue" DOUBLE PRECISION,
     "unit" TEXT NOT NULL,
     "category" "public"."QualityStandardCategory" NOT NULL,
     "isActive" BOOLEAN NOT NULL DEFAULT true,

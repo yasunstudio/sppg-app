@@ -16,8 +16,9 @@ const UpdateResourceUsageSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session?.user) {
@@ -25,7 +26,7 @@ export async function GET(
     }
 
     const resourceUsage = await prisma.resourceUsage.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         batch: {
           select: {
@@ -85,8 +86,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session?.user) {
@@ -98,7 +100,7 @@ export async function PUT(
 
     // Check if resource usage exists
     const existingResourceUsage = await prisma.resourceUsage.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingResourceUsage) {
@@ -144,7 +146,7 @@ export async function PUT(
     }
 
     const updatedResourceUsage = await prisma.resourceUsage.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(validatedData.batchId && { batchId: validatedData.batchId }),
         ...(validatedData.resourceId && { resourceId: validatedData.resourceId }),
@@ -211,8 +213,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session?.user) {
@@ -221,7 +224,7 @@ export async function DELETE(
 
     // Check if resource usage exists
     const existingResourceUsage = await prisma.resourceUsage.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingResourceUsage) {
@@ -232,7 +235,7 @@ export async function DELETE(
     }
 
     await prisma.resourceUsage.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Resource usage deleted successfully' })

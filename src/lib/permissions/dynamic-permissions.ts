@@ -2,8 +2,6 @@
 // DYNAMIC PERMISSION MANAGER (src/lib/permissions/dynamic-permissions.ts)
 // ============================================================================
 
-import { prisma } from '@/lib/prisma'
-
 export interface PermissionMap {
   [permission: string]: string[]
 }
@@ -63,45 +61,35 @@ class PermissionManager {
   }
 
   /**
-   * Refresh permissions from database
+   * Refresh permissions from database via API
    */
   private async refreshPermissions(): Promise<void> {
     this.isLoading = true
     
     try {
-      const roles = await prisma.role.findMany({
-        select: {
-          name: true,
-          permissions: true
-        }
-      })
-
-      const permissionMap: PermissionMap = {}
-
-      // Build reverse mapping: permission -> roles
-      roles.forEach(role => {
-        role.permissions.forEach(permission => {
-          if (!permissionMap[permission]) {
-            permissionMap[permission] = []
-          }
-          if (!permissionMap[permission].includes(role.name)) {
-            permissionMap[permission].push(role.name)
-          }
+      const response = await fetch('/api/permissions?all=true')
+      if (!response.ok) {
+        throw new Error('Failed to fetch permissions')
+      }
+      
+      const result = await response.json()
+      
+      if (result.success && result.data) {
+        // Assuming the API returns a permission map structure
+        this.permissions = result.data
+        this.lastUpdate = Date.now()
+        
+        console.log('✅ Permissions refreshed from API', {
+          permissionCount: Object.keys(result.data).length,
+          timestamp: new Date().toISOString()
         })
-      })
-
-      this.permissions = permissionMap
-      this.lastUpdate = Date.now()
-      
-      console.log('✅ Permissions refreshed from database', {
-        permissionCount: Object.keys(permissionMap).length,
-        timestamp: new Date().toISOString()
-      })
-
+      } else {
+        throw new Error('Invalid permissions response')
+      }
     } catch (error) {
-      console.error('❌ Failed to refresh permissions from database:', error)
+      console.error('❌ Failed to refresh permissions from API:', error)
       
-      // Fallback to static permissions if database fails
+      // Fallback to static permissions if API fails
       const { PERMISSIONS } = await import('../permissions')
       this.permissions = PERMISSIONS
       

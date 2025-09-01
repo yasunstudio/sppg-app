@@ -1,11 +1,12 @@
 import { EditItemForm } from "../../components"
 
 interface EditItemPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function EditItemPage({ params }: EditItemPageProps) {
-  return <EditItemForm itemId={params.id} />
+export default async function EditItemPage({ params }: EditItemPageProps) {
+  const { id } = await params
+  return <EditItemForm itemId={id} />
 }

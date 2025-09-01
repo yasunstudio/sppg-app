@@ -17,7 +17,7 @@ export async function seedDistributions() {
       employeeId: 'DRV-001-2025',
       name: 'Asep Sukandar',
       phone: '0812-3456-7890',
-      email: 'asep.driver@sppg-purwakarta.go.id',
+      email: 'asep.driver@sppg.com',
       licenseNumber: 'SIM-A-123456789',
       licenseExpiry: new Date('2027-12-31'),
       address: 'Jl. Veteran No. 15, Purwakarta',
@@ -32,7 +32,7 @@ export async function seedDistributions() {
       employeeId: 'DRV-002-2025',
       name: 'Ujang Sutrisno',
       phone: '0813-4567-8901',
-      email: 'ujang.driver@sppg-purwakarta.go.id',
+      email: 'ujang.driver@sppg.com',
       licenseNumber: 'SIM-A-987654321',
       licenseExpiry: new Date('2026-10-15'),
       address: 'Jl. Sudirman No. 8, Purwakarta',
@@ -178,7 +178,14 @@ export async function seedDistributions() {
     
     // Create school-specific distribution records for first 5 distributions  
     if (schools.length > 0) {
-      const schoolDistributions = []
+      const schoolDistributions: {
+        id: string
+        distributionId: string
+        schoolId: string
+        plannedPortions: number
+        actualPortions: number
+        routeOrder: number
+      }[] = []
       const completedDistributions = distributions.filter(d => d.status === DistributionStatus.COMPLETED).slice(0, 5)
       
       for (let i = 0; i < completedDistributions.length; i++) {
@@ -187,21 +194,37 @@ export async function seedDistributions() {
           const school = schools[j]
           const portionsForSchool = Math.floor(dist.totalPortions / Math.min(3, schools.length))
           
-          schoolDistributions.push({
-            id: `school-dist-${i+1}-${j+1}-2025`,
-            distributionId: dist.id,
-            schoolId: school.id,
-            plannedPortions: portionsForSchool,
-            actualPortions: portionsForSchool - Math.floor(Math.random() * 5), // Small variation
-            routeOrder: j + 1
-          })
+          // Check if this combination already exists in our array
+          const existingEntry = schoolDistributions.find(sd => 
+            sd.distributionId === dist.id && sd.schoolId === school.id
+          )
+          
+          if (!existingEntry) {
+            schoolDistributions.push({
+              id: `school-dist-${i+1}-${j+1}-2025`,
+              distributionId: dist.id,
+              schoolId: school.id,
+              plannedPortions: portionsForSchool,
+              actualPortions: portionsForSchool - Math.floor(Math.random() * 5), // Small variation
+              routeOrder: j + 1
+            })
+          }
         }
       }
       
       for (const schoolDist of schoolDistributions) {
         await prisma.distributionSchool.upsert({
-          where: { id: schoolDist.id },
-          update: schoolDist,
+          where: { 
+            distributionId_schoolId: {
+              distributionId: schoolDist.distributionId,
+              schoolId: schoolDist.schoolId
+            }
+          },
+          update: {
+            plannedPortions: schoolDist.plannedPortions,
+            actualPortions: schoolDist.actualPortions,
+            routeOrder: schoolDist.routeOrder
+          },
           create: schoolDist
         })
       }

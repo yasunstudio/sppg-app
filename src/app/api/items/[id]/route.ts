@@ -2,17 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
-
 // GET /api/items/[id] - Get single item
 export async function GET(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session) {
@@ -20,7 +15,7 @@ export async function GET(
     }
 
     const item = await prisma.item.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         supplier: {
           select: {
@@ -54,8 +49,9 @@ export async function GET(
 // PUT /api/items/[id] - Update item
 export async function PUT(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session) {
@@ -85,7 +81,7 @@ export async function PUT(
     }
 
     const item = await prisma.item.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         description,
@@ -128,8 +124,9 @@ export async function PUT(
 // DELETE /api/items/[id] - Delete item
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session) {
@@ -138,7 +135,7 @@ export async function DELETE(
 
     // Check if item exists
     const existingItem = await prisma.item.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingItem) {
@@ -150,7 +147,7 @@ export async function DELETE(
 
     // Check if item is used in recipes
     const recipeIngredients = await prisma.recipeIngredient.count({
-      where: { itemId: params.id }
+      where: { itemId: id }
     })
 
     if (recipeIngredients > 0) {
@@ -164,7 +161,7 @@ export async function DELETE(
     }
 
     await prisma.item.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({
@@ -183,8 +180,9 @@ export async function DELETE(
 // PATCH /api/items/[id] - Toggle item status
 export async function PATCH(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session) {
@@ -195,7 +193,7 @@ export async function PATCH(
     const { isActive } = body
 
     const item = await prisma.item.update({
-      where: { id: params.id },
+      where: { id },
       data: { isActive },
       include: {
         supplier: {

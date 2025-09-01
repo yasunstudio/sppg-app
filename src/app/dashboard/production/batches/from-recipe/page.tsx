@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { InventoryImpactPreview } from "@/components/production/inventory-impact-preview";
 import { toast } from "@/lib/toast";
 import Link from "next/link";
 
@@ -66,6 +67,8 @@ export default function RecipeToBatchPage() {
   const [scheduledDate, setScheduledDate] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [batchResult, setBatchResult] = useState<BatchCreationResult | null>(null);
+  const [showImpactPreview, setShowImpactPreview] = useState(false);
+  const [step, setStep] = useState<'form' | 'preview' | 'result'>('form');
 
   useEffect(() => {
     fetchRecipes();
@@ -116,6 +119,31 @@ export default function RecipeToBatchPage() {
     };
   };
 
+  const handlePreviewImpact = () => {
+    if (!selectedRecipe) {
+      toast.error("Please select a recipe first");
+      return;
+    }
+    if (!targetPortions || targetPortions <= 0) {
+      toast.error("Please enter valid target portions");
+      return;
+    }
+    if (!scheduledDate) {
+      toast.error("Please select a scheduled date");
+      return;
+    }
+    setStep('preview');
+  };
+
+  const handleConfirmProduction = async (impactData: any) => {
+    if (!impactData.canProduce) {
+      toast.error("Cannot proceed with production due to insufficient inventory");
+      return;
+    }
+
+    await handleCreateBatch();
+  };
+
   const handleCreateBatch = async () => {
     if (!selectedRecipe || !targetPortions || !scheduledDate) {
       toast.error("Mohon lengkapi semua field yang diperlukan");
@@ -144,6 +172,7 @@ export default function RecipeToBatchPage() {
 
       const result: BatchCreationResult = await response.json();
       setBatchResult(result);
+      setStep('result');
 
       toast.success("Production batch berhasil dibuat dari resep");
 
@@ -165,7 +194,7 @@ export default function RecipeToBatchPage() {
     }).format(amount);
   };
 
-  if (batchResult) {
+  if (step === 'result' && batchResult) {
     return (
       <div className="space-y-6">
         {/* Header */}
@@ -253,6 +282,34 @@ export default function RecipeToBatchPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  // Preview step - show inventory impact
+  if (step === 'preview' && selectedRecipe) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => setStep('form')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Form
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Production Impact Preview</h1>
+            <p className="text-muted-foreground">
+              Review inventory impact before creating batch
+            </p>
+          </div>
+        </div>
+
+        <InventoryImpactPreview
+          recipeId={selectedRecipe.id}
+          targetPortions={targetPortions}
+          onConfirm={handleConfirmProduction}
+          onCancel={() => setStep('form')}
+        />
       </div>
     );
   }
@@ -400,11 +457,11 @@ export default function RecipeToBatchPage() {
                 </div>
 
                 <Button 
-                  onClick={handleCreateBatch}
-                  disabled={loading || !selectedRecipe || !targetPortions || !scheduledDate}
+                  onClick={handlePreviewImpact}
+                  disabled={!selectedRecipe || !targetPortions || !scheduledDate}
                   className="w-full"
                 >
-                  {loading ? "Membuat Batch..." : "Buat Production Batch"}
+                  Preview Inventory Impact
                 </Button>
               </div>
             ) : (

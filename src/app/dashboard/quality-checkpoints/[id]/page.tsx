@@ -1,11 +1,12 @@
 import { QualityCheckpointDetails } from "../components"
 
 interface QualityCheckpointDetailsPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function QualityCheckpointDetailsPage({ params }: QualityCheckpointDetailsPageProps) {
-  return <QualityCheckpointDetails checkpointId={params.id} />
+export default async function QualityCheckpointDetailsPage({ params }: QualityCheckpointDetailsPageProps) {
+  const { id } = await params
+  return <QualityCheckpointDetails checkpointId={id} />
 }

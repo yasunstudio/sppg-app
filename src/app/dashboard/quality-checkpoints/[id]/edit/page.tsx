@@ -1,11 +1,12 @@
 import { EditQualityCheckpointForm } from "../../components"
 
 interface EditQualityCheckpointPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function EditQualityCheckpointPage({ params }: EditQualityCheckpointPageProps) {
-  return <EditQualityCheckpointForm checkpointId={params.id} />
+export default async function EditQualityCheckpointPage({ params }: EditQualityCheckpointPageProps) {
+  const { id } = await params
+  return <EditQualityCheckpointForm checkpointId={id} />
 }

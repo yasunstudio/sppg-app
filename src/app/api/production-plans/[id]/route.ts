@@ -18,8 +18,9 @@ const UpdateProductionPlanSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session?.user) {
@@ -27,7 +28,7 @@ export async function GET(
     }
 
     const productionPlan = await prisma.productionPlan.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         menu: {
           select: {
@@ -107,8 +108,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session?.user) {
@@ -120,7 +122,7 @@ export async function PUT(
 
     // Check if production plan exists
     const existingPlan = await prisma.productionPlan.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingPlan) {
@@ -157,7 +159,7 @@ export async function PUT(
     if (validatedData.notes !== undefined) updateData.notes = validatedData.notes
 
     const updatedPlan = await prisma.productionPlan.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         menu: {
@@ -207,8 +209,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session?.user) {
@@ -217,7 +220,7 @@ export async function DELETE(
 
     // Check if production plan exists
     const existingPlan = await prisma.productionPlan.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         batches: {
           select: { id: true }
@@ -241,7 +244,7 @@ export async function DELETE(
     }
 
     await prisma.productionPlan.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Production plan deleted successfully' })
