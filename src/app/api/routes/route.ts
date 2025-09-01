@@ -42,8 +42,15 @@ export async function GET(request: NextRequest) {
               dist.status === 'IN_TRANSIT' ? 'planned' : 'draft',
       estimatedDistance: Math.random() * 50 + 10, // Mock calculation
       estimatedDuration: Math.random() * 120 + 60, // Mock calculation
-      driver: dist.driver,
-      vehicle: dist.vehicle,
+      driver: dist.driver || {
+        name: 'Unknown Driver',
+        phone: 'No phone available'
+      },
+      vehicle: dist.vehicle || {
+        plateNumber: 'No Vehicle Assigned',
+        type: 'Unknown',
+        capacity: 0
+      },
       schools: dist.schools?.map(school => ({
         ...school,
         estimatedDeliveryTime: `${8 + Math.floor(Math.random() * 4)}:${30 + Math.floor(Math.random() * 30)}`.slice(0, 5)
