@@ -32,7 +32,7 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 
 interface School {
   id: string
@@ -62,7 +62,6 @@ export function DistributionSchoolForm() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
 
   useEffect(() => {
     fetchData()
@@ -91,12 +90,7 @@ export function DistributionSchoolForm() {
         setSchools(schoolsData.data || [])
       }
     } catch (error) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: 'Error',
-        description: 'Failed to load data'
-      })
+      toast.error('Failed to load data')
     } finally {
       setIsLoading(false)
     }
@@ -129,22 +123,12 @@ export function DistributionSchoolForm() {
     const selectedSchools = formData.filter(item => item.selected)
     
     if (!selectedDistribution) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: 'Error',
-        description: 'Please select a distribution'
-      })
+      toast.error('Please select a distribution')
       return
     }
 
     if (selectedSchools.length === 0) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: 'Error',
-        description: 'Please select at least one school'
-      })
+      toast.error('Please select at least one school')
       return
     }
 
@@ -164,23 +148,13 @@ export function DistributionSchoolForm() {
       })
 
       if (response.ok) {
-        toast({
-          open: true,
-          onOpenChange: () => {},
-          title: 'Success',
-          description: `Successfully created ${selectedSchools.length} distribution schools`
-        })
+        toast.success(`Successfully created ${selectedSchools.length} distribution schools`)
         router.push('/dashboard/distributions/schools')
       } else {
         throw new Error('Failed to create distribution schools')
       }
     } catch (error) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: 'Error',
-        description: 'Failed to create distribution schools'
-      })
+      toast.error('Failed to create distribution schools')
     } finally {
       setIsSaving(false)
     }

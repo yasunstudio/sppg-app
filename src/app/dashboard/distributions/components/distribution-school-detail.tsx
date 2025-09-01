@@ -28,7 +28,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 import { format } from 'date-fns'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 
 interface DistributionSchoolDetailProps {
   id: string
@@ -40,7 +40,6 @@ export default function DistributionSchoolDetail({ id }: DistributionSchoolDetai
   const [isUpdating, setIsUpdating] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [actualPortions, setActualPortions] = useState<number>(0)
-  const { toast } = useToast()
 
   useEffect(() => {
     fetchDistributionSchool()
@@ -57,12 +56,7 @@ export default function DistributionSchoolDetail({ id }: DistributionSchoolDetai
         throw new Error('Failed to fetch distribution school')
       }
     } catch (error) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: 'Error',
-        description: 'Failed to load distribution school details'
-      })
+      toast.error('Failed to load distribution school details')
     } finally {
       setIsLoading(false)
     }
@@ -82,24 +76,14 @@ export default function DistributionSchoolDetail({ id }: DistributionSchoolDetai
       })
 
       if (response.ok) {
-        toast({
-          open: true,
-          onOpenChange: () => {},
-          title: 'Success',
-          description: 'Distribution school updated successfully'
-        })
+        toast.success('Distribution school updated successfully')
         setIsDialogOpen(false)
         fetchDistributionSchool()
       } else {
         throw new Error('Failed to update distribution school')
       }
     } catch (error) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: 'Error',
-        description: 'Failed to update distribution school'
-      })
+      toast.error('Failed to update distribution school')
     } finally {
       setIsUpdating(false)
     }

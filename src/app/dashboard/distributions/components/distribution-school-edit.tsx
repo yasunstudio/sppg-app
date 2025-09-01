@@ -18,7 +18,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import Link from 'next/link'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 
 interface DistributionSchoolEditProps {
   id: string
@@ -31,7 +31,6 @@ export default function DistributionSchoolEdit({ id }: DistributionSchoolEditPro
   const [actualPortions, setActualPortions] = useState<number>(0)
   const [notes, setNotes] = useState('')
   const router = useRouter()
-  const { toast } = useToast()
 
   useEffect(() => {
     fetchDistributionSchool()
@@ -49,12 +48,7 @@ export default function DistributionSchoolEdit({ id }: DistributionSchoolEditPro
         throw new Error('Failed to fetch distribution school')
       }
     } catch (error) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: 'Error',
-        description: 'Failed to load distribution school details'
-      })
+      toast.error('Failed to load distribution school details')
     } finally {
       setIsLoading(false)
     }
@@ -75,23 +69,13 @@ export default function DistributionSchoolEdit({ id }: DistributionSchoolEditPro
       })
 
       if (response.ok) {
-        toast({
-          open: true,
-          onOpenChange: () => {},
-          title: 'Success',
-          description: 'Distribution school updated successfully'
-        })
+        toast.success('Distribution school updated successfully')
         router.push(`/dashboard/distributions/schools/${id}`)
       } else {
         throw new Error('Failed to update distribution school')
       }
     } catch (error) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: 'Error',
-        description: 'Failed to update distribution school'
-      })
+      toast.error('Failed to update distribution school')
     } finally {
       setIsSaving(false)
     }

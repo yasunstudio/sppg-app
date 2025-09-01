@@ -6,7 +6,7 @@ import { DistributionSchoolStats } from './distribution-school-stats'
 import { DistributionSchoolFilters } from './distribution-school-filters'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface DistributionSchool {
@@ -39,7 +39,6 @@ export function DistributionSchoolsList() {
   const [dateFilter, setDateFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 12
-  const { toast } = useToast()
 
   useEffect(() => {
     fetchDistributionSchools()
@@ -59,12 +58,7 @@ export function DistributionSchoolsList() {
         throw new Error('Failed to fetch distribution schools')
       }
     } catch (error) {
-      toast({
-        open: true,
-        onOpenChange: () => {},
-        title: 'Error',
-        description: 'Failed to load distribution schools'
-      })
+      toast.error('Failed to load distribution schools')
     } finally {
       setIsLoading(false)
     }
