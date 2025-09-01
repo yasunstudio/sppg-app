@@ -109,13 +109,13 @@ export default function AuditLogsPage() {
 
   const getActionColor = (action: string) => {
     switch (action) {
-      case 'CREATE': return 'bg-green-100 text-green-800';
-      case 'UPDATE': return 'bg-blue-100 text-blue-800';
-      case 'DELETE': return 'bg-red-100 text-red-800';
-      case 'LOGIN': return 'bg-purple-100 text-purple-800';
-      case 'LOGOUT': return 'bg-gray-100 text-gray-800';
-      case 'EXPORT': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'CREATE': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'UPDATE': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'DELETE': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'LOGIN': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'LOGOUT': return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      case 'EXPORT': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
     }
   };
 
@@ -139,10 +139,10 @@ export default function AuditLogsPage() {
     return (
       <div className="space-y-4">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
             ))}
           </div>
         </div>
@@ -168,8 +168,8 @@ export default function AuditLogsPage() {
       </div>
 
       {error && (
-        <Card className="p-4 bg-red-50 border-red-200">
-          <p className="text-red-800">❌ {error}</p>
+        <Card className="p-4 bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800">
+          <p className="text-red-800 dark:text-red-200">❌ {error}</p>
         </Card>
       )}
 
@@ -178,7 +178,7 @@ export default function AuditLogsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="flex items-center space-x-3">
-              <Shield className="w-8 h-8 text-blue-500" />
+              <Shield className="w-8 h-8 text-blue-500 dark:text-blue-400" />
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Logs</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
@@ -188,7 +188,7 @@ export default function AuditLogsPage() {
           
           <Card className="p-4">
             <div className="flex items-center space-x-3">
-              <Activity className="w-8 h-8 text-green-500" />
+              <Activity className="w-8 h-8 text-green-500 dark:text-green-400" />
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Actions</p>
                 <p className="text-2xl font-bold">{stats.byAction.length}</p>
@@ -198,7 +198,7 @@ export default function AuditLogsPage() {
 
           <Card className="p-4">
             <div className="flex items-center space-x-3">
-              <Eye className="w-8 h-8 text-orange-500" />
+              <Eye className="w-8 h-8 text-orange-500 dark:text-orange-400" />
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Entities</p>
                 <p className="text-2xl font-bold">{stats.byEntity.length}</p>
@@ -208,7 +208,7 @@ export default function AuditLogsPage() {
 
           <Card className="p-4">
             <div className="flex items-center space-x-3">
-              <Calendar className="w-8 h-8 text-purple-500" />
+              <Calendar className="w-8 h-8 text-purple-500 dark:text-purple-400" />
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Current Page</p>
                 <p className="text-2xl font-bold">
@@ -226,7 +226,7 @@ export default function AuditLogsPage() {
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background text-foreground dark:bg-gray-800"
           >
             <option value="">All Actions</option>
             <option value="CREATE">Create</option>
@@ -240,7 +240,7 @@ export default function AuditLogsPage() {
           <select
             value={entityFilter}
             onChange={(e) => setEntityFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background text-foreground dark:bg-gray-800"
           >
             <option value="">All Entities</option>
             <option value="User">User</option>
@@ -310,16 +310,16 @@ export default function AuditLogsPage() {
                   <span className="ml-1">{log.action}</span>
                 </Badge>
                 <Badge variant="outline">{log.entity}</Badge>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-muted-foreground">
                   ID: {log.entityId}
                 </span>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   {new Date(log.createdAt).toLocaleString('id-ID')}
                 </p>
                 {log.ipAddress && (
-                  <p className="text-xs text-gray-500">IP: {log.ipAddress}</p>
+                  <p className="text-xs text-muted-foreground">IP: {log.ipAddress}</p>
                 )}
               </div>
             </div>
@@ -342,7 +342,7 @@ export default function AuditLogsPage() {
                 {log.oldValues && (
                   <div>
                     <h4 className="font-medium mb-2">Old Values</h4>
-                    <pre className="bg-red-50 p-3 rounded text-xs overflow-x-auto">
+                    <pre className="bg-red-50 dark:bg-red-950/30 p-3 rounded text-xs overflow-x-auto border border-red-200 dark:border-red-800">
                       {formatJsonValue(log.oldValues)}
                     </pre>
                   </div>
@@ -351,7 +351,7 @@ export default function AuditLogsPage() {
                 {log.newValues && (
                   <div>
                     <h4 className="font-medium mb-2">New Values</h4>
-                    <pre className="bg-green-50 p-3 rounded text-xs overflow-x-auto">
+                    <pre className="bg-green-50 dark:bg-green-950/30 p-3 rounded text-xs overflow-x-auto border border-green-200 dark:border-green-800">
                       {formatJsonValue(log.newValues)}
                     </pre>
                   </div>
@@ -360,8 +360,8 @@ export default function AuditLogsPage() {
             </div>
 
             {log.userAgent && (
-              <div className="mt-4 p-3 bg-gray-50 rounded">
-                <p className="text-xs text-gray-600">
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-muted-foreground">
                   <span className="font-medium">User Agent:</span> {log.userAgent}
                 </p>
               </div>
@@ -388,7 +388,7 @@ export default function AuditLogsPage() {
               >
                 Previous
               </Button>
-              <span className="px-3 py-1 text-sm bg-gray-100 rounded">
+              <span className="px-3 py-1 text-sm bg-muted rounded border">
                 {pagination.page} / {pagination.totalPages}
               </span>
               <Button
