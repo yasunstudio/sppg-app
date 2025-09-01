@@ -4,7 +4,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { Toaster as SonnerToaster } from "sonner";
-import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 
@@ -43,7 +42,6 @@ export default function RootLayout({
             <AuthProvider>
               {children}
               <SonnerToaster />
-              <Toaster />
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
