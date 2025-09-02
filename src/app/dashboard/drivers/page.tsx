@@ -1,5 +1,5 @@
-import { DriversManagement } from "./components/drivers-management"
+import { DriversManagementV2 } from "./components"
 
 export default function DriversPage() {
-  return <DriversManagement />
+  return <DriversManagementV2 />
 }
