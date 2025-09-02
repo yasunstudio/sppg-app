@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import type { Driver, FilterState, PaginationState, DriverStats } from '../utils/driver-types'
