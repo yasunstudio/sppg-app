@@ -76,16 +76,19 @@ function ThemeToggle() {
       </DropdownMenu>
     </NoSSR>
   )
-}
-
-export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
+}export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
   const { data: session } = useSession()
   const pathname = usePathname()
   const [searchQuery, setSearchQuery] = React.useState("")
   const [mobileSearchOpen, setMobileSearchOpen] = React.useState(false)
+  const [mounted, setMounted] = React.useState(false)
   const { notifications, loading } = useNotifications()
   const count = notifications.length
   const { profile } = useUserProfile()
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
   
   const getRoleDisplay = () => {
     return profile?.roles?.[0]?.role?.name || 'User'
@@ -94,57 +97,53 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
   // Get page title based on current path
   const getPageTitle = () => {
     if (pathname === "/dashboard") return "Dashboard"
-    if (pathname === "/dashboard/users") return "Pengguna"
-    if (pathname === "/dashboard/schools") return "Sekolah"
-    if (pathname === "/dashboard/raw-materials") return "Bahan Baku"
-    if (pathname === "/dashboard/inventory") return "Inventori"
-    if (pathname === "/dashboard/production") return "Produksi"
-    if (pathname === "/dashboard/distribution") return "Distribusi"
-    if (pathname === "/dashboard/waste-management") return "Manajemen Limbah"
-    if (pathname === "/dashboard/quality") return "Quality Control"
-    if (pathname === "/dashboard/financial") return "Keuangan"
-    if (pathname === "/dashboard/reports") return "Laporan"
-    if (pathname === "/dashboard/settings") return "Pengaturan"
-    return "SPPG System"
+    if (pathname.startsWith("/dashboard/users")) return "Manajemen Pengguna"
+    if (pathname.startsWith("/dashboard/admin")) return "Admin Panel"
+    if (pathname.startsWith("/dashboard/schools")) return "Data Sekolah"
+    if (pathname.startsWith("/dashboard/inventory")) return "Inventaris"
+    if (pathname.startsWith("/dashboard/menus")) return "Menu & Produksi"
+    if (pathname.startsWith("/dashboard/distribution")) return "Distribusi"
+    if (pathname.startsWith("/dashboard/quality")) return "Kontrol Kualitas"
+    if (pathname.startsWith("/dashboard/waste-management")) return "Manajemen Limbah"
+    if (pathname.startsWith("/dashboard/settings")) return "Pengaturan"
+    return "SPPG Admin"
   }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     // TODO: Implement search functionality
     console.log("Search query:", searchQuery)
+    setMobileSearchOpen(false)
   }
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/auth/signin" })
+    signOut({ callbackUrl: "/auth/login" })
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:bg-slate-900/95 dark:border-slate-700">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:border-slate-700">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-        {/* Left Section - Mobile Menu & Page Title */}
-        <div className="flex items-center space-x-3 flex-1 min-w-0">
-          {/* Mobile Sidebar Toggle */}
-          <div className="lg:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
-              onClick={onMobileSidebarToggle}
-            >
-              {sidebarOpen ? (
-                <X className="h-4 w-4" />
-              ) : (
-                <Menu className="h-4 w-4" />
-              )}
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </div>
+        {/* Left Section - Mobile Menu + Page Title */}
+        <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden h-9 w-9"
+            onClick={onMobileSidebarToggle}
+          >
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <span className="sr-only">Toggle sidebar</span>
+          </Button>
 
           {/* Page Title */}
-          <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-xl font-semibold text-foreground dark:text-slate-100 truncate">
+          <div className="flex flex-col min-w-0 flex-1">
+            <h1 className="text-lg sm:text-xl font-semibold tracking-tight dark:text-slate-100 truncate">
               {getPageTitle()}
             </h1>
+            <p className="text-xs text-muted-foreground dark:text-slate-400 hidden sm:block truncate">
+              Sistem Pengelolaan Program Gizi
+            </p>
           </div>
         </div>
 
@@ -200,109 +199,99 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
                   <span className="sr-only">Notifications</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 dark:bg-slate-800 dark:border-slate-600">
-                <DropdownMenuLabel className="dark:text-slate-100">Notifikasi</DropdownMenuLabel>
-                <DropdownMenuSeparator className="dark:border-slate-600" />
-                <div className="max-h-64 overflow-y-auto">
-                  {loading ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground dark:text-slate-400">
-                      Memuat notifikasi...
-                    </div>
-                  ) : notifications.length > 0 ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground dark:text-slate-400">
-                      {notifications.length} notifikasi tersedia
-                    </div>
-                  ) : (
-                    <div className="p-4 text-center text-sm text-muted-foreground dark:text-slate-400">
-                      Tidak ada notifikasi baru
-                    </div>
-                  )}
-                </div>
-                <DropdownMenuSeparator className="dark:border-slate-600" />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/notifications" className="w-full text-center font-medium dark:text-slate-200 dark:hover:bg-slate-700">
-                    Lihat semua notifikasi
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
+            <DropdownMenuContent align="end" className="w-80 dark:bg-slate-800 dark:border-slate-600">
+              <DropdownMenuLabel className="dark:text-slate-100">Notifikasi</DropdownMenuLabel>
+              <DropdownMenuSeparator className="dark:border-slate-600" />
+              <div className="max-h-64 overflow-y-auto">
+                {loading ? (
+                  <div className="p-4 text-center text-sm text-muted-foreground dark:text-slate-400">
+                    Memuat notifikasi...
+                  </div>
+                ) : notifications.length > 0 ? (
+                  <div className="p-4 text-center text-sm text-muted-foreground dark:text-slate-400">
+                    {notifications.length} notifikasi tersedia
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-sm text-muted-foreground dark:text-slate-400">
+                    Tidak ada notifikasi baru
+                  </div>
+                )}
+              </div>
+              <DropdownMenuSeparator className="dark:border-slate-600" />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/notifications" className="w-full text-center font-medium dark:text-slate-200 dark:hover:bg-slate-700">
+                  Lihat semua notifikasi
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
             </DropdownMenu>
-          </NoSSR>
+          </div>
 
           {/* Theme Toggle */}
           <ThemeToggle />
 
           {/* User Menu */}
-          <NoSSR 
-            fallback={
-              <Button variant="ghost" className="relative h-9 w-auto px-2 sm:px-3">
-                <div className="flex items-center space-x-2">
-                  <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs sm:text-sm font-medium shadow-md">
-                    ?
-                  </div>
-                </div>
-              </Button>
-            }
-          >
+          <div suppressHydrationWarning>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-auto px-2 sm:px-3 hover:bg-muted/50 dark:hover:bg-slate-700">
-                  <div className="flex items-center space-x-2">
-                    <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs sm:text-sm font-medium shadow-md">
-                      {profile?.name ? (
-                        profile.name.charAt(0).toUpperCase()
-                      ) : session?.user?.name ? (
-                        session.user.name.charAt(0).toUpperCase()
-                      ) : (
-                        "?"
-                      )}
-                    </div>
-                    <div className="hidden sm:flex sm:flex-col sm:items-start">
-                      <span className="text-sm font-medium leading-none dark:text-slate-200">
-                        {profile?.name || session?.user?.name || "User"}
-                      </span>
-                      <span className="text-xs text-muted-foreground dark:text-slate-400 leading-none mt-1">
-                        {getRoleDisplay()}
-                      </span>
-                    </div>
-                    <ChevronDown className="h-3 w-3 text-muted-foreground dark:text-slate-400 ml-1 hidden sm:block" />
+                <div className="flex items-center space-x-2">
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs sm:text-sm font-medium shadow-md">
+                    {profile?.name ? (
+                      profile.name.charAt(0).toUpperCase()
+                    ) : session?.user?.name ? (
+                      session.user.name.charAt(0).toUpperCase()
+                    ) : (
+                      "?"
+                    )}
                   </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 dark:bg-slate-800 dark:border-slate-600">
-                <DropdownMenuLabel className="dark:text-slate-100">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
+                  <div className="hidden sm:flex sm:flex-col sm:items-start">
+                    <span className="text-sm font-medium leading-none dark:text-slate-200">
                       {profile?.name || session?.user?.name || "User"}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground dark:text-slate-400">
-                      {session?.user?.email}
-                    </p>
+                    </span>
+                    <span className="text-xs text-muted-foreground dark:text-slate-400 leading-none mt-1">
+                      {getRoleDisplay()}
+                    </span>
                   </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator className="dark:border-slate-600" />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/profile" className="cursor-pointer hover:bg-muted/50 dark:text-slate-200 dark:hover:bg-slate-700">
-                    <User className="mr-2 h-4 w-4" />
-                    Profil Saya
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings" className="cursor-pointer hover:bg-muted/50 dark:text-slate-200 dark:hover:bg-slate-700">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Pengaturan
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="dark:border-slate-600" />
-                <DropdownMenuItem
-                  className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-50 dark:focus:bg-red-900/20 cursor-pointer"
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Keluar
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </NoSSR>
+                  <ChevronDown className="h-3 w-3 text-muted-foreground dark:text-slate-400 ml-1 hidden sm:block" />
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 dark:bg-slate-800 dark:border-slate-600">
+              <DropdownMenuLabel className="dark:text-slate-100">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {profile?.name || session?.user?.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground dark:text-slate-400 leading-none">
+                    {profile?.email || session?.user?.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="dark:border-slate-600" />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings/profile" className="cursor-pointer dark:text-slate-200 dark:hover:bg-slate-700">
+                  <User className="mr-2 h-4 w-4" />
+                  Profil Saya
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings" className="cursor-pointer dark:text-slate-200 dark:hover:bg-slate-700">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Pengaturan
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="dark:border-slate-600" />
+              <DropdownMenuItem
+                className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-50 dark:focus:bg-red-900/20 cursor-pointer"
+                onClick={handleSignOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Keluar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          </div>
         </div>
       </div>
 
@@ -310,13 +299,14 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
       {mobileSearchOpen && (
         <div className="sm:hidden pb-3 pt-2 px-4 sm:px-6">
           <form onSubmit={handleSearch} className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Cari pengguna, sekolah, atau data..."
-              className="pl-9 w-full bg-background border-input hover:border-ring focus:border-ring transition-colors dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:placeholder-slate-400"
+              placeholder="Cari menu, data, atau laporan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 w-full bg-muted/30 dark:bg-slate-800/50 border-muted-foreground/20 dark:border-slate-600 focus:bg-background dark:focus:bg-slate-800 transition-colors"
+              autoFocus
             />
           </form>
         </div>

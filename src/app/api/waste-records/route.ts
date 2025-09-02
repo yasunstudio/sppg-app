@@ -3,9 +3,51 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // prisma imported from lib;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const search = searchParams.get('search') || ''
+    const wasteType = searchParams.get('wasteType') || 'all'
+    const source = searchParams.get('source') || 'all'
+
+    // Build where clause for filtering
+    const where: any = {}
+    
+    if (search) {
+      where.OR = [
+        {
+          school: {
+            name: {
+              contains: search,
+              mode: 'insensitive'
+            }
+          }
+        },
+        {
+          notes: {
+            contains: search,
+            mode: 'insensitive'
+          }
+        }
+      ]
+    }
+
+    if (wasteType !== 'all') {
+      where.wasteType = wasteType
+    }
+
+    if (source !== 'all') {
+      where.source = source
+    }
+
+    // Get total count for pagination
+    const totalCount = await prisma.wasteRecord.count({ where })
+
+    // Get paginated records
     const wasteRecords = await prisma.wasteRecord.findMany({
+      where,
       include: {
         school: {
           select: {
@@ -16,28 +58,41 @@ export async function GET() {
       },
       orderBy: {
         recordDate: 'desc'
+      },
+      skip: (page - 1) * limit,
+      take: limit
+    });
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalCount / limit)
+    const hasNextPage = page < totalPages
+    const hasPreviousPage = page > 1
+
+    // Calculate waste statistics (for all records, not just current page)
+    const allRecords = await prisma.wasteRecord.findMany({
+      orderBy: {
+        recordDate: 'desc'
       }
     });
 
-    // Calculate waste statistics
     const stats = {
-      total: wasteRecords.length,
-      totalWeight: wasteRecords.reduce((sum, record) => sum + record.weight, 0),
-      byType: wasteRecords.reduce((acc: any, record) => {
+      total: allRecords.length,
+      totalWeight: allRecords.reduce((sum, record) => sum + record.weight, 0),
+      byType: allRecords.reduce((acc: any, record) => {
         acc[record.wasteType] = {
           count: (acc[record.wasteType]?.count || 0) + 1,
           weight: (acc[record.wasteType]?.weight || 0) + record.weight
         };
         return acc;
       }, {}),
-      bySource: wasteRecords.reduce((acc: any, record) => {
+      bySource: allRecords.reduce((acc: any, record) => {
         acc[record.source] = {
           count: (acc[record.source]?.count || 0) + 1,
           weight: (acc[record.source]?.weight || 0) + record.weight
         };
         return acc;
       }, {}),
-      recent30Days: wasteRecords.filter(r => {
+      recent30Days: allRecords.filter(r => {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         return r.recordDate >= thirtyDaysAgo;
@@ -48,7 +103,14 @@ export async function GET() {
       success: true,
       data: wasteRecords,
       stats,
-      count: wasteRecords.length
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage,
+        hasPreviousPage,
+        limit
+      }
     });
   } catch (error) {
     console.error('Error fetching waste records:', error);

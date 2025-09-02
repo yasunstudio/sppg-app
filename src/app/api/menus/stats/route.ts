@@ -1,31 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from "@/lib/prisma"
 
-// prisma imported from lib
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const period = searchParams.get('period') || 'week' // week, month, year
+    const period = searchParams.get('period') || 'all' // week, month, year, all
     
     // Calculate date range based on period
     const now = new Date()
     let startDate: Date
     
     switch (period) {
+      case 'week':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        break
       case 'month':
         startDate = new Date(now.getFullYear(), now.getMonth(), 1)
         break
       case 'year':
         startDate = new Date(now.getFullYear(), 0, 1)
         break
-      default: // week
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      default: // all
+        startDate = new Date('2025-01-01') // Show all data from 2025
         break
     }
 
-    // Get total menus count
-    const totalMenus = await prisma.menu.count({
+    // Get total menus count (all time)
+    const totalMenus = await prisma.menu.count()
+
+    // Get approved menus count (use isActive as proxy for approved)
+    const approvedMenus = await prisma.menu.count({
+      where: {
+        isActive: true
+      }
+    })
+
+    // Get recent menus (current period)
+    const recentMenus = await prisma.menu.count({
       where: {
         menuDate: {
           gte: startDate,
@@ -34,7 +45,18 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Get menus by meal type
+    // Get average calories from all menus
+    const averageNutrition = await prisma.menu.aggregate({
+      _avg: {
+        totalCalories: true,
+        totalProtein: true,
+        totalCarbs: true,
+        totalFat: true,
+        totalFiber: true
+      }
+    })
+
+    // Get menus by meal type for current period
     const menusByMealType = await prisma.menu.groupBy({
       by: ['mealType'],
       where: {
@@ -45,23 +67,6 @@ export async function GET(request: NextRequest) {
       },
       _count: {
         id: true
-      }
-    })
-
-    // Get average nutrition per menu
-    const nutritionStats = await prisma.menu.aggregate({
-      where: {
-        menuDate: {
-          gte: startDate,
-          lte: now
-        }
-      },
-      _avg: {
-        totalCalories: true,
-        totalProtein: true,
-        totalCarbs: true,
-        totalFat: true,
-        totalFiber: true
       }
     })
 
@@ -133,18 +138,22 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Return data in the format expected by the frontend
     const stats = {
       totalMenus,
+      approvedMenus,
+      averageCalories: Math.round(averageNutrition._avg.totalCalories || 0),
+      monthlyMenus: recentMenus,
       menusByMealType: menusByMealType.map(item => ({
         mealType: item.mealType,
         count: item._count.id
       })),
       averageNutrition: {
-        calories: nutritionStats._avg.totalCalories || 0,
-        protein: nutritionStats._avg.totalProtein || 0,
-        carbohydrates: nutritionStats._avg.totalCarbs || 0,
-        fat: nutritionStats._avg.totalFat || 0,
-        fiber: nutritionStats._avg.totalFiber || 0
+        calories: averageNutrition._avg.totalCalories || 0,
+        protein: averageNutrition._avg.totalProtein || 0,
+        carbohydrates: averageNutrition._avg.totalCarbs || 0,
+        fat: averageNutrition._avg.totalFat || 0,
+        fiber: averageNutrition._avg.totalFiber || 0
       },
       topIngredients: topIngredientsWithDetails.map(item => ({
         rawMaterial: item.rawMaterial,

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Building } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
@@ -21,7 +21,9 @@ interface School {
 export function CreateWasteRecord() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [schoolsLoading, setSchoolsLoading] = useState(false)
   const [schools, setSchools] = useState<School[]>([])
+  const [selectedSchool, setSelectedSchool] = useState<School | null>(null)
   const [formData, setFormData] = useState({
     recordDate: new Date().toISOString().split('T')[0],
     wasteType: '' as 'ORGANIC' | 'INORGANIC' | 'PACKAGING' | '',
@@ -35,130 +37,166 @@ export function CreateWasteRecord() {
     fetchSchools()
   }, [])
 
+  useEffect(() => {
+    // Auto fetch schools when SCHOOL_LEFTOVER is selected
+    if (formData.source === 'SCHOOL_LEFTOVER' && schools.length === 0) {
+      fetchSchools()
+    }
+  }, [formData.source, schools.length])
+
+  useEffect(() => {
+    // Update selected school when formData.schoolId changes and schools are available
+    if (formData.schoolId && schools.length > 0) {
+      const school = schools.find(s => s.id === formData.schoolId)
+      setSelectedSchool(school || null)
+    } else {
+      setSelectedSchool(null)
+    }
+  }, [formData.schoolId, schools])
+
   const fetchSchools = async () => {
     try {
+      setSchoolsLoading(true)
+      console.log('Fetching schools from API...')
+      
       const response = await fetch('/api/schools?limit=100')
+      console.log('Schools API response status:', response.status)
+      
       if (response.ok) {
         const result = await response.json()
-        if (result.success) {
+        console.log('Schools API response:', result)
+        
+        // Check if the response has data property (schools API structure)
+        if (result.data && Array.isArray(result.data)) {
+          console.log('Successfully fetched schools:', result.data.length)
           setSchools(result.data)
+        } else if (result.error) {
+          console.error('Failed to fetch schools:', result.error)
+          // Set empty array as fallback
+          setSchools([])
+        } else {
+          console.error('Invalid schools API response structure:', result)
+          // Set empty array as fallback
+          setSchools([])
         }
+      } else {
+        console.error('Failed to fetch schools, status:', response.status)
+        // Set empty array as fallback
+        setSchools([])
       }
     } catch (error) {
       console.error('Error fetching schools:', error)
+      // Set empty array as fallback
+      setSchools([])
+    } finally {
+      setSchoolsLoading(false)
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validation
-    if (!formData.wasteType || !formData.source || !formData.weight) {
-      toast.error('Please fill in all required fields')
-      return
-    }
-
-    if (formData.weight <= 0) {
-      toast.error('Weight must be greater than 0')
+    if (!formData.wasteType || !formData.source || formData.weight <= 0) {
+      toast.error('Please fill all required fields')
       return
     }
 
     setLoading(true)
     try {
-      const submitData = {
-        recordDate: new Date(formData.recordDate).toISOString(),
-        wasteType: formData.wasteType,
-        source: formData.source,
-        weight: formData.weight,
-        notes: formData.notes || null,
-        schoolId: formData.schoolId || null
-      }
-
       const response = await fetch('/api/waste-records', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(submitData)
+        body: JSON.stringify({
+          recordDate: formData.recordDate,
+          wasteType: formData.wasteType,
+          source: formData.source,
+          weight: formData.weight,
+          notes: formData.notes || null,
+          schoolId: formData.schoolId || null
+        }),
       })
 
       const result = await response.json()
 
       if (response.ok && result.success) {
-        toast.success('Waste record created successfully')
+        toast.success('Catatan limbah berhasil dibuat')
         router.push('/dashboard/waste-management')
       } else {
-        toast.error(result.error || 'Failed to create waste record')
+        toast.error(result.error || 'Gagal membuat catatan limbah')
       }
     } catch (error) {
       console.error('Error creating waste record:', error)
-      toast.error('Failed to create waste record')
+      toast.error('Gagal membuat catatan limbah')
     } finally {
       setLoading(false)
     }
   }
 
   const wasteTypes = [
-    { value: 'ORGANIC', label: 'Organic' },
-    { value: 'INORGANIC', label: 'Inorganic' },
-    { value: 'PACKAGING', label: 'Packaging' }
+    { value: 'ORGANIC', label: 'Organik' },
+    { value: 'INORGANIC', label: 'Anorganik' },
+    { value: 'PACKAGING', label: 'Kemasan' }
   ]
 
   const wasteSources = [
-    { value: 'PREPARATION', label: 'Food Preparation' },
-    { value: 'PRODUCTION', label: 'Production Process' },
-    { value: 'PACKAGING', label: 'Packaging Process' },
-    { value: 'SCHOOL_LEFTOVER', label: 'School Leftover' },
-    { value: 'EXPIRED_MATERIAL', label: 'Expired Material' }
+    { value: 'PREPARATION', label: 'Persiapan Makanan' },
+    { value: 'PRODUCTION', label: 'Proses Produksi' },
+    { value: 'PACKAGING', label: 'Proses Pengemasan' },
+    { value: 'SCHOOL_LEFTOVER', label: 'Sisa Sekolah' },
+    { value: 'EXPIRED_MATERIAL', label: 'Bahan Kadaluarsa' }
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link href="/dashboard/waste-management">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Waste Management
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Create Waste Record</h1>
-            <p className="text-muted-foreground">Add a new waste tracking record</p>
-          </div>
-        </div>
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Buat Catatan Limbah</h1>
+        <p className="text-muted-foreground">
+          Tambahkan catatan pelacakan limbah baru
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 xl:grid-cols-2">
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Waste Information</CardTitle>
-              <CardDescription>Basic details about the waste record</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Trash2 className="h-5 w-5" />
+                Informasi Limbah
+              </CardTitle>
+              <CardDescription>
+                Detail dasar tentang catatan limbah
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="recordDate">Record Date *</Label>
+                <Label htmlFor="recordDate">
+                  Tanggal Catatan <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="recordDate"
                   type="date"
                   value={formData.recordDate}
                   onChange={(e) => setFormData({ ...formData, recordDate: e.target.value })}
-                  required
+                  className="dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="wasteType">Waste Type *</Label>
+                <Label htmlFor="wasteType">
+                  Jenis Limbah <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   value={formData.wasteType}
                   onValueChange={(value: 'ORGANIC' | 'INORGANIC' | 'PACKAGING') => 
                     setFormData({ ...formData, wasteType: value })
                   }
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select waste type" />
+                  <SelectTrigger className="dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                    <SelectValue placeholder="Pilih jenis limbah" />
                   </SelectTrigger>
                   <SelectContent>
                     {wasteTypes.map((type) => (
@@ -171,15 +209,17 @@ export function CreateWasteRecord() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="source">Waste Source *</Label>
+                <Label htmlFor="source">
+                  Sumber Limbah <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   value={formData.source}
                   onValueChange={(value: 'PREPARATION' | 'PRODUCTION' | 'PACKAGING' | 'SCHOOL_LEFTOVER' | 'EXPIRED_MATERIAL') => 
                     setFormData({ ...formData, source: value })
                   }
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select waste source" />
+                  <SelectTrigger className="dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                    <SelectValue placeholder="Pilih sumber limbah" />
                   </SelectTrigger>
                   <SelectContent>
                     {wasteSources.map((source) => (
@@ -192,16 +232,18 @@ export function CreateWasteRecord() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="weight">Weight (kg) *</Label>
+                <Label htmlFor="weight">
+                  Berat (kg) <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="weight"
                   type="number"
+                  step="0.1"
                   min="0"
-                  step="0.01"
-                  value={formData.weight}
+                  value={formData.weight || ''}
                   onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) || 0 })}
-                  placeholder="Enter weight in kg"
-                  required
+                  placeholder="0.0"
+                  className="dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:placeholder-slate-400"
                 />
               </div>
             </CardContent>
@@ -210,44 +252,62 @@ export function CreateWasteRecord() {
           {/* Additional Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Additional Information</CardTitle>
-              <CardDescription>Optional details and notes</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Building className="h-5 w-5" />
+                Informasi Tambahan
+              </CardTitle>
+              <CardDescription>
+                Catatan dan informasi sekolah (opsional)
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="schoolId">Associated School</Label>
-                <Select
-                  value={formData.schoolId}
-                  onValueChange={(value) => setFormData({ ...formData, schoolId: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select school (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">No school</SelectItem>
-                    {schools.map((school) => (
-                      <SelectItem key={school.id} value={school.id}>
-                        {school.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Select a school if this waste is related to a specific school
-                </p>
-              </div>
+              {formData.source === 'SCHOOL_LEFTOVER' && (
+                <div className="space-y-2">
+                  <Label htmlFor="school">Sekolah</Label>
+                  <Select
+                    value={formData.schoolId}
+                    onValueChange={(value) => setFormData({ ...formData, schoolId: value })}
+                  >
+                    <SelectTrigger className="dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                      <SelectValue 
+                        placeholder={
+                          schoolsLoading 
+                            ? "Memuat sekolah..." 
+                            : schools.length === 0 
+                              ? "Tidak ada sekolah tersedia" 
+                              : "Pilih sekolah"
+                        } 
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {schools.map((school) => (
+                        <SelectItem key={school.id} value={school.id}>
+                          {school.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedSchool && (
+                    <div className="p-3 bg-muted dark:bg-slate-700 rounded-md">
+                      <p className="text-sm font-medium dark:text-slate-200">{selectedSchool.name}</p>
+                      <p className="text-xs text-muted-foreground dark:text-slate-400">{selectedSchool.address}</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes">Catatan</Label>
                 <Textarea
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Enter any additional notes or comments..."
-                  rows={6}
+                  placeholder="Catatan tambahan tentang limbah..."
+                  rows={4}
+                  className="resize-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:placeholder-slate-400"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Additional details about the waste record
+                <p className="text-xs text-muted-foreground dark:text-slate-400">
+                  Detail tambahan tentang catatan limbah
                 </p>
               </div>
             </CardContent>
@@ -255,13 +315,20 @@ export function CreateWasteRecord() {
         </div>
 
         {/* Form Actions */}
-        <div className="flex items-center justify-end space-x-4">
-          <Button type="button" variant="outline" onClick={() => router.back()}>
-            Cancel
+        <div className="flex gap-4 justify-end pt-6">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => router.push('/dashboard/waste-management')}
+          >
+            Batal
           </Button>
-          <Button type="submit" disabled={loading}>
+          <Button 
+            type="submit" 
+            disabled={loading}
+          >
             <Plus className="h-4 w-4 mr-2" />
-            {loading ? 'Creating...' : 'Create Waste Record'}
+            {loading ? 'Membuat...' : 'Buat Catatan Limbah'}
           </Button>
         </div>
       </form>

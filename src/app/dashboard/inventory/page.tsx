@@ -69,28 +69,28 @@ export default function InventoryPage() {
   const getStatusIcon = (status: InventoryStatus) => {
     switch (status) {
       case 'AVAILABLE':
-        return <CheckCircle className="w-4 h-4 text-green-500" />
+        return <CheckCircle className="w-4 h-4 text-green-500 dark:text-green-400" />
       case 'LOW_STOCK':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />
+        return <AlertTriangle className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
       case 'OUT_OF_STOCK':
-        return <XCircle className="w-4 h-4 text-red-500" />
+        return <XCircle className="w-4 h-4 text-red-500 dark:text-red-400" />
       case 'EXPIRED':
-        return <XCircle className="w-4 h-4 text-red-500" />
+        return <XCircle className="w-4 h-4 text-red-500 dark:text-red-400" />
     }
   }
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      AVAILABLE: 'bg-green-100 text-green-800',
-      LOW_STOCK: 'bg-yellow-100 text-yellow-800',
-      OUT_OF_STOCK: 'bg-red-100 text-red-800',
-      EXPIRED: 'bg-red-100 text-red-800'
+      AVAILABLE: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      LOW_STOCK: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      OUT_OF_STOCK: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+      EXPIRED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     }
     
     const statusKey = status as InventoryStatus
     
     return (
-      <Badge className={variants[statusKey] || 'bg-gray-100 text-gray-800'}>
+      <Badge className={variants[statusKey] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'}>
         {getStatusIcon(statusKey)}
         <span className="ml-1">
           {status.replace('_', ' ')}
@@ -104,7 +104,7 @@ export default function InventoryPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Inventory Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Inventory Management</h1>
           <p className="text-muted-foreground">
             Kelola stok bahan baku dan pantau ketersediaan untuk produksi makanan
           </p>
@@ -112,14 +112,17 @@ export default function InventoryPage() {
         <div className="flex gap-2">
           <Dialog open={isAIPredictorOpen} onOpenChange={setIsAIPredictorOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600">
+              <Button 
+                variant="outline" 
+                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 border-border transition-all duration-200"
+              >
                 <Bot className="w-4 h-4 mr-2" />
                 AI Inventory Predictor
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-background border-border">
               <DialogHeader>
-                <DialogTitle>🤖 AI Inventory Predictor</DialogTitle>
+                <DialogTitle className="text-foreground">🤖 AI Inventory Predictor</DialogTitle>
               </DialogHeader>
               <AIInventoryPredictor
                 onSuccess={() => {
@@ -129,7 +132,7 @@ export default function InventoryPage() {
               />
             </DialogContent>
           </Dialog>
-          <Button asChild>
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link href="/dashboard/inventory/add">
               <Plus className="w-4 h-4 mr-2" />
               Tambah Stok
@@ -143,10 +146,10 @@ export default function InventoryPage() {
       <InventoryAlerts />
 
       {/* Filters */}
-      <Card>
+      <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Package className="w-5 h-5 mr-2" />
+          <CardTitle className="flex items-center text-foreground">
+            <Package className="w-5 h-5 mr-2 text-primary" />
             Filter & Pencarian
           </CardTitle>
         </CardHeader>
@@ -159,33 +162,33 @@ export default function InventoryPage() {
                   placeholder="Cari bahan baku, supplier, atau batch number..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
             <Select value={statusFilter} onValueChange={(value: InventoryStatus | 'ALL') => setStatusFilter(value)}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-48 bg-background border-border text-foreground">
                 <SelectValue placeholder="Filter Status" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Semua Status</SelectItem>
-                <SelectItem value="AVAILABLE">Available</SelectItem>
-                <SelectItem value="LOW_STOCK">Low Stock</SelectItem>
-                <SelectItem value="OUT_OF_STOCK">Out of Stock</SelectItem>
-                <SelectItem value="EXPIRED">Expired</SelectItem>
+              <SelectContent className="bg-background border-border">
+                <SelectItem value="ALL" className="text-foreground hover:bg-muted">Semua Status</SelectItem>
+                <SelectItem value="AVAILABLE" className="text-foreground hover:bg-muted">Available</SelectItem>
+                <SelectItem value="LOW_STOCK" className="text-foreground hover:bg-muted">Low Stock</SelectItem>
+                <SelectItem value="OUT_OF_STOCK" className="text-foreground hover:bg-muted">Out of Stock</SelectItem>
+                <SelectItem value="EXPIRED" className="text-foreground hover:bg-muted">Expired</SelectItem>
               </SelectContent>
             </Select>
             <Select value={categoryFilter} onValueChange={(value: MaterialCategory | 'ALL') => setCategoryFilter(value)}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-48 bg-background border-border text-foreground">
                 <SelectValue placeholder="Filter Kategori" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Semua Kategori</SelectItem>
-                <SelectItem value="PROTEIN">Protein</SelectItem>
-                <SelectItem value="VEGETABLE">Sayuran</SelectItem>
-                <SelectItem value="GRAIN">Karbohidrat</SelectItem>
-                <SelectItem value="SPICE">Bumbu</SelectItem>
-                <SelectItem value="OIL">Minyak</SelectItem>
+              <SelectContent className="bg-background border-border">
+                <SelectItem value="ALL" className="text-foreground hover:bg-muted">Semua Kategori</SelectItem>
+                <SelectItem value="PROTEIN" className="text-foreground hover:bg-muted">Protein</SelectItem>
+                <SelectItem value="VEGETABLE" className="text-foreground hover:bg-muted">Sayuran</SelectItem>
+                <SelectItem value="GRAIN" className="text-foreground hover:bg-muted">Karbohidrat</SelectItem>
+                <SelectItem value="SPICE" className="text-foreground hover:bg-muted">Bumbu</SelectItem>
+                <SelectItem value="OIL" className="text-foreground hover:bg-muted">Minyak</SelectItem>
               </SelectContent>
             </Select>
           </div>

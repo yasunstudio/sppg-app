@@ -52,10 +52,20 @@ import type { Permission } from "@/lib/permissions"
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   isCollapsed?: boolean
   onToggle?: () => void
+  isMobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
-export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: SidebarProps) {
+export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen = false, onMobileClose, ...props }: SidebarProps) {
   const pathname = usePathname()
+  
+  // Helper function to handle link clicks on mobile
+  const handleMobileLinkClick = () => {
+    if (isMobileOpen && onMobileClose) {
+      onMobileClose()
+    }
+  }
+  
   const [productionExpanded, setProductionExpanded] = useState(
     pathname.startsWith("/dashboard/production") || 
     pathname.startsWith("/dashboard/production-plans") || 
@@ -79,25 +89,25 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
   const menuPlanningSubMenus = [
     {
-      name: "Overview",
+      name: "Ringkasan",
       href: "/dashboard/menu-planning",
       icon: LayoutGrid,
       current: pathname === "/dashboard/menu-planning",
     },
     {
-      name: "Recipe Management",
+      name: "Manajemen Resep",
       href: "/dashboard/recipes",
       icon: ChefHat,
       current: pathname.startsWith("/dashboard/recipes"),
     },
     {
-      name: "Menu Planning",
+      name: "Perencanaan Menu",
       href: "/dashboard/menu-planning/planning",
       icon: Calendar,
       current: pathname.startsWith("/dashboard/menu-planning/planning"),
     },
     {
-      name: "Nutrition Standards",
+      name: "Standar Nutrisi",
       href: "/dashboard/menu-planning/nutrition",
       icon: Heart,
       current: pathname.startsWith("/dashboard/menu-planning/nutrition"),
@@ -106,31 +116,31 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
   const productionSubMenus = [
     {
-      name: "Overview",
+      name: "Ringkasan",
       href: "/dashboard/production",
       icon: LayoutGrid,
       current: pathname === "/dashboard/production",
     },
     {
-      name: "Production Plans",
+      name: "Rencana Produksi",
       href: "/dashboard/production-plans",
       icon: Calendar,
       current: pathname.startsWith("/dashboard/production-plans"),
     },
     {
-      name: "Execution",
+      name: "Eksekusi",
       href: "/dashboard/production/execution",
       icon: PlayCircle,
       current: pathname.startsWith("/dashboard/production/execution"),
     },
     {
-      name: "Resource Usage",
+      name: "Penggunaan Sumber Daya",
       href: "/dashboard/resource-usage",
       icon: Activity,
       current: pathname.startsWith("/dashboard/resource-usage"),
     },
     {
-      name: "Quality Control",
+      name: "Kontrol Kualitas",
       href: "/dashboard/production/quality",
       icon: ClipboardCheck,
       current: pathname.startsWith("/dashboard/production/quality"),
@@ -139,37 +149,37 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
   const qualitySubMenus = [
     {
-      name: "Overview",
+      name: "Ringkasan",
       href: "/dashboard/quality",
       icon: LayoutGrid,
       current: pathname === "/dashboard/quality",
     },
     {
-      name: "Quality Checks",
+      name: "Pemeriksaan Kualitas",
       href: "/dashboard/quality-checks",
       icon: ClipboardCheck,
       current: pathname.startsWith("/dashboard/quality-checks"),
     },
     {
-      name: "Quality Checkpoints",
+      name: "Titik Kontrol Kualitas",
       href: "/dashboard/quality-checkpoints",
       icon: ClipboardCheck,
       current: pathname.startsWith("/dashboard/quality-checkpoints"),
     },
     {
-      name: "Quality Standards",
+      name: "Standar Kualitas",
       href: "/dashboard/quality-standards",
       icon: Shield,
       current: pathname.startsWith("/dashboard/quality-standards"),
     },
     {
-      name: "Food Samples",
+      name: "Sampel Makanan",
       href: "/dashboard/food-samples",
       icon: TestTube,
       current: pathname.startsWith("/dashboard/food-samples"),
     },
     {
-      name: "Nutrition Consultations",
+      name: "Konsultasi Nutrisi",
       href: "/dashboard/nutrition-consultations",
       icon: Heart,
       current: pathname.startsWith("/dashboard/nutrition-consultations"),
@@ -178,25 +188,25 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
   const monitoringSubMenus = [
     {
-      name: "Real-time Monitoring",
+      name: "Monitoring Real-time",
       href: "/dashboard/monitoring/real-time",
       icon: Activity,
       current: pathname.startsWith("/dashboard/monitoring/real-time"),
     },
     {
-      name: "Analytics",
+      name: "Analitik",
       href: "/dashboard/monitoring/analytics",
       icon: BarChart,
       current: pathname.startsWith("/dashboard/monitoring/analytics"),
     },
     {
-      name: "Performance",
+      name: "Performa",
       href: "/dashboard/performance",
       icon: TrendingUp,
       current: pathname.startsWith("/dashboard/performance"),
     },
     {
-      name: "Reports",
+      name: "Laporan",
       href: "/dashboard/monitoring/reports",
       icon: FileBarChart,
       current: pathname.startsWith("/dashboard/monitoring/reports"),
@@ -205,25 +215,25 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
   const distributionSubMenus = [
     {
-      name: "Overview",
+      name: "Ringkasan",
       href: "/dashboard/distributions",
       icon: LayoutGrid,
       current: pathname === "/dashboard/distributions",
     },
     {
-      name: "Distribution Schools",
+      name: "Sekolah Distribusi",
       href: "/dashboard/distributions/schools",
       icon: School,
       current: pathname.startsWith("/dashboard/distributions/schools"),
     },
     {
-      name: "Delivery Tracking",
+      name: "Pelacakan Pengiriman",
       href: "/dashboard/distributions/tracking",
       icon: Eye,
       current: pathname.startsWith("/dashboard/distributions/tracking"),
     },
     {
-      name: "Route Planning",
+      name: "Perencanaan Rute",
       href: "/dashboard/distributions/routes",
       icon: Truck,
       current: pathname.startsWith("/dashboard/distributions/routes"),
@@ -232,13 +242,13 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
   const purchaseOrdersSubMenus = [
     {
-      name: "Overview",
+      name: "Ringkasan",
       href: "/dashboard/purchase-orders",
       icon: ClipboardCheck,
       current: pathname === "/dashboard/purchase-orders",
     },
     {
-      name: "Analytics",
+      name: "Analitik",
       href: "/dashboard/purchase-orders/analytics",
       icon: BarChart,
       current: pathname.startsWith("/dashboard/purchase-orders/analytics"),
@@ -254,7 +264,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
       current: pathname === "/dashboard",
     },
     {
-      name: "My Dashboard",
+      name: "Dashboard Saya",
       href: "/dashboard/basic",
       icon: Activity,
       current: pathname.startsWith("/dashboard/basic"),
@@ -263,19 +273,19 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
   const schoolManagement = [
     {
-      name: "Schools",
+      name: "Sekolah",
       href: "/dashboard/schools",
       icon: School,
       current: pathname.startsWith("/dashboard/schools"),
     },
     {
-      name: "Students",
+      name: "Siswa",
       href: "/dashboard/students",
       icon: GraduationCap,
       current: pathname.startsWith("/dashboard/students"),
     },
     {
-      name: "Classes",
+      name: "Kelas",
       href: "/dashboard/classes",
       icon: Users,
       current: pathname.startsWith("/dashboard/classes"),
@@ -284,13 +294,13 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
   const logisticsManagement = [
     {
-      name: "Vehicles",
+      name: "Kendaraan",
       href: "/dashboard/vehicles",
       icon: Truck,
       current: pathname.startsWith("/dashboard/vehicles"),
     },
     {
-      name: "Drivers",
+      name: "Supir",
       href: "/dashboard/drivers",
       icon: UserCheck,
       current: pathname.startsWith("/dashboard/drivers"),
@@ -299,43 +309,43 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
   const systemManagement = [
     {
-      name: "Notifications",
+      name: "Notifikasi",
       href: "/dashboard/notifications",
       icon: Bell,
       current: pathname.startsWith("/dashboard/notifications"),
     },
     {
-      name: "User Management",
+      name: "Manajemen Pengguna",
       href: "/dashboard/users",
       icon: Users,
       current: pathname.startsWith("/dashboard/users"),
     },
     {
-      name: "Role Management",
+      name: "Manajemen Role",
       href: "/dashboard/roles",
       icon: Shield,
       current: pathname.startsWith("/dashboard/roles"),
     },
     {
-      name: "User Role Assignment",
+      name: "Penugasan Role Pengguna",
       href: "/dashboard/user-roles",
       icon: UserCheck,
       current: pathname.startsWith("/dashboard/user-roles"),
     },
     {
-      name: "System Configuration",
+      name: "Konfigurasi Sistem",
       href: "/dashboard/system-config",
       icon: Settings,
       current: pathname.startsWith("/dashboard/system-config"),
     },
     {
-      name: "Audit Logs",
+      name: "Log Audit",
       href: "/dashboard/audit-logs",
       icon: Shield,
       current: pathname.startsWith("/dashboard/audit-logs"),
     },
     {
-      name: "Admin Panel",
+      name: "Panel Admin",
       href: "/dashboard/admin",
       icon: Wrench,
       current: pathname.startsWith("/dashboard/admin"),
@@ -344,19 +354,19 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
   const otherFeatures = [
     {
-      name: "Waste Management",
+      name: "Manajemen Limbah",
       href: "/dashboard/waste-management",
       icon: Trash,
       current: pathname.startsWith("/dashboard/waste-management"),
     },
     {
-      name: "Financial Management",
+      name: "Manajemen Keuangan",
       href: "/dashboard/financial",
       icon: DollarSign,
       current: pathname.startsWith("/dashboard/financial"),
     },
     {
-      name: "Feedback Management",
+      name: "Manajemen Umpan Balik",
       href: "/dashboard/feedback",
       icon: MessageSquare,
       current: pathname.startsWith("/dashboard/feedback"),
@@ -410,6 +420,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
                 <DropdownMenuItem key={item.name} asChild>
                   <Link
                     href={item.href}
+                    onClick={handleMobileLinkClick}
                     className={cn(
                       "flex items-center gap-3 w-full px-3 py-2 cursor-pointer",
                       item.current && "bg-accent text-accent-foreground"
@@ -437,6 +448,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
           <Link
             key={item.name}
             href={item.href}
+            onClick={handleMobileLinkClick}
             className={cn(
               "flex items-center rounded-xl py-2 text-sm font-medium transition-all duration-200 ease-in-out",
               "hover:bg-accent/60 hover:text-accent-foreground hover:shadow-sm hover:scale-[1.02]",
@@ -571,6 +583,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleMobileLinkClick}
               className={cn(
                 "flex items-center rounded-xl py-2 text-sm font-medium transition-all duration-200 ease-in-out",
                 "hover:bg-accent/60 hover:text-accent-foreground hover:shadow-sm hover:scale-[1.02]",
@@ -668,6 +681,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
                 <DropdownMenuItem key={subItem.name} asChild>
                   <Link
                     href={subItem.href}
+                    onClick={handleMobileLinkClick}
                     className={cn(
                       "flex items-center gap-3 w-full px-3 py-2 cursor-pointer",
                       subItem.current && "bg-accent text-accent-foreground"
@@ -747,6 +761,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
               <Link
                 key={subItem.name}
                 href={subItem.href}
+                onClick={handleMobileLinkClick}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out",
                   "hover:bg-accent/50 hover:text-accent-foreground hover:shadow-sm hover:scale-[1.01]",
@@ -771,19 +786,21 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
   }
 
   return (
-    <div className={cn(
-      "fixed left-0 top-0 z-40 h-screen border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-xl hidden lg:block transition-all duration-300 ease-in-out",
-      "dark:shadow-2xl dark:border-border",
-      isCollapsed ? "w-20" : "w-72",
-      className
-    )} {...props}>
-      <div className="flex h-full flex-col">
-        {/* Header */}
-        <div className={cn(
-          "flex h-20 items-center border-b border-border/50 bg-gradient-to-r from-primary to-primary/90 shadow-lg",
-          "relative px-4"
-        )}>
-          {isCollapsed ? (
+    <>
+      {/* Desktop Sidebar */}
+      <div className={cn(
+        "fixed left-0 top-0 z-40 h-screen border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-xl hidden lg:block transition-all duration-300 ease-in-out",
+        "dark:shadow-2xl dark:border-border",
+        isCollapsed ? "w-20" : "w-72",
+        className
+      )} {...props}>
+        <div className="flex h-full flex-col">
+          {/* Header */}
+          <div className={cn(
+            "flex h-20 items-center border-b border-border/50 bg-gradient-to-r from-primary to-primary/90 shadow-lg",
+            "relative px-4"
+          )}>
+            {isCollapsed ? (
             // Collapsed header - centered logo with toggle button overlay
             <div className="w-full flex items-center justify-center relative">
               <div className="flex items-center justify-center rounded-xl bg-primary-foreground/15 backdrop-blur-sm border border-primary-foreground/20 shadow-inner h-12 w-12">
@@ -803,7 +820,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
                   "hover:scale-110 active:scale-95",
                   "border border-primary-foreground/30 bg-primary-foreground/10"
                 )}
-                title="Expand sidebar"
+                title="Buka sidebar"
               >
                 <Menu className="h-4 w-4" />
               </Button>
@@ -833,7 +850,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
                   "transition-all duration-200 hover:scale-105 active:scale-95 rounded-lg shadow-sm",
                   "ml-2"
                 )}
-                title="Collapse sidebar"
+                title="Tutup sidebar"
               >
                 <ChevronRight className="h-5 w-5 transition-transform duration-200 rotate-180" />
               </Button>
@@ -850,7 +867,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
             {/* 1. PLANNING PHASE */}
             {/* Menu Planning with Submenu */}
             {renderExpandableSection(
-              "Menu Planning",
+              "Perencanaan Menu",
               UtensilsCrossed,
               menuPlanningExpanded,
               setMenuPlanningExpanded,
@@ -859,9 +876,9 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
             )}
 
             {/* 2. PROCUREMENT PHASE */}
-            {renderNavSection("Procurement", [
+            {renderNavSection("Pengadaan", [
               {
-                name: "Suppliers",
+                name: "Pemasok",
                 href: "/dashboard/suppliers",
                 icon: ShoppingCart,
                 current: pathname.startsWith("/dashboard/suppliers"),
@@ -870,7 +887,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
 
             {/* Purchase Orders with Submenu */}
             {renderExpandableSection(
-              "Purchase Orders",
+              "Order Pembelian",
               ClipboardCheck,
               purchaseOrdersExpanded,
               setPurchaseOrdersExpanded,
@@ -879,21 +896,21 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
             )}
 
             {/* 3. INVENTORY PHASE */}
-            {renderNavSection("Inventory & Materials", [
+            {renderNavSection("Inventori & Material", [
               {
-                name: "Raw Materials",
+                name: "Bahan Mentah",
                 href: "/dashboard/raw-materials",
                 icon: Package,
                 current: pathname.startsWith("/dashboard/raw-materials"),
               },
               {
-                name: "Items Management",
+                name: "Manajemen Item",
                 href: "/dashboard/items",
                 icon: Package,
                 current: pathname.startsWith("/dashboard/items"),
               },
               {
-                name: "Inventory Management",
+                name: "Manajemen Inventori",
                 href: "/dashboard/inventory",
                 icon: Package,
                 current: pathname.startsWith("/dashboard/inventory"),
@@ -903,7 +920,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
             {/* 4. PRODUCTION PHASE */}
             {/* Production with Submenu */}
             {renderExpandableSection(
-              "Production",
+              "Produksi",
               ChefHat,
               productionExpanded,
               setProductionExpanded,
@@ -914,7 +931,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
             {/* 5. QUALITY CONTROL PHASE */}
             {/* Quality Management with Submenu */}
             {renderExpandableSection(
-              "Quality Management",
+              "Manajemen Kualitas",
               ClipboardCheck,
               qualityExpanded,
               setQualityExpanded,
@@ -925,7 +942,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
             {/* 6. DISTRIBUTION PHASE */}
             {/* Distribution with Submenu */}
             {renderExpandableSection(
-              "Distribution",
+              "Distribusi",
               Package,
               distributionExpanded,
               setDistributionExpanded,
@@ -934,12 +951,12 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
             )}
 
             {/* Logistics Support */}
-            {renderNavSection("Logistics Support", logisticsManagement)}
+            {renderNavSection("Dukungan Logistik", logisticsManagement)}
 
             {/* 7. MONITORING & ANALYTICS */}
             {/* Monitoring Submenu */}
             {renderExpandableSection(
-              "Monitoring & Reports",
+              "Monitoring & Laporan",
               Activity,
               monitoringExpanded,
               setMonitoringExpanded,
@@ -948,16 +965,166 @@ export function Sidebar({ className, isCollapsed = false, onToggle, ...props }: 
             )}
 
             {/* 8. SCHOOL MANAGEMENT */}
-            {renderNavSection("School Management", schoolManagement)}
+            {renderNavSection("Manajemen Sekolah", schoolManagement)}
 
             {/* 9. OTHER FEATURES */}
-            {renderNavSection("Other Features", otherFeatures)}
+            {renderNavSection("Fitur Lainnya", otherFeatures)}
 
             {/* 10. SYSTEM MANAGEMENT */}
-            {renderNavSection("System Management", systemManagement)}
+            {renderNavSection("Manajemen Sistem", systemManagement)}
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Mobile Sidebar */}
+      <div className={cn(
+        "fixed left-0 top-0 z-50 h-screen w-72 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-xl lg:hidden transition-all duration-300 ease-in-out",
+        "dark:shadow-2xl dark:border-border",
+        isMobileOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="flex h-full flex-col">
+          {/* Mobile Header */}
+          <div className="flex h-16 items-center border-b border-border/50 bg-gradient-to-r from-primary to-primary/90 shadow-lg px-4">
+            <div className="flex items-center w-full">
+              <div className="flex items-center justify-center rounded-xl bg-primary-foreground/15 backdrop-blur-sm border border-primary-foreground/20 shadow-inner h-10 w-10">
+                <Shield className="h-5 w-5 text-primary-foreground drop-shadow-sm" />
+              </div>
+              
+              <div className="flex-1 ml-3">
+                <h1 className="text-lg font-bold text-primary-foreground tracking-tight leading-tight">
+                  SPPG System
+                </h1>
+                <p className="text-xs text-primary-foreground/75 font-medium">
+                  School Food Program
+                </p>
+              </div>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onMobileClose}
+                className="text-primary-foreground hover:bg-primary-foreground/15 focus:bg-primary-foreground/15 transition-all duration-200 hover:scale-105 active:scale-95 rounded-lg shadow-sm ml-2"
+                title="Tutup menu"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="flex-1 overflow-y-auto py-4 px-3 bg-gradient-to-b from-muted/30 to-muted/10">
+            <div className="space-y-2">
+              {/* Core Navigation */}
+              {renderNavSection("", coreNavigation, true)}
+
+              {/* Menu Planning */}
+              {renderExpandableSection(
+                "Perencanaan Menu",
+                UtensilsCrossed,
+                menuPlanningExpanded,
+                setMenuPlanningExpanded,
+                menuPlanningSubMenus,
+                "/dashboard/menu-planning"
+              )}
+
+              {/* Procurement */}
+              {renderNavSection("Pengadaan", [
+                {
+                  name: "Pemasok",
+                  href: "/dashboard/suppliers",
+                  icon: ShoppingCart,
+                  current: pathname.startsWith("/dashboard/suppliers"),
+                }
+              ])}
+
+              {/* Purchase Orders */}
+              {renderExpandableSection(
+                "Order Pembelian",
+                ClipboardCheck,
+                purchaseOrdersExpanded,
+                setPurchaseOrdersExpanded,
+                purchaseOrdersSubMenus,
+                "/dashboard/purchase-orders"
+              )}
+
+              {/* Inventory */}
+              {renderNavSection("Inventori & Material", [
+                {
+                  name: "Bahan Mentah",
+                  href: "/dashboard/raw-materials",
+                  icon: Package,
+                  current: pathname.startsWith("/dashboard/raw-materials"),
+                },
+                {
+                  name: "Manajemen Item",
+                  href: "/dashboard/items",
+                  icon: Package,
+                  current: pathname.startsWith("/dashboard/items"),
+                },
+                {
+                  name: "Manajemen Inventori",
+                  href: "/dashboard/inventory",
+                  icon: Package,
+                  current: pathname.startsWith("/dashboard/inventory"),
+                }
+              ])}
+
+              {/* Production */}
+              {renderExpandableSection(
+                "Produksi",
+                ChefHat,
+                productionExpanded,
+                setProductionExpanded,
+                productionSubMenus,
+                "/dashboard/production"
+              )}
+
+              {/* Quality Management */}
+              {renderExpandableSection(
+                "Manajemen Kualitas",
+                ClipboardCheck,
+                qualityExpanded,
+                setQualityExpanded,
+                qualitySubMenus,
+                "/dashboard/quality"
+              )}
+
+              {/* Distribution */}
+              {renderExpandableSection(
+                "Distribusi",
+                Package,
+                distributionExpanded,
+                setDistributionExpanded,
+                distributionSubMenus,
+                "/dashboard/distributions"
+              )}
+
+              {/* Logistics */}
+              {renderNavSection("Dukungan Logistik", logisticsManagement)}
+
+              {/* Monitoring */}
+              {renderExpandableSection(
+                "Monitoring & Laporan",
+                Activity,
+                monitoringExpanded,
+                setMonitoringExpanded,
+                monitoringSubMenus,
+                "/dashboard/monitoring"
+              )}
+
+              {/* School Management */}
+              {renderNavSection("Manajemen Sekolah", schoolManagement)}
+
+              {/* Other Features */}
+              {renderNavSection("Fitur Lainnya", otherFeatures)}
+
+              {/* System Management */}
+              {renderNavSection("Manajemen Sistem", systemManagement)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   )
 }

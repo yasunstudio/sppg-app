@@ -106,13 +106,13 @@ export default function AddInventoryPage() {
           variant="outline" 
           size="sm" 
           onClick={handleCancel}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-border hover:bg-muted"
         >
           <ArrowLeft className="w-4 h-4" />
           Kembali
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tambah Item Inventory</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Tambah Item Inventory</h1>
           <p className="text-muted-foreground">
             Tambahkan item baru ke dalam inventory stok bahan baku
           </p>
@@ -120,10 +120,10 @@ export default function AddInventoryPage() {
       </div>
 
       {/* Form */}
-      <Card>
+      <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <Package className="w-5 h-5 text-primary" />
             Informasi Item Inventory
           </CardTitle>
         </CardHeader>
@@ -132,19 +132,23 @@ export default function AddInventoryPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Raw Material */}
               <div className="space-y-2">
-                <Label htmlFor="rawMaterialId">
+                <Label htmlFor="rawMaterialId" className="text-foreground">
                   Bahan Baku <span className="text-red-500">*</span>
                 </Label>
                 <Select 
                   onValueChange={(value) => setValue('rawMaterialId', value)}
                   disabled={loadingMaterials}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder={loadingMaterials ? "Loading..." : "Pilih bahan baku"} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border-border">
                     {rawMaterials.map((material: any) => (
-                      <SelectItem key={material.id} value={material.id}>
+                      <SelectItem 
+                        key={material.id} 
+                        value={material.id}
+                        className="text-foreground hover:bg-muted focus:bg-muted"
+                      >
                         {material.name} - {material.category} ({material.unit})
                       </SelectItem>
                     ))}
@@ -157,18 +161,22 @@ export default function AddInventoryPage() {
 
               {/* Supplier */}
               <div className="space-y-2">
-                <Label htmlFor="supplierId">Supplier</Label>
+                <Label htmlFor="supplierId" className="text-foreground">Supplier</Label>
                 <Select 
                   onValueChange={(value) => setValue('supplierId', value === 'none' ? undefined : value)}
                   disabled={loadingSuppliers}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder={loadingSuppliers ? "Loading..." : "Pilih supplier (opsional)"} />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Tidak ada supplier</SelectItem>
+                  <SelectContent className="bg-background border-border">
+                    <SelectItem value="none" className="text-foreground hover:bg-muted focus:bg-muted">Tidak ada supplier</SelectItem>
                     {suppliers.map((supplier: any) => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
+                      <SelectItem 
+                        key={supplier.id} 
+                        value={supplier.id}
+                        className="text-foreground hover:bg-muted focus:bg-muted"
+                      >
                         {supplier.name}
                       </SelectItem>
                     ))}
@@ -178,7 +186,7 @@ export default function AddInventoryPage() {
 
               {/* Quantity */}
               <div className="space-y-2">
-                <Label htmlFor="quantity">
+                <Label htmlFor="quantity" className="text-foreground">
                   Quantity <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -187,6 +195,7 @@ export default function AddInventoryPage() {
                   step="0.1"
                   min="0"
                   placeholder="Masukkan jumlah"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                   {...register('quantity')}
                 />
                 {errors.quantity && (
@@ -196,7 +205,7 @@ export default function AddInventoryPage() {
 
               {/* Unit Price */}
               <div className="space-y-2">
-                <Label htmlFor="unitPrice">
+                <Label htmlFor="unitPrice" className="text-foreground">
                   Harga per Unit <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -205,6 +214,7 @@ export default function AddInventoryPage() {
                   step="0.01"
                   min="0"
                   placeholder="Masukkan harga per unit"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                   {...register('unitPrice')}
                 />
                 {errors.unitPrice && (
@@ -214,59 +224,62 @@ export default function AddInventoryPage() {
 
               {/* Expiry Date */}
               <div className="space-y-2">
-                <Label htmlFor="expiryDate">Tanggal Kadaluarsa</Label>
+                <Label htmlFor="expiryDate" className="text-foreground">Tanggal Kadaluarsa</Label>
                 <Input
                   id="expiryDate"
                   type="date"
+                  className="bg-background border-border text-foreground"
                   {...register('expiryDate')}
                 />
               </div>
 
               {/* Batch Number */}
               <div className="space-y-2">
-                <Label htmlFor="batchNumber">Batch Number</Label>
+                <Label htmlFor="batchNumber" className="text-foreground">Batch Number</Label>
                 <Input
                   id="batchNumber"
                   placeholder="Masukkan batch number"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                   {...register('batchNumber')}
                 />
               </div>
 
               {/* Quality Status */}
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="qualityStatus">Status Kualitas</Label>
+                <Label htmlFor="qualityStatus" className="text-foreground">Status Kualitas</Label>
                 <Select 
                   onValueChange={(value) => setValue('qualityStatus', value as any)}
                   defaultValue="GOOD"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder="Pilih status kualitas" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="GOOD">Baik</SelectItem>
-                    <SelectItem value="FAIR">Cukup</SelectItem>
-                    <SelectItem value="POOR">Buruk</SelectItem>
-                    <SelectItem value="REJECTED">Ditolak</SelectItem>
-                    <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectContent className="bg-background border-border">
+                    <SelectItem value="GOOD" className="text-foreground hover:bg-muted focus:bg-muted">Baik</SelectItem>
+                    <SelectItem value="FAIR" className="text-foreground hover:bg-muted focus:bg-muted">Cukup</SelectItem>
+                    <SelectItem value="POOR" className="text-foreground hover:bg-muted focus:bg-muted">Buruk</SelectItem>
+                    <SelectItem value="REJECTED" className="text-foreground hover:bg-muted focus:bg-muted">Ditolak</SelectItem>
+                    <SelectItem value="PENDING" className="text-foreground hover:bg-muted focus:bg-muted">Pending</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-4 pt-6 border-t">
+            <div className="flex items-center justify-end gap-4 pt-6 border-t border-border">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={handleCancel}
                 disabled={createMutation.isPending}
+                className="border-border hover:bg-muted text-foreground"
               >
                 Batal
               </Button>
               <Button 
                 type="submit" 
                 disabled={createMutation.isPending}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {createMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

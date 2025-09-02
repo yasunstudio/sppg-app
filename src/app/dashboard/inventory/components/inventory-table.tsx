@@ -76,9 +76,9 @@ export function InventoryTable({ data, isLoading, onRefetch, getStatusBadge }: I
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
         <CardHeader>
-          <CardTitle>Loading...</CardTitle>
+          <CardTitle className="text-foreground">Loading...</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -92,53 +92,53 @@ export function InventoryTable({ data, isLoading, onRefetch, getStatusBadge }: I
   }
 
   return (
-    <Card>
+    <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
       <CardHeader>
-        <CardTitle>Inventory Items ({data.length})</CardTitle>
+        <CardTitle className="text-foreground">Inventory Items ({data.length})</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
+        <div className="rounded-md border border-border">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Bahan Baku</TableHead>
-                <TableHead>Kategori</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Harga Unit</TableHead>
-                <TableHead>Total Harga</TableHead>
-                <TableHead>Batch</TableHead>
-                <TableHead>Kadaluarsa</TableHead>
-                <TableHead>Status</TableHead>
+              <TableRow className="border-border hover:bg-muted/50">
+                <TableHead className="text-foreground">Bahan Baku</TableHead>
+                <TableHead className="text-foreground">Kategori</TableHead>
+                <TableHead className="text-foreground">Supplier</TableHead>
+                <TableHead className="text-foreground">Quantity</TableHead>
+                <TableHead className="text-foreground">Harga Unit</TableHead>
+                <TableHead className="text-foreground">Total Harga</TableHead>
+                <TableHead className="text-foreground">Batch</TableHead>
+                <TableHead className="text-foreground">Kadaluarsa</TableHead>
+                <TableHead className="text-foreground">Status</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="h-24 text-center">
+                <TableRow className="border-border hover:bg-muted/50">
+                  <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                     Tidak ada data inventory.
                   </TableCell>
                 </TableRow>
               ) : (
                 data.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow key={item.id} className="border-border hover:bg-muted/50 transition-colors">
                     <TableCell>
                       <div>
-                        <p className="font-medium">{item.rawMaterial?.name || 'N/A'}</p>
+                        <p className="font-medium text-foreground">{item.rawMaterial?.name || 'N/A'}</p>
                         <p className="text-sm text-muted-foreground">
                           {item.rawMaterial?.unit || 'N/A'}
                         </p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">
+                      <Badge variant="outline" className="border-border bg-muted/30 text-foreground">
                         {item.rawMaterial?.category || 'N/A'}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{item.supplier?.name || 'N/A'}</p>
+                        <p className="font-medium text-foreground">{item.supplier?.name || 'N/A'}</p>
                         <p className="text-sm text-muted-foreground">
                           {item.supplier?.contactName || 'N/A'}
                         </p>
@@ -146,21 +146,21 @@ export function InventoryTable({ data, isLoading, onRefetch, getStatusBadge }: I
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{item.quantity}</p>
+                        <p className="font-medium text-foreground">{item.quantity}</p>
                         <p className="text-sm text-muted-foreground">
                           {item.rawMaterial?.unit || 'unit'}
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-foreground">
                       {formatCurrency(item.unitPrice || 0)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-foreground">
                       {formatCurrency(item.totalPrice || 0)}
                     </TableCell>
                     <TableCell>
                       {item.batchNumber ? (
-                        <code className="text-sm bg-muted px-1 rounded">
+                        <code className="text-sm bg-muted px-1 rounded text-foreground">
                           {item.batchNumber}
                         </code>
                       ) : (
@@ -170,7 +170,7 @@ export function InventoryTable({ data, isLoading, onRefetch, getStatusBadge }: I
                     <TableCell>
                       {item.expiryDate ? (
                         <div>
-                          <p>{formatDate(item.expiryDate)}</p>
+                          <p className="text-foreground">{formatDate(item.expiryDate)}</p>
                           <p className="text-sm text-muted-foreground">
                             {Math.ceil((new Date(item.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} hari
                           </p>
@@ -185,25 +185,25 @@ export function InventoryTable({ data, isLoading, onRefetch, getStatusBadge }: I
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" className="hover:bg-muted">
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
+                        <DropdownMenuContent align="end" className="bg-background border-border">
+                          <DropdownMenuItem asChild className="text-foreground hover:bg-muted focus:bg-muted">
                             <Link href={`/dashboard/inventory/${item.id}`}>
                               <Eye className="w-4 h-4 mr-2" />
                               Lihat Detail
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
+                          <DropdownMenuItem asChild className="text-foreground hover:bg-muted focus:bg-muted">
                             <Link href={`/dashboard/inventory/${item.id}/edit`}>
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            className="text-red-600"
+                            className="text-red-600 dark:text-red-400 hover:bg-muted focus:bg-muted"
                             onClick={() => handleDelete(item.id, item.rawMaterial?.name || 'Item')}
                             disabled={deleteMutation.isPending}
                           >

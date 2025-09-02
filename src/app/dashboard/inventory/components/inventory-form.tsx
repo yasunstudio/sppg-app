@@ -78,96 +78,100 @@ export function InventoryForm({ onSuccess }: InventoryFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="rawMaterialId">Bahan Baku</Label>
+          <Label htmlFor="rawMaterialId" className="text-foreground">Bahan Baku</Label>
           <Select onValueChange={(value) => setValue('rawMaterialId', value)}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-background border-border text-foreground">
               <SelectValue placeholder="Pilih bahan baku" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-background border-border">
               {rawMaterials.map((material: any) => (
-                <SelectItem key={material.id} value={material.id}>
+                <SelectItem key={material.id} value={material.id} className="text-foreground hover:bg-muted">
                   {material.name} ({material.category})
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {errors.rawMaterialId && (
-            <p className="text-sm text-red-500">{errors.rawMaterialId.message}</p>
+            <p className="text-sm text-red-500 dark:text-red-400">{errors.rawMaterialId.message}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="supplierId">Supplier (Opsional)</Label>
+          <Label htmlFor="supplierId" className="text-foreground">Supplier (Opsional)</Label>
           <Select onValueChange={(value) => setValue('supplierId', value)}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-background border-border text-foreground">
               <SelectValue placeholder="Pilih supplier" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-background border-border">
               {suppliers.map((supplier: any) => (
-                <SelectItem key={supplier.id} value={supplier.id}>
+                <SelectItem key={supplier.id} value={supplier.id} className="text-foreground hover:bg-muted">
                   {supplier.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {errors.supplierId && (
-            <p className="text-sm text-red-500">{errors.supplierId.message}</p>
+            <p className="text-sm text-red-500 dark:text-red-400">{errors.supplierId.message}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="quantity">Quantity</Label>
+          <Label htmlFor="quantity" className="text-foreground">Quantity</Label>
           <Input
             id="quantity"
             type="number"
             {...register('quantity', { valueAsNumber: true })}
             placeholder="Masukkan quantity"
+            className="bg-background border-border text-foreground focus:ring-ring"
           />
           {errors.quantity && (
-            <p className="text-sm text-red-500">{errors.quantity.message}</p>
+            <p className="text-sm text-red-500 dark:text-red-400">{errors.quantity.message}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="unitPrice">Harga per Unit (Rp)</Label>
+          <Label htmlFor="unitPrice" className="text-foreground">Harga per Unit (Rp)</Label>
           <Input
             id="unitPrice"
             type="number"
             {...register('unitPrice', { valueAsNumber: true })}
             placeholder="Harga per unit"
+            className="bg-background border-border text-foreground focus:ring-ring"
           />
           {errors.unitPrice && (
-            <p className="text-sm text-red-500">{errors.unitPrice.message}</p>
+            <p className="text-sm text-red-500 dark:text-red-400">{errors.unitPrice.message}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="expiryDate">Tanggal Kadaluarsa (Opsional)</Label>
+          <Label htmlFor="expiryDate" className="text-foreground">Tanggal Kadaluarsa (Opsional)</Label>
           <Input
             id="expiryDate"
             type="date"
             {...register('expiryDate')}
+            className="bg-background border-border text-foreground focus:ring-ring"
           />
           {errors.expiryDate && (
-            <p className="text-sm text-red-500">{errors.expiryDate.message}</p>
+            <p className="text-sm text-red-500 dark:text-red-400">{errors.expiryDate.message}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="batchNumber">Batch Number (Opsional)</Label>
+          <Label htmlFor="batchNumber" className="text-foreground">Batch Number (Opsional)</Label>
           <Input
             id="batchNumber"
             {...register('batchNumber')}
             placeholder="Nomor batch produksi"
+            className="bg-background border-border text-foreground focus:ring-ring"
           />
           {errors.batchNumber && (
-            <p className="text-sm text-red-500">{errors.batchNumber.message}</p>
+            <p className="text-sm text-red-500 dark:text-red-400">{errors.batchNumber.message}</p>
           )}
         </div>
       </div>
 
       <div className="flex justify-end space-x-2">
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-primary-foreground">
           {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
           {isSubmitting ? 'Menyimpan...' : 'Simpan'}
         </Button>

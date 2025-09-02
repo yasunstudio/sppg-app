@@ -32,11 +32,11 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      GOOD: 'bg-green-100 text-green-800',
-      FAIR: 'bg-yellow-100 text-yellow-800', 
-      POOR: 'bg-orange-100 text-orange-800',
-      REJECTED: 'bg-red-100 text-red-800',
-      PENDING: 'bg-gray-100 text-gray-800'
+      GOOD: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800',
+      FAIR: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800', 
+      POOR: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+      REJECTED: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800',
+      PENDING: 'bg-muted/50 text-muted-foreground border-border'
     }
     
     const statusLabels = {
@@ -50,7 +50,7 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
     const statusKey = status as keyof typeof variants
     
     return (
-      <Badge className={variants[statusKey] || 'bg-gray-100 text-gray-800'}>
+      <Badge className={`${variants[statusKey] || 'bg-muted/50 text-muted-foreground border-border'} border`}>
         {statusLabels[statusKey] || status}
       </Badge>
     )
@@ -58,11 +58,11 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
 
   const getCategoryBadge = (category: string) => {
     const variants = {
-      PROTEIN: 'bg-red-100 text-red-800',
-      VEGETABLE: 'bg-green-100 text-green-800',
-      GRAIN: 'bg-amber-100 text-amber-800',
-      SPICE: 'bg-purple-100 text-purple-800',
-      OIL: 'bg-blue-100 text-blue-800'
+      PROTEIN: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800',
+      VEGETABLE: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800',
+      GRAIN: 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+      SPICE: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+      OIL: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800'
     }
 
     const categoryLabels = {
@@ -76,7 +76,7 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
     const categoryKey = category as keyof typeof variants
     
     return (
-      <Badge variant="outline" className={variants[categoryKey] || 'bg-gray-100 text-gray-800'}>
+      <Badge variant="outline" className={`${variants[categoryKey] || 'bg-muted/50 text-muted-foreground border-border'} border`}>
         {categoryLabels[categoryKey] || category}
       </Badge>
     )
@@ -91,7 +91,7 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => router.back()}>
+          <Button variant="outline" size="sm" onClick={() => router.back()} className="border-border text-foreground hover:bg-muted">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali
           </Button>
@@ -102,7 +102,7 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
         </div>
         <div className="grid gap-6">
           {[...Array(3)].map((_, i) => (
-            <Card key={i}>
+            <Card key={i} className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
               <CardHeader>
                 <div className="h-6 bg-muted animate-pulse rounded w-48"></div>
               </CardHeader>
@@ -124,12 +124,12 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => router.back()}>
+          <Button variant="outline" size="sm" onClick={() => router.back()} className="border-border text-foreground hover:bg-muted">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Item Tidak Ditemukan</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Item Tidak Ditemukan</h1>
             <p className="text-muted-foreground">
               Item inventory yang Anda cari tidak ditemukan atau telah dihapus.
             </p>
@@ -144,12 +144,12 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => router.back()}>
+          <Button variant="outline" size="sm" onClick={() => router.back()} className="border-border text-foreground hover:bg-muted">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
               {inventoryItem.rawMaterial?.name || 'Detail Item Inventory'}
             </h1>
             <p className="text-muted-foreground">
@@ -158,7 +158,7 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
           </div>
         </div>
         <div className="flex gap-2">
-          <Button asChild>
+          <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
             <Link href={`/dashboard/inventory/${id}/edit`}>
               <Edit className="w-4 h-4 mr-2" />
               Edit
@@ -173,9 +173,9 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Basic Information */}
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Package className="w-5 h-5" />
               Informasi Dasar
             </CardTitle>
@@ -183,7 +183,7 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
           <CardContent className="space-y-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Nama Bahan Baku</label>
-              <p className="text-lg font-semibold">{inventoryItem.rawMaterial?.name}</p>
+              <p className="text-lg font-semibold text-foreground">{inventoryItem.rawMaterial?.name}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Kategori</label>
@@ -193,7 +193,7 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Deskripsi</label>
-              <p className="text-sm">{inventoryItem.rawMaterial?.description || 'Tidak ada deskripsi'}</p>
+              <p className="text-sm text-foreground">{inventoryItem.rawMaterial?.description || 'Tidak ada deskripsi'}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Status Kualitas</label>
@@ -205,9 +205,9 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
         </Card>
 
         {/* Quantity & Pricing */}
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <DollarSign className="w-5 h-5" />
               Quantity & Harga
             </CardTitle>
@@ -215,26 +215,26 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
           <CardContent className="space-y-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Quantity</label>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-semibold text-foreground">
                 {inventoryItem.quantity} {inventoryItem.rawMaterial?.unit}
               </p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Harga per Unit</label>
-              <p className="text-lg font-semibold">{formatCurrency(inventoryItem.unitPrice)}</p>
+              <p className="text-lg font-semibold text-foreground">{formatCurrency(inventoryItem.unitPrice)}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Total Harga</label>
-              <p className="text-xl font-bold text-green-600">{formatCurrency(inventoryItem.totalPrice)}</p>
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatCurrency(inventoryItem.totalPrice)}</p>
             </div>
           </CardContent>
         </Card>
 
         {/* Supplier Information */}
         {inventoryItem.supplier && (
-          <Card>
+          <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Building className="w-5 h-5" />
                 Informasi Supplier
               </CardTitle>
@@ -242,28 +242,28 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Nama Supplier</label>
-                <p className="text-lg font-semibold">{inventoryItem.supplier.name}</p>
+                <p className="text-lg font-semibold text-foreground">{inventoryItem.supplier.name}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Contact Person</label>
-                <p className="text-sm">{inventoryItem.supplier.contactName}</p>
+                <p className="text-sm text-foreground">{inventoryItem.supplier.contactName}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Email</label>
-                <p className="text-sm">{inventoryItem.supplier.email}</p>
+                <p className="text-sm text-foreground">{inventoryItem.supplier.email}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Telepon</label>
-                <p className="text-sm">{inventoryItem.supplier.phone}</p>
+                <p className="text-sm text-foreground">{inventoryItem.supplier.phone}</p>
               </div>
             </CardContent>
           </Card>
         )}
 
         {/* Batch & Expiry Information */}
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Calendar className="w-5 h-5" />
               Informasi Batch & Kadaluarsa
             </CardTitle>
@@ -273,7 +273,7 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
               <label className="text-sm font-medium text-muted-foreground">Batch Number</label>
               <p className="text-lg font-semibold">
                 {inventoryItem.batchNumber ? (
-                  <code className="text-sm bg-muted px-2 py-1 rounded">
+                  <code className="text-sm bg-muted/50 dark:bg-muted/20 px-2 py-1 rounded border border-border text-foreground">
                     {inventoryItem.batchNumber}
                   </code>
                 ) : (
@@ -285,16 +285,16 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
               <>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Tanggal Kadaluarsa</label>
-                  <p className="text-lg font-semibold">{formatDate(inventoryItem.expiryDate)}</p>
+                  <p className="text-lg font-semibold text-foreground">{formatDate(inventoryItem.expiryDate)}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Sisa Hari</label>
                   <p className={`text-lg font-semibold ${
                     calculateDaysUntilExpiry(inventoryItem.expiryDate) <= 7 
-                      ? 'text-red-600' 
+                      ? 'text-red-600 dark:text-red-400' 
                       : calculateDaysUntilExpiry(inventoryItem.expiryDate) <= 30
-                        ? 'text-yellow-600'
-                        : 'text-green-600'
+                        ? 'text-yellow-600 dark:text-yellow-400'
+                        : 'text-green-600 dark:text-green-400'
                   }`}>
                     {calculateDaysUntilExpiry(inventoryItem.expiryDate)} hari
                   </p>
@@ -303,11 +303,11 @@ export default function InventoryDetailClient({ id }: InventoryDetailClientProps
             )}
             <div>
               <label className="text-sm font-medium text-muted-foreground">Dibuat</label>
-              <p className="text-sm">{formatDate(inventoryItem.createdAt)}</p>
+              <p className="text-sm text-foreground">{formatDate(inventoryItem.createdAt)}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Terakhir Diupdate</label>
-              <p className="text-sm">{formatDate(inventoryItem.updatedAt)}</p>
+              <p className="text-sm text-foreground">{formatDate(inventoryItem.updatedAt)}</p>
             </div>
           </CardContent>
         </Card>

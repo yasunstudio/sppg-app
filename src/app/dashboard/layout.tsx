@@ -10,6 +10,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
   // Load sidebar state from localStorage on mount
@@ -27,14 +28,45 @@ export default function DashboardLayout({
     localStorage.setItem('sidebar-collapsed', JSON.stringify(newState))
   }
 
+  const toggleMobileSidebar = () => {
+    const newState = !sidebarOpen
+    setSidebarOpen(newState)
+    
+    // Prevent body scroll when mobile sidebar is open
+    if (newState) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+  }
+
+  // Clean up body scroll when component unmounts
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
+
+  // Also clean up when sidebar closes
+  useEffect(() => {
+    if (!sidebarOpen) {
+      document.body.style.overflow = 'unset'
+    }
+  }, [sidebarOpen])
+
   // Prevent hydration mismatch by not rendering until loaded
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-background">
         <div className="lg:pl-72">
-          <Header />
-          <main className="p-4 lg:p-6 bg-background text-foreground">
-            {children}
+          <Header 
+            onMobileSidebarToggle={toggleMobileSidebar}
+            sidebarOpen={sidebarOpen}
+          />
+          <main className="p-4 sm:p-6 lg:p-8 bg-background text-foreground">
+            <div className="mx-auto max-w-7xl">
+              {children}
+            </div>
           </main>
         </div>
       </div>
@@ -43,11 +75,32 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar isCollapsed={sidebarCollapsed} onToggle={toggleSidebar} />
-      <div className={`transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
-        <Header />
-        <main className="p-4 lg:p-6 bg-background text-foreground">
-          {children}
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden transition-all duration-300"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      <Sidebar 
+        isCollapsed={sidebarCollapsed} 
+        onToggle={toggleSidebar}
+        isMobileOpen={sidebarOpen}
+        onMobileClose={() => setSidebarOpen(false)}
+      />
+      
+      <div className={`transition-all duration-300 ease-in-out ${
+        sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'
+      }`}>
+        <Header 
+          onMobileSidebarToggle={toggleMobileSidebar}
+          sidebarOpen={sidebarOpen}
+        />
+        <main className="p-4 sm:p-6 lg:p-8 bg-background text-foreground min-h-[calc(100vh-4rem)] overflow-x-hidden">
+          <div className="mx-auto max-w-7xl">
+            {children}
+          </div>
         </main>
       </div>
     </div>

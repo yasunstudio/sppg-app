@@ -131,7 +131,7 @@ export default function EditInventoryClient({ id }: EditInventoryClientProps) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" disabled>
+          <Button variant="outline" size="sm" disabled className="border-border text-foreground">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali
           </Button>
@@ -140,7 +140,7 @@ export default function EditInventoryClient({ id }: EditInventoryClientProps) {
             <div className="h-4 bg-muted animate-pulse rounded w-96 mt-2"></div>
           </div>
         </div>
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
           <CardHeader>
             <div className="h-6 bg-muted animate-pulse rounded w-48"></div>
           </CardHeader>
@@ -163,12 +163,12 @@ export default function EditInventoryClient({ id }: EditInventoryClientProps) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => router.back()}>
+          <Button variant="outline" size="sm" onClick={() => router.back()} className="border-border text-foreground hover:bg-muted">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Item Tidak Ditemukan</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Item Tidak Ditemukan</h1>
             <p className="text-muted-foreground">
               Item inventory yang Anda cari tidak ditemukan atau telah dihapus.
             </p>
@@ -186,13 +186,13 @@ export default function EditInventoryClient({ id }: EditInventoryClientProps) {
           variant="outline" 
           size="sm" 
           onClick={handleCancel}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-border text-foreground hover:bg-muted"
         >
           <ArrowLeft className="w-4 h-4" />
           Kembali
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Item Inventory</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Edit Item Inventory</h1>
           <p className="text-muted-foreground">
             Edit informasi item {inventoryItem.rawMaterial?.name}
           </p>
@@ -200,9 +200,9 @@ export default function EditInventoryClient({ id }: EditInventoryClientProps) {
       </div>
 
       {/* Form */}
-      <Card>
+      <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Package className="w-5 h-5" />
             Informasi Item Inventory
           </CardTitle>
@@ -212,45 +212,45 @@ export default function EditInventoryClient({ id }: EditInventoryClientProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Raw Material */}
               <div className="space-y-2">
-                <Label htmlFor="rawMaterialId">
-                  Bahan Baku <span className="text-red-500">*</span>
+                <Label htmlFor="rawMaterialId" className="text-foreground">
+                  Bahan Baku <span className="text-red-500 dark:text-red-400">*</span>
                 </Label>
                 <Select 
                   onValueChange={(value) => setValue('rawMaterialId', value)}
                   disabled={loadingMaterials}
                   defaultValue={inventoryItem.rawMaterialId}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder={loadingMaterials ? "Loading..." : "Pilih bahan baku"} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border-border">
                     {rawMaterials.map((material: any) => (
-                      <SelectItem key={material.id} value={material.id}>
+                      <SelectItem key={material.id} value={material.id} className="text-foreground hover:bg-muted">
                         {material.name} - {material.category} ({material.unit})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {errors.rawMaterialId && (
-                  <p className="text-sm text-red-500">{errors.rawMaterialId.message}</p>
+                  <p className="text-sm text-red-500 dark:text-red-400">{errors.rawMaterialId.message}</p>
                 )}
               </div>
 
               {/* Supplier */}
               <div className="space-y-2">
-                <Label htmlFor="supplierId">Supplier</Label>
+                <Label htmlFor="supplierId" className="text-foreground">Supplier</Label>
                 <Select 
                   onValueChange={(value) => setValue('supplierId', value === 'none' ? undefined : value)}
                   disabled={loadingSuppliers}
                   defaultValue={inventoryItem.supplierId || 'none'}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder={loadingSuppliers ? "Loading..." : "Pilih supplier (opsional)"} />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Tidak ada supplier</SelectItem>
+                  <SelectContent className="bg-background border-border">
+                    <SelectItem value="none" className="text-foreground hover:bg-muted">Tidak ada supplier</SelectItem>
                     {suppliers.map((supplier: any) => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
+                      <SelectItem key={supplier.id} value={supplier.id} className="text-foreground hover:bg-muted">
                         {supplier.name}
                       </SelectItem>
                     ))}
@@ -260,8 +260,8 @@ export default function EditInventoryClient({ id }: EditInventoryClientProps) {
 
               {/* Quantity */}
               <div className="space-y-2">
-                <Label htmlFor="quantity">
-                  Quantity <span className="text-red-500">*</span>
+                <Label htmlFor="quantity" className="text-foreground">
+                  Quantity <span className="text-red-500 dark:text-red-400">*</span>
                 </Label>
                 <Input
                   id="quantity"
@@ -270,16 +270,17 @@ export default function EditInventoryClient({ id }: EditInventoryClientProps) {
                   min="0"
                   placeholder="Masukkan jumlah"
                   {...register('quantity')}
+                  className="bg-background border-border text-foreground focus:ring-ring"
                 />
                 {errors.quantity && (
-                  <p className="text-sm text-red-500">{errors.quantity.message}</p>
+                  <p className="text-sm text-red-500 dark:text-red-400">{errors.quantity.message}</p>
                 )}
               </div>
 
               {/* Unit Price */}
               <div className="space-y-2">
-                <Label htmlFor="unitPrice">
-                  Harga per Unit <span className="text-red-500">*</span>
+                <Label htmlFor="unitPrice" className="text-foreground">
+                  Harga per Unit <span className="text-red-500 dark:text-red-400">*</span>
                 </Label>
                 <Input
                   id="unitPrice"
@@ -288,67 +289,71 @@ export default function EditInventoryClient({ id }: EditInventoryClientProps) {
                   min="0"
                   placeholder="Masukkan harga per unit"
                   {...register('unitPrice')}
+                  className="bg-background border-border text-foreground focus:ring-ring"
                 />
                 {errors.unitPrice && (
-                  <p className="text-sm text-red-500">{errors.unitPrice.message}</p>
+                  <p className="text-sm text-red-500 dark:text-red-400">{errors.unitPrice.message}</p>
                 )}
               </div>
 
               {/* Expiry Date */}
               <div className="space-y-2">
-                <Label htmlFor="expiryDate">Tanggal Kadaluarsa</Label>
+                <Label htmlFor="expiryDate" className="text-foreground">Tanggal Kadaluarsa</Label>
                 <Input
                   id="expiryDate"
                   type="date"
                   {...register('expiryDate')}
+                  className="bg-background border-border text-foreground focus:ring-ring"
                 />
               </div>
 
               {/* Batch Number */}
               <div className="space-y-2">
-                <Label htmlFor="batchNumber">Batch Number</Label>
+                <Label htmlFor="batchNumber" className="text-foreground">Batch Number</Label>
                 <Input
                   id="batchNumber"
                   placeholder="Masukkan batch number"
                   {...register('batchNumber')}
+                  className="bg-background border-border text-foreground focus:ring-ring"
                 />
               </div>
 
               {/* Quality Status */}
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="qualityStatus">Status Kualitas</Label>
+                <Label htmlFor="qualityStatus" className="text-foreground">Status Kualitas</Label>
                 <Select 
                   onValueChange={(value) => setValue('qualityStatus', value as any)}
                   defaultValue={inventoryItem.qualityStatus}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder="Pilih status kualitas" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="GOOD">Baik</SelectItem>
-                    <SelectItem value="FAIR">Cukup</SelectItem>
-                    <SelectItem value="POOR">Buruk</SelectItem>
-                    <SelectItem value="REJECTED">Ditolak</SelectItem>
-                    <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectContent className="bg-background border-border">
+                    <SelectItem value="GOOD" className="text-foreground hover:bg-muted">Baik</SelectItem>
+                    <SelectItem value="FAIR" className="text-foreground hover:bg-muted">Cukup</SelectItem>
+                    <SelectItem value="POOR" className="text-foreground hover:bg-muted">Buruk</SelectItem>
+                    <SelectItem value="REJECTED" className="text-foreground hover:bg-muted">Ditolak</SelectItem>
+                    <SelectItem value="PENDING" className="text-foreground hover:bg-muted">Pending</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-4 pt-6 border-t">
+            <div className="flex items-center justify-end gap-4 pt-6 border-t border-border">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={handleCancel}
                 disabled={updateMutation.isPending}
+                className="border-border text-foreground hover:bg-muted"
               >
                 Batal
               </Button>
               <Button 
                 type="submit" 
                 disabled={updateMutation.isPending}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 {updateMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

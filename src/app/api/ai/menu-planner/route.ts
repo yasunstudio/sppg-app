@@ -3,7 +3,11 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🤖 AI Menu Planner - Starting request processing...')
+    
     const body = await request.json()
+    console.log('📊 Request body:', body)
+    
     const { 
       plannerId,
       planningPeriod = 7, // days
@@ -16,21 +20,29 @@ export async function POST(request: NextRequest) {
 
     // Validate planner ID
     if (!plannerId) {
+      console.error('❌ Planner ID is required')
       return NextResponse.json(
         { success: false, error: 'Planner ID is required' },
         { status: 400 }
       )
     }
 
+    console.log('🔍 Getting available recipes...')
     // 1. Get available recipes with nutritional data
     const availableRecipes = await getAvailableRecipes()
+    console.log(`✅ Found ${availableRecipes.length} available recipes`)
 
+    console.log('🏫 Getting schools data...')
     // 2. Get schools and their requirements
     const targetSchoolsData = await getSchoolsData(targetSchools)
+    console.log(`✅ Found ${targetSchoolsData.length} schools`)
 
+    console.log('📦 Getting inventory data...')
     // 3. Get current inventory and costs
     const inventoryData = await getInventoryForPlanning()
+    console.log(`✅ Found ${inventoryData.length} inventory items`)
 
+    console.log('🎯 Generating optimized menu plans...')
     // 4. Generate AI-optimized menu plans
     const menuPlans = await generateOptimizedMenuPlans({
       availableRecipes,
@@ -42,10 +54,13 @@ export async function POST(request: NextRequest) {
       preferences,
       includeDiversityOptimization
     })
+    console.log(`✅ Generated ${menuPlans.length} menu plans`)
 
+    console.log('🥗 Analyzing nutrition...')
     // 5. Generate nutritional analysis
     const nutritionalAnalysis = analyzeMenuNutrition(menuPlans)
 
+    console.log('💰 Analyzing costs...')
     // 6. Generate cost analysis
     const costAnalysis = analyzeMenuCosts(menuPlans, inventoryData)
 
@@ -60,7 +75,26 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         planningPeriod,
-        menuPlans,
+        menuPlans: menuPlans.map(plan => ({
+          day: plan.day,
+          schoolName: plan.schoolName,
+          totalCost: plan.totalCost,
+          plannedMeals: plan.plannedMeals,
+          costPerMeal: plan.costPerMeal,
+          recipes: plan.selectedRecipes?.map((recipe: any) => ({
+            id: recipe.id,
+            name: recipe.name,
+            description: recipe.description || '',
+            category: recipe.category || 'main',
+            servingSize: recipe.servingSize || 1,
+            nutritionInfo: recipe.nutritionInfo || {},
+            cost: recipe.cost || 0,
+            estimatedCost: recipe.estimatedCost || recipe.cost || 0,
+            complexity: recipe.complexity || 'medium',
+            preparationTime: recipe.preparationTime || recipe.prepTime || 30
+          })) || [],
+          efficiency: plan.efficiency
+        })),
         nutritionalAnalysis: {
           averageCalories: nutritionalAnalysis.dailyAverages.calories,
           averageProtein: nutritionalAnalysis.dailyAverages.protein,
@@ -76,7 +110,7 @@ export async function POST(request: NextRequest) {
           totalBudgetUsed: costAnalysis.totalCost,
           budgetEfficiency: Math.min(costAnalysis.averageCostPerMeal / 35000, 1), // Assume target 35k per meal
           costByDay: costAnalysis.costByDay,
-          costTrends: costAnalysis.costByDay.map((day, index) => ({
+          costTrends: costAnalysis.costByDay.slice(0, 20).map((day, index) => ({
             day: day.day,
             cost: day.costPerMeal,
             trend: index > 0 ? 
@@ -108,9 +142,20 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Menu planning error:', error)
+    console.error('❌ Menu planning error:', error)
+    
+    // Log specific error details
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
+    
     return NextResponse.json(
-      { success: false, error: 'Failed to generate menu plans' },
+      { 
+        success: false, 
+        error: 'Failed to generate menu plans',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
@@ -118,27 +163,32 @@ export async function POST(request: NextRequest) {
 
 // Get available recipes with nutritional information
 async function getAvailableRecipes() {
-  const recipes = await prisma.recipe.findMany({
-    where: {
-      isActive: true
-    },
-    include: {
-      ingredients: {
-        include: {
-          item: true
+  try {
+    const recipes = await prisma.recipe.findMany({
+      where: {
+        isActive: true
+      },
+      include: {
+        ingredients: {
+          include: {
+            item: true
+          }
         }
       }
-    }
-  })
+    })
 
-  // Calculate nutritional info for each recipe
-  return recipes.map(recipe => ({
-    ...recipe,
-    calculatedNutrition: calculateRecipeNutrition(recipe.ingredients),
-    estimatedCost: calculateRecipeCost(recipe.ingredients),
-    complexity: calculateRecipeComplexity(recipe),
-    preparationTime: recipe.prepTime + recipe.cookTime
-  }))
+    // Calculate nutritional info for each recipe
+    return recipes.map(recipe => ({
+      ...recipe,
+      calculatedNutrition: calculateRecipeNutrition(recipe.ingredients),
+      estimatedCost: calculateRecipeCost(recipe.ingredients),
+      complexity: calculateRecipeComplexity(recipe),
+      preparationTime: recipe.prepTime + recipe.cookTime
+    }))
+  } catch (error) {
+    console.error('❌ Error getting available recipes:', error)
+    throw new Error('Failed to fetch available recipes')
+  }
 }
 
 // Calculate nutritional information for a recipe
@@ -344,7 +394,7 @@ async function optimizeDayMenu({
 
   return {
     selectedRecipes,
-    estimatedCost: selectedRecipes.reduce((sum: number, recipe: any) => sum + recipe.estimatedCost, 0),
+    estimatedCost: selectedRecipes.reduce((sum: number, recipe: any) => sum + (recipe.estimatedCost || 0), 0),
     nutritionalProfile: calculateCombinedNutrition(selectedRecipes),
     diversityScore: calculateDiversityScore(selectedRecipes, previousDays),
     feasibilityScore: calculateFeasibilityScore(selectedRecipes, inventoryData)
@@ -368,7 +418,8 @@ function calculateRecipeScore({
 
   // Cost scoring (25% weight)
   const maxBudget = budgetConstraints.maxCostPerMeal || 50000 // Default 50k IDR
-  const costScore = Math.max(0, (maxBudget - recipe.estimatedCost) / maxBudget)
+  const recipeCost = recipe.estimatedCost || 0
+  const costScore = Math.max(0, (maxBudget - recipeCost) / maxBudget)
   score += costScore * 0.25
 
   // Diversity scoring (20% weight) - avoid repetition
@@ -464,35 +515,58 @@ function selectOptimalRecipeCombination({
   budgetConstraints,
   mealsNeeded
 }: any) {
+  // Validate input
+  if (!scoredRecipes || !Array.isArray(scoredRecipes) || scoredRecipes.length === 0) {
+    console.warn('⚠️ No scored recipes available for selection')
+    return []
+  }
+
   // Sort recipes by score
-  const sortedRecipes = scoredRecipes.sort((a: any, b: any) => b.score - a.score)
+  const sortedRecipes = scoredRecipes.sort((a: any, b: any) => {
+    const scoreA = a?.score || 0
+    const scoreB = b?.score || 0
+    return scoreB - scoreA
+  })
 
   // Simple selection - take top recipes that fit budget
   const selected = []
   let totalCost = 0
-  const maxBudget = (budgetConstraints.maxCostPerMeal || 50000) * mealsNeeded
+  const maxBudget = (budgetConstraints?.maxCostPerMeal || 50000) * (mealsNeeded || 1)
 
   for (const recipe of sortedRecipes) {
-    if (totalCost + recipe.estimatedCost <= maxBudget) {
+    if (!recipe) {
+      console.warn('⚠️ Undefined recipe in sorted recipes')
+      continue
+    }
+    
+    const recipeCost = recipe.estimatedCost || recipe.cost || 0
+    if (totalCost + recipeCost <= maxBudget) {
       selected.push(recipe)
-      totalCost += recipe.estimatedCost
+      totalCost += recipeCost
       
       if (selected.length >= 3) break // Limit to 3 recipes per meal
     }
   }
 
-  return selected.length > 0 ? selected : [sortedRecipes[0]] // At least one recipe
+  return selected.length > 0 ? selected : (sortedRecipes[0] ? [sortedRecipes[0]] : [])
 }
 
 // Calculate combined nutrition for selected recipes
 function calculateCombinedNutrition(recipes: any[]) {
-  return recipes.reduce((total, recipe) => ({
-    calories: total.calories + recipe.calculatedNutrition.calories,
-    protein: total.protein + recipe.calculatedNutrition.protein,
-    fat: total.fat + recipe.calculatedNutrition.fat,
-    carbohydrates: total.carbohydrates + recipe.calculatedNutrition.carbohydrates,
-    fiber: total.fiber + recipe.calculatedNutrition.fiber
-  }), { calories: 0, protein: 0, fat: 0, carbohydrates: 0, fiber: 0 })
+  if (!recipes || !Array.isArray(recipes)) {
+    return { calories: 0, protein: 0, fat: 0, carbohydrates: 0, fiber: 0 }
+  }
+  
+  return recipes.reduce((total, recipe) => {
+    const nutrition = recipe?.calculatedNutrition || {}
+    return {
+      calories: total.calories + (nutrition.calories || 0),
+      protein: total.protein + (nutrition.protein || 0),
+      fat: total.fat + (nutrition.fat || 0),
+      carbohydrates: total.carbohydrates + (nutrition.carbohydrates || 0),
+      fiber: total.fiber + (nutrition.fiber || 0)
+    }
+  }, { calories: 0, protein: 0, fat: 0, carbohydrates: 0, fiber: 0 })
 }
 
 // Calculate diversity score for selected recipes
