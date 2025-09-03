@@ -170,53 +170,44 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link href={`/dashboard/vehicles/${vehicleId}`}>
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali ke Detail
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Edit Kendaraan</h1>
-            <p className="text-muted-foreground">Perbarui informasi dan detail kendaraan</p>
-          </div>
-        </div>
+      <div>
+        <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Edit Kendaraan</h1>
+        <p className="text-muted-foreground">Perbarui informasi dan detail kendaraan</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2">
           {/* Basic Information */}
-          <Card>
+          <Card className="bg-card dark:bg-card border-border dark:border-border">
             <CardHeader>
-              <CardTitle>Informasi Dasar</CardTitle>
-              <CardDescription>Identifikasi kendaraan dan detail dasar</CardDescription>
+              <CardTitle className="text-foreground">Informasi Dasar</CardTitle>
+              <CardDescription className="text-muted-foreground">Identifikasi kendaraan dan detail dasar</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="plateNumber">Nomor Plat *</Label>
+                <Label htmlFor="plateNumber" className="text-foreground">Nomor Plat *</Label>
                 <Input
                   id="plateNumber"
                   value={formData.plateNumber}
                   onChange={(e) => setFormData({ ...formData, plateNumber: e.target.value.toUpperCase() })}
                   placeholder="contoh: B 1234 ABC"
                   required
+                  className="bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="type">Jenis Kendaraan *</Label>
+                <Label htmlFor="type" className="text-foreground">Jenis Kendaraan *</Label>
                 <Select
                   value={formData.type}
                   onValueChange={(value) => setFormData({ ...formData, type: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input">
                     <SelectValue placeholder="Pilih jenis kendaraan" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-popover dark:bg-popover border-border dark:border-border">
                     {vehicleTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
+                      <SelectItem key={type.value} value={type.value} className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent">
                         {type.label}
                       </SelectItem>
                     ))}
@@ -225,65 +216,57 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="capacity">Kapasitas (kg) *</Label>
-                <div className="space-y-2">
-                  <Select
-                    value={formData.capacity.toString()}
-                    onValueChange={(value) => setFormData({ ...formData, capacity: parseInt(value) })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih kapasitas" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {commonCapacities.map((cap) => (
-                        <SelectItem key={cap.value} value={cap.value.toString()}>
-                          {cap.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={formData.capacity || ''}
-                    onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 0 })}
-                    placeholder="Atau masukkan kapasitas custom"
-                  />
-                </div>
+                <Label htmlFor="capacity" className="text-foreground">Kapasitas (kg) *</Label>
+                <Select
+                  value={formData.capacity.toString()}
+                  onValueChange={(value) => setFormData({ ...formData, capacity: parseInt(value) })}
+                >
+                  <SelectTrigger className="bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input">
+                    <SelectValue placeholder="Pilih kapasitas" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover dark:bg-popover border-border dark:border-border">
+                    {commonCapacities.map((cap) => (
+                      <SelectItem key={cap.value} value={cap.value.toString()} className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent">
+                        {cap.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
 
           {/* Operational Information */}
-          <Card>
+          <Card className="bg-card dark:bg-card border-border dark:border-border">
             <CardHeader>
-              <CardTitle>Informasi Operasional</CardTitle>
-              <CardDescription>Status dan detail operasional</CardDescription>
+              <CardTitle className="text-foreground">Informasi Operasional</CardTitle>
+              <CardDescription className="text-muted-foreground">Status dan detail operasional</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="isActive">Status Kendaraan</Label>
+                <Label htmlFor="isActive" className="text-foreground">Status Kendaraan</Label>
                 <Select
                   value={formData.isActive.toString()}
                   onValueChange={(value) => setFormData({ ...formData, isActive: value === 'true' })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="true">Aktif</SelectItem>
-                    <SelectItem value="false">Tidak Aktif</SelectItem>
+                  <SelectContent className="bg-popover dark:bg-popover border-border dark:border-border">
+                    <SelectItem value="true" className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent">Aktif</SelectItem>
+                    <SelectItem value="false" className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent">Tidak Aktif</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lastService">Tanggal Service Terakhir</Label>
+                <Label htmlFor="lastService" className="text-foreground">Tanggal Service Terakhir</Label>
                 <Input
                   id="lastService"
                   type="date"
                   value={formData.lastService}
                   onChange={(e) => setFormData({ ...formData, lastService: e.target.value })}
+                  className="bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input"
                 />
                 <p className="text-xs text-muted-foreground">Kosongkan jika belum pernah service</p>
               </div>
@@ -292,35 +275,41 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
         </div>
 
         {/* Notes */}
-        <Card>
+        <Card className="bg-card dark:bg-card border-border dark:border-border">
           <CardHeader>
-            <CardTitle>Catatan Tambahan</CardTitle>
-            <CardDescription>Informasi tambahan tentang kendaraan ini</CardDescription>
+            <CardTitle className="text-foreground">Catatan Tambahan</CardTitle>
+            <CardDescription className="text-muted-foreground">Informasi tambahan tentang kendaraan ini</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label htmlFor="notes">Catatan</Label>
+              <Label htmlFor="notes" className="text-foreground">Catatan</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Masukkan catatan atau komentar tambahan tentang kendaraan ini..."
                 rows={4}
+                className="bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input placeholder:text-muted-foreground"
               />
             </div>
           </CardContent>
         </Card>
 
         {/* Form Actions */}
-        <div className="flex items-center justify-end space-x-4">
+        <div className="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-4">
           <Button 
             type="button" 
             variant="outline" 
             onClick={() => router.push(`/dashboard/vehicles/${vehicleId}`)}
+            className="w-full sm:w-auto bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input hover:bg-accent dark:hover:bg-accent"
           >
             Batal
           </Button>
-          <Button type="submit" disabled={saving}>
+          <Button 
+            type="submit" 
+            disabled={saving}
+            className="w-full sm:w-auto bg-primary dark:bg-primary text-primary-foreground dark:text-primary-foreground hover:bg-primary/90 dark:hover:bg-primary/90"
+          >
             <Save className="h-4 w-4 mr-2" />
             {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
           </Button>
