@@ -171,7 +171,6 @@ function getCleanUrl(internalRoute: string): string {
   
   // Fallback mapping for routes not in URL_REWRITES
   if (internalRoute === '/dashboard') return '/home'
-  if (internalRoute === '/dashboard/basic') return '/home'
   if (internalRoute === '/dashboard/admin') return '/admin'
   
   // If no mapping found, return as is but remove /dashboard prefix

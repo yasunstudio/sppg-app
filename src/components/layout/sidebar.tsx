@@ -81,8 +81,6 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
     switch (href) {
       case '/dashboard':
         return ['system.config']; // Only for admin dashboards
-      case '/dashboard/basic':
-        return null; // Available for all authenticated users
       case '/dashboard/schools':
         return ['schools.view'];
       case '/dashboard/students':

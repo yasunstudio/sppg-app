@@ -7,7 +7,6 @@ import { prisma } from '@/lib/prisma';
 export const PROFESSIONAL_ROUTES = {
   // Internal routes to clean URLs
   '/dashboard': '/home',
-  '/dashboard/basic': '/home',
   '/dashboard/admin': '/admin',
   '/dashboard/financial': '/financial',
   '/dashboard/users': '/users',

@@ -227,7 +227,7 @@ function getCleanUrl(internalRoute: string): string {
   }
   
   // Special mappings
-  if (internalRoute === '/dashboard' || internalRoute === '/dashboard/basic') {
+  if (internalRoute === '/dashboard') {
     return '/home'
   }
   
