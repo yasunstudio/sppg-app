@@ -393,6 +393,52 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
     },
   ]
 
+  // DATA MASTER SECTION - Foundation data
+  const dataMasterManagement = [
+    {
+      name: "Sekolah",
+      href: "/dashboard/schools",
+      icon: School,
+      current: pathname.startsWith("/dashboard/schools"),
+    },
+    {
+      name: "Siswa",
+      href: "/dashboard/students",
+      icon: GraduationCap,
+      current: pathname.startsWith("/dashboard/students"),
+    },
+    {
+      name: "Kelas",
+      href: "/dashboard/classes",
+      icon: Users,
+      current: pathname.startsWith("/dashboard/classes"),
+    },
+    {
+      name: "Bahan Mentah",
+      href: "/dashboard/raw-materials",
+      icon: Package,
+      current: pathname.startsWith("/dashboard/raw-materials"),
+    },
+    {
+      name: "Pemasok",
+      href: "/dashboard/suppliers",
+      icon: ShoppingCart,
+      current: pathname.startsWith("/dashboard/suppliers"),
+    },
+    {
+      name: "Kendaraan",
+      href: "/dashboard/vehicles",
+      icon: Truck,
+      current: pathname.startsWith("/dashboard/vehicles"),
+    },
+    {
+      name: "Supir",
+      href: "/dashboard/drivers",
+      icon: UserCheck,
+      current: pathname.startsWith("/dashboard/drivers"),
+    },
+  ]
+
   const schoolManagement = [
     {
       name: "Sekolah",
@@ -426,6 +472,32 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       href: "/dashboard/drivers",
       icon: UserCheck,
       current: pathname.startsWith("/dashboard/drivers"),
+    },
+  ]
+
+  // PROCUREMENT SECTION - Combined procurement activities
+  const procurementManagement = [
+    {
+      name: "Pemasok",
+      href: "/dashboard/suppliers",
+      icon: ShoppingCart,
+      current: pathname.startsWith("/dashboard/suppliers"),
+    },
+  ]
+
+  // INVENTORY SECTION - After procurement
+  const inventoryManagement = [
+    {
+      name: "Manajemen Item",
+      href: "/dashboard/items",
+      icon: Package,
+      current: pathname.startsWith("/dashboard/items"),
+    },
+    {
+      name: "Inventori",
+      href: "/dashboard/inventory",
+      icon: Package,
+      current: pathname.startsWith("/dashboard/inventory"),
     },
   ]
 
@@ -903,7 +975,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                   SPPG System
                 </h1>
                 <p className="text-xs text-primary-foreground/75 font-medium">
-                  School Food Program Management
+                  Sistem Manajemen Program Gizi Sekolah
                 </p>
               </div>
               
@@ -927,11 +999,13 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
         {/* Scrollable Navigation */}
         <div className="flex-1 overflow-y-auto py-4 px-3 bg-gradient-to-b from-muted/30 to-muted/10 custom-scrollbar">
           <div className="space-y-2">
-            {/* Core Navigation - No section header */}
+            {/* 1. CORE NAVIGATION */}
             {renderNavSection("", coreNavigation, true)}
 
-            {/* 1. PLANNING PHASE */}
-            {/* Menu Planning with Submenu */}
+            {/* 2. DATA MASTER - Foundation Data */}
+            {renderNavSection("Data Master", dataMasterManagement)}
+
+            {/* 3. PLANNING PHASE */}
             {renderExpandableSection(
               "Perencanaan Menu",
               UtensilsCrossed,
@@ -941,15 +1015,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/menu-planning"
             )}
 
-            {/* 2. PROCUREMENT PHASE */}
-            {renderNavSection("Pengadaan", [
-              {
-                name: "Pemasok",
-                href: "/dashboard/suppliers",
-                icon: ShoppingCart,
-                current: pathname.startsWith("/dashboard/suppliers"),
-              }
-            ])}
+            {/* 4. PROCUREMENT PHASE */}
+            {renderNavSection("Pengadaan", procurementManagement)}
 
             {/* Purchase Orders with Submenu */}
             {renderExpandableSection(
@@ -961,30 +1028,10 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/purchase-orders"
             )}
 
-            {/* 3. INVENTORY PHASE */}
-            {renderNavSection("Inventori & Material", [
-              {
-                name: "Bahan Mentah",
-                href: "/dashboard/raw-materials",
-                icon: Package,
-                current: pathname.startsWith("/dashboard/raw-materials"),
-              },
-              {
-                name: "Manajemen Item",
-                href: "/dashboard/items",
-                icon: Package,
-                current: pathname.startsWith("/dashboard/items"),
-              },
-              {
-                name: "Manajemen Inventori",
-                href: "/dashboard/inventory",
-                icon: Package,
-                current: pathname.startsWith("/dashboard/inventory"),
-              }
-            ])}
+            {/* 5. INVENTORY PHASE */}
+            {renderNavSection("Inventori & Material", inventoryManagement)}
 
-            {/* 4. PRODUCTION PHASE */}
-            {/* Production with Submenu */}
+            {/* 6. PRODUCTION PHASE */}
             {renderExpandableSection(
               "Produksi",
               ChefHat,
@@ -994,8 +1041,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/production"
             )}
 
-            {/* 5. QUALITY CONTROL PHASE */}
-            {/* Quality Management with Submenu */}
+            {/* 7. QUALITY CONTROL PHASE */}
             {renderExpandableSection(
               "Manajemen Kualitas",
               ClipboardCheck,
@@ -1005,8 +1051,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/quality"
             )}
 
-            {/* 6. DISTRIBUTION PHASE */}
-            {/* Distribution with Submenu */}
+            {/* 8. DISTRIBUTION PHASE */}
             {renderExpandableSection(
               "Distribusi",
               Package,
@@ -1016,11 +1061,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/distributions"
             )}
 
-            {/* Logistics Support */}
-            {renderNavSection("Dukungan Logistik", logisticsManagement)}
-
-            {/* 7. MONITORING & ANALYTICS */}
-            {/* Monitoring Submenu */}
+            {/* 9. MONITORING & ANALYTICS */}
             {renderExpandableSection(
               "Monitoring & Laporan",
               Activity,
@@ -1030,13 +1071,10 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/monitoring"
             )}
 
-            {/* 8. SCHOOL MANAGEMENT */}
-            {renderNavSection("Manajemen Sekolah", schoolManagement)}
-
-            {/* 9. OTHER FEATURES */}
+            {/* 10. OTHER FEATURES */}
             {renderNavSection("Fitur Lainnya", otherFeatures)}
 
-            {/* 10. SYSTEM MANAGEMENT */}
+            {/* 11. SYSTEM MANAGEMENT */}
             {renderNavSection("Manajemen Sistem", systemManagement)}
           </div>
         </div>
@@ -1062,7 +1100,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                   SPPG System
                 </h1>
                 <p className="text-xs text-primary-foreground/75 font-medium">
-                  School Food Program
+                  Sistem Manajemen Program Gizi
                 </p>
               </div>
               
@@ -1084,6 +1122,9 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               {/* Core Navigation */}
               {renderNavSection("", coreNavigation, true)}
 
+              {/* Data Master */}
+              {renderNavSection("Data Master", dataMasterManagement)}
+
               {/* Menu Planning */}
               {renderExpandableSection(
                 "Perencanaan Menu",
@@ -1095,14 +1136,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               )}
 
               {/* Procurement */}
-              {renderNavSection("Pengadaan", [
-                {
-                  name: "Pemasok",
-                  href: "/dashboard/suppliers",
-                  icon: ShoppingCart,
-                  current: pathname.startsWith("/dashboard/suppliers"),
-                }
-              ])}
+              {renderNavSection("Pengadaan", procurementManagement)}
 
               {/* Purchase Orders */}
               {renderExpandableSection(
@@ -1115,26 +1149,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               )}
 
               {/* Inventory */}
-              {renderNavSection("Inventori & Material", [
-                {
-                  name: "Bahan Mentah",
-                  href: "/dashboard/raw-materials",
-                  icon: Package,
-                  current: pathname.startsWith("/dashboard/raw-materials"),
-                },
-                {
-                  name: "Manajemen Item",
-                  href: "/dashboard/items",
-                  icon: Package,
-                  current: pathname.startsWith("/dashboard/items"),
-                },
-                {
-                  name: "Manajemen Inventori",
-                  href: "/dashboard/inventory",
-                  icon: Package,
-                  current: pathname.startsWith("/dashboard/inventory"),
-                }
-              ])}
+              {renderNavSection("Inventori & Material", inventoryManagement)}
 
               {/* Production */}
               {renderExpandableSection(
@@ -1166,9 +1181,6 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 "/dashboard/distributions"
               )}
 
-              {/* Logistics */}
-              {renderNavSection("Dukungan Logistik", logisticsManagement)}
-
               {/* Monitoring */}
               {renderExpandableSection(
                 "Monitoring & Laporan",
@@ -1178,9 +1190,6 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 monitoringSubMenus,
                 "/dashboard/monitoring"
               )}
-
-              {/* School Management */}
-              {renderNavSection("Manajemen Sekolah", schoolManagement)}
 
               {/* Other Features */}
               {renderNavSection("Fitur Lainnya", otherFeatures)}
