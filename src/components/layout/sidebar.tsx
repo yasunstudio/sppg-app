@@ -232,11 +232,17 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       icon: Heart,
       current: pathname.startsWith("/dashboard/menu-planning/nutrition"),
     },
+    {
+      name: "AI Planner",
+      href: "/dashboard/menu-planning/ai-planner",
+      icon: TrendingUp,
+      current: pathname.startsWith("/dashboard/menu-planning/ai-planner"),
+    },
   ]
 
   const productionSubMenus = [
     {
-      name: "Ringkasan",
+      name: "Dashboard Produksi",
       href: "/dashboard/production",
       icon: LayoutGrid,
       current: pathname === "/dashboard/production",
@@ -248,7 +254,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       current: pathname.startsWith("/dashboard/production-plans"),
     },
     {
-      name: "Eksekusi",
+      name: "Eksekusi Produksi",
       href: "/dashboard/production/execution",
       icon: PlayCircle,
       current: pathname.startsWith("/dashboard/production/execution"),
@@ -260,13 +266,13 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       current: pathname.startsWith("/dashboard/production/batches"),
     },
     {
-      name: "Sumber Daya Produksi",
+      name: "Manajemen Sumber Daya",
       href: "/dashboard/production/resources",
       icon: Wrench,
       current: pathname.startsWith("/dashboard/production/resources"),
     },
     {
-      name: "AI Optimizer",
+      name: "Optimasi AI",
       href: "/dashboard/production/ai-optimizer",
       icon: TrendingUp,
       current: pathname.startsWith("/dashboard/production/ai-optimizer"),
@@ -281,37 +287,37 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
 
   const qualitySubMenus = [
     {
-      name: "Ringkasan",
+      name: "Dashboard Kualitas",
       href: "/dashboard/quality",
       icon: LayoutGrid,
       current: pathname === "/dashboard/quality",
     },
     {
-      name: "Pemeriksaan Kualitas",
+      name: "Inspeksi Kualitas",
       href: "/dashboard/quality-checks",
       icon: ClipboardCheck,
       current: pathname.startsWith("/dashboard/quality-checks"),
     },
     {
-      name: "Titik Kontrol Kualitas",
+      name: "Titik Kontrol Kritis",
       href: "/dashboard/quality-checkpoints",
       icon: ClipboardCheck,
       current: pathname.startsWith("/dashboard/quality-checkpoints"),
     },
     {
-      name: "Standar Kualitas",
+      name: "Standar Mutu",
       href: "/dashboard/quality-standards",
       icon: Shield,
       current: pathname.startsWith("/dashboard/quality-standards"),
     },
     {
-      name: "Sampel Makanan",
+      name: "Uji Laboratorium",
       href: "/dashboard/food-samples",
       icon: TestTube,
       current: pathname.startsWith("/dashboard/food-samples"),
     },
     {
-      name: "Konsultasi Nutrisi",
+      name: "Konsultasi Ahli Gizi",
       href: "/dashboard/nutrition-consultations",
       icon: Heart,
       current: pathname.startsWith("/dashboard/nutrition-consultations"),
@@ -320,25 +326,31 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
 
   const monitoringSubMenus = [
     {
+      name: "Dashboard Monitoring",
+      href: "/dashboard/monitoring",
+      icon: LayoutGrid,
+      current: pathname === "/dashboard/monitoring",
+    },
+    {
       name: "Monitoring Real-time",
       href: "/dashboard/monitoring/real-time",
       icon: Activity,
       current: pathname.startsWith("/dashboard/monitoring/real-time"),
     },
     {
-      name: "Analitik",
+      name: "Analitik & Insights",
       href: "/dashboard/monitoring/analytics",
       icon: BarChart,
       current: pathname.startsWith("/dashboard/monitoring/analytics"),
     },
     {
-      name: "Performa",
+      name: "Evaluasi Kinerja",
       href: "/dashboard/performance",
       icon: TrendingUp,
       current: pathname.startsWith("/dashboard/performance"),
     },
     {
-      name: "Laporan",
+      name: "Laporan Eksekutif",
       href: "/dashboard/monitoring/reports",
       icon: FileBarChart,
       current: pathname.startsWith("/dashboard/monitoring/reports"),
@@ -403,7 +415,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       current: pathname.startsWith("/dashboard/classes"),
     },
     {
-      name: "Bahan Mentah",
+      name: "Bahan Baku",
       href: "/dashboard/raw-materials",
       icon: Package,
       current: pathname.startsWith("/dashboard/raw-materials"),
@@ -421,7 +433,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       current: pathname.startsWith("/dashboard/vehicles"),
     },
     {
-      name: "Supir",
+      name: "Driver",
       href: "/dashboard/drivers",
       icon: UserCheck,
       current: pathname.startsWith("/dashboard/drivers"),
@@ -469,13 +481,13 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
   // PROFESSIONAL SERVICES
   const professionalServices = [
     {
-      name: "Konsultasi Gizi",
+      name: "Konsultasi Ahli Gizi",
       href: "/dashboard/nutrition-consultations",
       icon: Heart,
       current: pathname.startsWith("/dashboard/nutrition-consultations"),
     },
     {
-      name: "Sampel Makanan",
+      name: "Uji Laboratorium",
       href: "/dashboard/food-samples",
       icon: TestTube,
       current: pathname.startsWith("/dashboard/food-samples"),
@@ -485,7 +497,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
   // USER MANAGEMENT
   const userManagement = [
     {
-      name: "Profil Saya",
+      name: "Profil Pengguna",
       href: "/dashboard/profile",
       icon: User,
       current: pathname.startsWith("/dashboard/profile"),
@@ -545,13 +557,13 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       current: pathname.startsWith("/dashboard/waste-management"),
     },
     {
-      name: "Manajemen Keuangan",
+      name: "Keuangan & Anggaran",
       href: "/dashboard/financial",
       icon: DollarSign,
       current: pathname.startsWith("/dashboard/financial"),
     },
     {
-      name: "Manajemen Umpan Balik",
+      name: "Evaluasi & Feedback",
       href: "/dashboard/feedback",
       icon: MessageSquare,
       current: pathname.startsWith("/dashboard/feedback"),
@@ -803,7 +815,9 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                       onClick={handleMobileLinkClick}
                       className={cn(
                         "flex items-center gap-3 w-full px-3 py-2 cursor-pointer",
-                        subItem.current && "bg-accent text-accent-foreground"
+                        subItem.current 
+                          ? "bg-accent text-accent-foreground font-semibold" 
+                          : "text-muted-foreground hover:text-foreground"
                       )}
                     >
                       <subItem.icon className="h-4 w-4 flex-shrink-0" />
@@ -896,7 +910,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                     "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/40",
                     "active:scale-[0.98] group relative",
                     subItem.current 
-                      ? "bg-accent/70 text-accent-foreground shadow-sm border border-accent/30" 
+                      ? "bg-accent text-accent-foreground shadow-sm border border-accent/30 font-semibold" 
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
