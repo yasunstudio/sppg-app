@@ -38,6 +38,8 @@ import {
   Truck,
   Bell,
   Menu,
+  BookOpen,
+  User,
   X
 } from "lucide-react"
 import {
@@ -180,7 +182,6 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
   const [distributionExpanded, setDistributionExpanded] = useState(false)
   const [monitoringExpanded, setMonitoringExpanded] = useState(false)
   const [qualityExpanded, setQualityExpanded] = useState(false)
-  const [purchaseOrdersExpanded, setPurchaseOrdersExpanded] = useState(false)
 
   // Set initial expanded state based on current pathname
   useEffect(() => {
@@ -204,7 +205,6 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       pathname.startsWith("/dashboard/food-samples") || 
       pathname.startsWith("/dashboard/nutrition-consultations")
     )
-    setPurchaseOrdersExpanded(pathname.startsWith("/dashboard/purchase-orders"))
   }, [pathname])
 
   const menuPlanningSubMenus = [
@@ -254,16 +254,28 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       current: pathname.startsWith("/dashboard/production/execution"),
     },
     {
-      name: "Penggunaan Sumber Daya",
-      href: "/dashboard/resource-usage",
-      icon: Activity,
-      current: pathname.startsWith("/dashboard/resource-usage"),
+      name: "Batch Produksi",
+      href: "/dashboard/production/batches",
+      icon: Package,
+      current: pathname.startsWith("/dashboard/production/batches"),
     },
     {
-      name: "Kontrol Kualitas",
-      href: "/dashboard/production/quality",
-      icon: ClipboardCheck,
-      current: pathname.startsWith("/dashboard/production/quality"),
+      name: "Sumber Daya Produksi",
+      href: "/dashboard/production/resources",
+      icon: Wrench,
+      current: pathname.startsWith("/dashboard/production/resources"),
+    },
+    {
+      name: "AI Optimizer",
+      href: "/dashboard/production/ai-optimizer",
+      icon: TrendingUp,
+      current: pathname.startsWith("/dashboard/production/ai-optimizer"),
+    },
+    {
+      name: "Analitik Produksi",
+      href: "/dashboard/production/analytics",
+      icon: BarChart,
+      current: pathname.startsWith("/dashboard/production/analytics"),
     },
   ]
 
@@ -360,21 +372,6 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
     },
   ]
 
-  const purchaseOrdersSubMenus = [
-    {
-      name: "Ringkasan",
-      href: "/dashboard/purchase-orders",
-      icon: ClipboardCheck,
-      current: pathname === "/dashboard/purchase-orders",
-    },
-    {
-      name: "Analitik",
-      href: "/dashboard/purchase-orders/analytics",
-      icon: BarChart,
-      current: pathname.startsWith("/dashboard/purchase-orders/analytics"),
-    },
-  ]
-
   // Group navigation items by logical sections
   const coreNavigation = [
     {
@@ -431,49 +428,13 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
     },
   ]
 
-  const schoolManagement = [
-    {
-      name: "Sekolah",
-      href: "/dashboard/schools",
-      icon: School,
-      current: pathname.startsWith("/dashboard/schools"),
-    },
-    {
-      name: "Siswa",
-      href: "/dashboard/students",
-      icon: GraduationCap,
-      current: pathname.startsWith("/dashboard/students"),
-    },
-    {
-      name: "Kelas",
-      href: "/dashboard/classes",
-      icon: Users,
-      current: pathname.startsWith("/dashboard/classes"),
-    },
-  ]
-
-  const logisticsManagement = [
-    {
-      name: "Kendaraan",
-      href: "/dashboard/vehicles",
-      icon: Truck,
-      current: pathname.startsWith("/dashboard/vehicles"),
-    },
-    {
-      name: "Supir",
-      href: "/dashboard/drivers",
-      icon: UserCheck,
-      current: pathname.startsWith("/dashboard/drivers"),
-    },
-  ]
-
   // PROCUREMENT SECTION - Combined procurement activities
   const procurementManagement = [
     {
-      name: "Pemasok",
-      href: "/dashboard/suppliers",
-      icon: ShoppingCart,
-      current: pathname.startsWith("/dashboard/suppliers"),
+      name: "Order Pembelian",
+      href: "/dashboard/purchase-orders",
+      icon: ClipboardCheck,
+      current: pathname.startsWith("/dashboard/purchase-orders"),
     },
   ]
 
@@ -490,6 +451,44 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       href: "/dashboard/inventory",
       icon: Package,
       current: pathname.startsWith("/dashboard/inventory"),
+    },
+    {
+      name: "Resep",
+      href: "/dashboard/recipes",
+      icon: BookOpen,
+      current: pathname.startsWith("/dashboard/recipes"),
+    },
+    {
+      name: "Penggunaan Sumber Daya",
+      href: "/dashboard/resource-usage",
+      icon: Activity,
+      current: pathname.startsWith("/dashboard/resource-usage"),
+    },
+  ]
+
+  // PROFESSIONAL SERVICES
+  const professionalServices = [
+    {
+      name: "Konsultasi Gizi",
+      href: "/dashboard/nutrition-consultations",
+      icon: Heart,
+      current: pathname.startsWith("/dashboard/nutrition-consultations"),
+    },
+    {
+      name: "Sampel Makanan",
+      href: "/dashboard/food-samples",
+      icon: TestTube,
+      current: pathname.startsWith("/dashboard/food-samples"),
+    },
+  ]
+
+  // USER MANAGEMENT
+  const userManagement = [
+    {
+      name: "Profil Saya",
+      href: "/dashboard/profile",
+      icon: User,
+      current: pathname.startsWith("/dashboard/profile"),
     },
   ]
 
@@ -1010,20 +1009,16 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
             {/* 4. PROCUREMENT PHASE */}
             {renderNavSection("Pengadaan", procurementManagement)}
 
-            {/* Purchase Orders with Submenu */}
-            {renderExpandableSection(
-              "Order Pembelian",
-              ClipboardCheck,
-              purchaseOrdersExpanded,
-              setPurchaseOrdersExpanded,
-              purchaseOrdersSubMenus,
-              "/dashboard/purchase-orders"
-            )}
-
             {/* 5. INVENTORY PHASE */}
             {renderNavSection("Inventori & Material", inventoryManagement)}
 
-            {/* 6. PRODUCTION PHASE */}
+            {/* 6. PROFESSIONAL SERVICES */}
+            {renderNavSection("Layanan Profesional", professionalServices)}
+
+            {/* 7. USER MANAGEMENT */}
+            {renderNavSection("Pengguna", userManagement)}
+
+            {/* 8. PRODUCTION PHASE */}
             {renderExpandableSection(
               "Produksi",
               ChefHat,
@@ -1033,7 +1028,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/production"
             )}
 
-            {/* 7. QUALITY CONTROL PHASE */}
+            {/* 9. QUALITY CONTROL PHASE */}
             {renderExpandableSection(
               "Manajemen Kualitas",
               ClipboardCheck,
@@ -1043,7 +1038,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/quality"
             )}
 
-            {/* 8. DISTRIBUTION PHASE */}
+            {/* 10. DISTRIBUTION PHASE */}
             {renderExpandableSection(
               "Distribusi",
               Package,
@@ -1053,7 +1048,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/distributions"
             )}
 
-            {/* 9. MONITORING & ANALYTICS */}
+            {/* 11. MONITORING & ANALYTICS */}
             {renderExpandableSection(
               "Monitoring & Laporan",
               Activity,
@@ -1063,10 +1058,10 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/monitoring"
             )}
 
-            {/* 10. OTHER FEATURES */}
+            {/* 12. OTHER FEATURES */}
             {renderNavSection("Fitur Lainnya", otherFeatures)}
 
-            {/* 11. SYSTEM MANAGEMENT */}
+            {/* 13. SYSTEM MANAGEMENT */}
             {renderNavSection("Manajemen Sistem", systemManagement)}
           </div>
         </div>
@@ -1130,18 +1125,17 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               {/* Procurement */}
               {renderNavSection("Pengadaan", procurementManagement)}
 
-              {/* Purchase Orders */}
-              {renderExpandableSection(
-                "Order Pembelian",
-                ClipboardCheck,
-                purchaseOrdersExpanded,
-                setPurchaseOrdersExpanded,
-                purchaseOrdersSubMenus,
-                "/dashboard/purchase-orders"
-              )}
+              {/* Procurement */}
+              {renderNavSection("Pengadaan", procurementManagement)}
 
               {/* Inventory */}
               {renderNavSection("Inventori & Material", inventoryManagement)}
+
+              {/* Professional Services */}
+              {renderNavSection("Layanan Profesional", professionalServices)}
+
+              {/* User Management */}
+              {renderNavSection("Pengguna", userManagement)}
 
               {/* Production */}
               {renderExpandableSection(
