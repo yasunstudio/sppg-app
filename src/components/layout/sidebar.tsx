@@ -310,18 +310,6 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       icon: Shield,
       current: pathname.startsWith("/dashboard/quality-standards"),
     },
-    {
-      name: "Uji Laboratorium",
-      href: "/dashboard/food-samples",
-      icon: TestTube,
-      current: pathname.startsWith("/dashboard/food-samples"),
-    },
-    {
-      name: "Konsultasi Ahli Gizi",
-      href: "/dashboard/nutrition-consultations",
-      icon: Heart,
-      current: pathname.startsWith("/dashboard/nutrition-consultations"),
-    },
   ]
 
   const monitoringSubMenus = [
@@ -1026,13 +1014,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
             {/* 5. INVENTORY PHASE */}
             {renderNavSection("Inventori & Material", inventoryManagement)}
 
-            {/* 6. PROFESSIONAL SERVICES */}
-            {renderNavSection("Layanan Profesional", professionalServices)}
-
-            {/* 7. USER MANAGEMENT */}
-            {renderNavSection("Pengguna", userManagement)}
-
-            {/* 8. PRODUCTION PHASE */}
+            {/* 6. PRODUCTION PHASE */}
             {renderExpandableSection(
               "Produksi",
               ChefHat,
@@ -1042,7 +1024,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/production"
             )}
 
-            {/* 9. QUALITY CONTROL PHASE */}
+            {/* 7. QUALITY CONTROL PHASE */}
             {renderExpandableSection(
               "Manajemen Kualitas",
               ClipboardCheck,
@@ -1052,7 +1034,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/quality"
             )}
 
-            {/* 10. DISTRIBUTION PHASE */}
+            {/* 8. DISTRIBUTION PHASE */}
             {renderExpandableSection(
               "Distribusi",
               Package,
@@ -1062,7 +1044,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               "/dashboard/distributions"
             )}
 
-            {/* 11. MONITORING & ANALYTICS */}
+            {/* 9. MONITORING & ANALYTICS */}
             {renderExpandableSection(
               "Monitoring & Laporan",
               Activity,
@@ -1071,6 +1053,12 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               monitoringSubMenus,
               "/dashboard/monitoring"
             )}
+
+            {/* 10. PROFESSIONAL SERVICES */}
+            {renderNavSection("Layanan Profesional", professionalServices)}
+
+            {/* 11. USER MANAGEMENT */}
+            {renderNavSection("Pengguna", userManagement)}
 
             {/* 12. OTHER FEATURES */}
             {renderNavSection("Fitur Lainnya", otherFeatures)}
@@ -1139,17 +1127,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               {/* Procurement */}
               {renderNavSection("Pengadaan", procurementManagement)}
 
-              {/* Procurement */}
-              {renderNavSection("Pengadaan", procurementManagement)}
-
               {/* Inventory */}
               {renderNavSection("Inventori & Material", inventoryManagement)}
-
-              {/* Professional Services */}
-              {renderNavSection("Layanan Profesional", professionalServices)}
-
-              {/* User Management */}
-              {renderNavSection("Pengguna", userManagement)}
 
               {/* Production */}
               {renderExpandableSection(
@@ -1190,6 +1169,12 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 monitoringSubMenus,
                 "/dashboard/monitoring"
               )}
+
+              {/* Professional Services */}
+              {renderNavSection("Layanan Profesional", professionalServices)}
+
+              {/* User Management */}
+              {renderNavSection("Pengguna", userManagement)}
 
               {/* Other Features */}
               {renderNavSection("Fitur Lainnya", otherFeatures)}
