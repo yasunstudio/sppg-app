@@ -138,12 +138,10 @@ export function SuppliersManagement() {
       {/* Pagination */}
       {paginationData && (
         <SupplierPagination
-          currentPage={paginationData.currentPage}
-          totalPages={paginationData.totalPages}
-          totalItems={paginationData.totalCount}
+          pagination={paginationData}
+          currentPage={pagination.currentPage}
+          itemsPerPage={pagination.itemsPerPage}
           onPageChange={handlePageChange}
-          hasMore={paginationData.hasMore}
-          loading={loading || isFiltering}
         />
       )}
     </div>

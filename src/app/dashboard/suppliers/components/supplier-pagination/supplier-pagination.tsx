@@ -1,148 +1,110 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  ChevronsLeft, 
-  ChevronsRight,
-  Loader2 
-} from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import type { PaginationData } from '../utils/supplier-types'
 
 interface SupplierPaginationProps {
+  pagination: PaginationData
   currentPage: number
-  totalPages: number
-  totalItems: number
+  itemsPerPage: number
   onPageChange: (page: number) => void
-  hasMore: boolean
-  loading?: boolean
 }
 
-export function SupplierPagination({
-  currentPage,
-  totalPages,
-  totalItems,
-  onPageChange,
-  hasMore,
-  loading = false
-}: SupplierPaginationProps) {
-  const generatePageNumbers = () => {
-    const pages: (number | string)[] = []
-    const maxVisiblePages = 5
-    
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
-      }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i)
-        }
-        pages.push('...')
-        pages.push(totalPages)
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1)
-        pages.push('...')
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i)
-        }
-      } else {
-        pages.push(1)
-        pages.push('...')
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pages.push(i)
-        }
-        pages.push('...')
-        pages.push(totalPages)
-      }
-    }
-    
-    return pages
-  }
-
-  if (totalPages <= 1) return null
+export function SupplierPagination({ pagination, currentPage, itemsPerPage, onPageChange }: SupplierPaginationProps) {
+  if (!pagination || pagination.totalCount === 0) return null
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-      <div className="text-sm text-muted-foreground">
-        Menampilkan <span className="font-medium text-foreground">{totalItems}</span> supplier total
-      </div>
-      
-      <div className="flex items-center space-x-2">
-        {/* First Page */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(1)}
-          disabled={currentPage === 1 || loading}
-          className="hidden sm:flex"
-        >
-          <ChevronsLeft className="h-4 w-4" />
-        </Button>
-        
-        {/* Previous Page */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1 || loading}
-        >
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
+    <div className="border-t">
+      {/* Mobile Pagination */}
+      <div className="px-4 py-3 md:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage <= 1}
+            className="flex-shrink-0"
+          >
             <ChevronLeft className="h-4 w-4" />
-          )}
-          <span className="ml-1 hidden sm:inline">Sebelumnya</span>
-        </Button>
-
-        {/* Page Numbers */}
-        <div className="flex items-center space-x-1">
-          {generatePageNumbers().map((page, index) => (
-            <Button
-              key={index}
-              variant={currentPage === page ? "default" : "outline"}
-              size="sm"
-              onClick={() => typeof page === 'number' && onPageChange(page)}
-              disabled={page === '...' || loading}
-              className={`min-w-[40px] ${
-                currentPage === page 
-                  ? 'bg-primary text-primary-foreground' 
-                  : page === '...' 
-                    ? 'cursor-default hover:bg-transparent' 
-                    : ''
-              }`}
-            >
-              {page}
-            </Button>
-          ))}
-        </div>
-
-        {/* Next Page */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages || !hasMore || loading}
-        >
-          <span className="mr-1 hidden sm:inline">Selanjutnya</span>
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
+          </Button>
+          
+          <div className="flex-1 text-center">
+            <div className="text-sm font-medium">
+              {currentPage} / {pagination.totalPages}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {pagination.totalCount} total
+            </div>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(Math.min(pagination.totalPages, currentPage + 1))}
+            disabled={currentPage >= pagination.totalPages}
+            className="flex-shrink-0"
+          >
             <ChevronRight className="h-4 w-4" />
-          )}
-        </Button>
+          </Button>
+        </div>
+      </div>
 
-        {/* Last Page */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(totalPages)}
-          disabled={currentPage === totalPages || loading}
-          className="hidden sm:flex"
-        >
-          <ChevronsRight className="h-4 w-4" />
-        </Button>
+      {/* Desktop Pagination */}
+      <div className="hidden md:flex items-center justify-between px-6 py-4">
+        <div className="text-sm text-muted-foreground">
+          Menampilkan {((currentPage - 1) * itemsPerPage) + 1} sampai{' '}
+          {Math.min(currentPage * itemsPerPage, pagination.totalCount)} dari{' '}
+          {pagination.totalCount} entri
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage <= 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Sebelumnya
+          </Button>
+          
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, index) => {
+              let pageNumber
+              if (pagination.totalPages <= 5) {
+                pageNumber = index + 1
+              } else if (currentPage <= 3) {
+                pageNumber = index + 1
+              } else if (currentPage >= pagination.totalPages - 2) {
+                pageNumber = pagination.totalPages - 4 + index
+              } else {
+                pageNumber = currentPage - 2 + index
+              }
+              
+              return (
+                <Button
+                  key={pageNumber}
+                  variant={currentPage === pageNumber ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onPageChange(pageNumber)}
+                  className="w-8 h-8 p-0"
+                >
+                  {pageNumber}
+                </Button>
+              )
+            })}
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(Math.min(pagination.totalPages, currentPage + 1))}
+            disabled={currentPage >= pagination.totalPages}
+          >
+            Selanjutnya
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   )

@@ -52,7 +52,8 @@ export async function GET(request: NextRequest) {
     ])
 
     const totalPages = Math.ceil(total / limit)
-    const hasMore = page < totalPages
+    const hasNextPage = page < totalPages
+    const hasPreviousPage = page > 1
 
     // Calculate stats
     const inactiveCount = total - activeCount
@@ -74,7 +75,9 @@ export async function GET(request: NextRequest) {
         currentPage: page,
         totalPages,
         totalCount: total,
-        hasMore
+        hasNextPage,
+        hasPreviousPage,
+        limit
       }
     })
   } catch (error) {
@@ -89,7 +92,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, contactName, phone, email, address } = body
+    const { name, contactName, phone, email, address, isActive } = body
 
     // Validate required fields
     if (!name || !contactName || !phone || !address) {
@@ -119,7 +122,7 @@ export async function POST(request: NextRequest) {
         phone,
         email: email || null,
         address,
-        isActive: true,
+        isActive: isActive !== undefined ? isActive : true,
       },
       include: {
         _count: {

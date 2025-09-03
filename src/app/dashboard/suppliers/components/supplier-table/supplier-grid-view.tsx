@@ -86,18 +86,18 @@ export function SupplierGridView({ suppliers, isFiltering, onDelete }: SupplierG
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {suppliers.map((supplier) => (
         <Card 
           key={supplier.id} 
-          className="bg-card dark:bg-card border-border dark:border-border hover:shadow-md dark:hover:shadow-lg transition-all duration-200 hover:border-primary/20 dark:hover:border-primary/20"
+          className="bg-card dark:bg-card border-border dark:border-border hover:shadow-md dark:hover:shadow-lg transition-all duration-200 hover:border-primary/20 dark:hover:border-primary/20 overflow-hidden"
         >
           <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <CardTitle className="text-base font-semibold text-foreground dark:text-foreground truncate">
+                  <CardTitle className="text-sm sm:text-base font-semibold text-foreground dark:text-foreground truncate">
                     {supplier.name}
                   </CardTitle>
                   <p className="text-xs text-muted-foreground">
@@ -149,23 +149,23 @@ export function SupplierGridView({ suppliers, isFiltering, onDelete }: SupplierG
             </div>
           </CardHeader>
           
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 px-4 py-3">
             {/* Contact Information */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                <span className="text-foreground dark:text-foreground font-medium">{supplier.contactName}</span>
+                <span className="text-foreground dark:text-foreground font-medium truncate">{supplier.contactName}</span>
               </div>
               
               <div className="flex items-center gap-2 text-sm">
                 <Phone className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                <span className="text-foreground dark:text-foreground">{formatPhone(supplier.phone)}</span>
+                <span className="text-foreground dark:text-foreground truncate">{formatPhone(supplier.phone)}</span>
               </div>
               
               {supplier.email ? (
                 <div className="flex items-center gap-2 text-sm">
                   <Mail className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                  <span className="text-foreground dark:text-foreground truncate">{supplier.email}</span>
+                  <span className="text-foreground dark:text-foreground truncate text-xs sm:text-sm" title={supplier.email}>{supplier.email}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-sm">
@@ -176,26 +176,33 @@ export function SupplierGridView({ suppliers, isFiltering, onDelete }: SupplierG
               
               <div className="flex items-start gap-2 text-sm">
                 <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <span className="text-foreground dark:text-foreground line-clamp-2">{supplier.address}</span>
+                <span className="text-foreground dark:text-foreground text-xs sm:text-sm overflow-hidden" style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  wordBreak: 'break-word'
+                }} title={supplier.address}>{supplier.address}</span>
               </div>
             </div>
 
             {/* Statistics */}
             <div className="flex gap-2 pt-2 border-t border-border dark:border-border">
-              <Badge variant="outline" className="flex items-center gap-1 text-xs">
+              <Badge variant="outline" className="flex items-center gap-1 text-xs flex-shrink-0">
                 <ShoppingCart className="h-3 w-3" />
+                <span className="hidden sm:inline">PO:</span>
                 {supplier._count.purchaseOrders}
               </Badge>
-              <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+              <Badge variant="secondary" className="flex items-center gap-1 text-xs flex-shrink-0">
                 <Package className="h-3 w-3" />
+                <span className="hidden sm:inline">Inv:</span>
                 {supplier._count.inventory}
               </Badge>
             </div>
 
             {/* Created Date */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
-              <Calendar className="h-3 w-3" />
-              Dibuat: {formatDate(supplier.createdAt)}
+              <Calendar className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">Dibuat: {formatDate(supplier.createdAt)}</span>
             </div>
           </CardContent>
         </Card>

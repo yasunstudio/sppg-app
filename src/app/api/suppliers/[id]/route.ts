@@ -77,7 +77,7 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { name, contactName, phone, email, address } = body
+    const { name, contactName, phone, email, address, isActive } = body
 
     // Validate required fields
     if (!name || !contactName || !phone || !address) {
@@ -123,6 +123,7 @@ export async function PUT(
         phone,
         email: email || null,
         address,
+        isActive: isActive !== undefined ? isActive : true,
       },
       include: {
         _count: {

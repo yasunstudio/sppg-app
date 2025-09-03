@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Save, Building2, Phone, Mail, MapPin, User } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { Save, Building2, Phone, Mail, MapPin, User, ToggleLeft } from "lucide-react"
 import { toast } from "sonner"
 
 const supplierSchema = z.object({
@@ -19,6 +20,7 @@ const supplierSchema = z.object({
   phone: z.string().min(1, "Nomor telepon wajib diisi").regex(/^[+]?[\d\s\-\(\)]{8,20}$/, "Format nomor telepon tidak valid"),
   email: z.string().email("Format email tidak valid").optional().or(z.literal("")),
   address: z.string().min(1, "Alamat wajib diisi").max(500, "Alamat tidak boleh lebih dari 500 karakter"),
+  isActive: z.boolean(),
 })
 
 type SupplierFormData = z.infer<typeof supplierSchema>
@@ -30,10 +32,17 @@ export function SupplierCreate() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors }
   } = useForm<SupplierFormData>({
-    resolver: zodResolver(supplierSchema)
+    resolver: zodResolver(supplierSchema),
+    defaultValues: {
+      isActive: true
+    }
   })
+
+  const isActive = watch("isActive")
 
   const onSubmit = async (data: SupplierFormData) => {
     setIsSubmitting(true)
@@ -45,7 +54,8 @@ export function SupplierCreate() {
         phone: data.phone.replace(/\s/g, ''), // Remove spaces from phone
         address: data.address.trim(),
         name: data.name.trim(),
-        contactName: data.contactName.trim()
+        contactName: data.contactName.trim(),
+        isActive: data.isActive
       }
 
       const response = await fetch('/api/suppliers', {
@@ -171,6 +181,27 @@ export function SupplierCreate() {
                 {errors.email && (
                   <p className="text-sm text-red-500 dark:text-red-400">{errors.email.message}</p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="isActive" className="text-foreground dark:text-foreground">
+                  Status Supplier
+                </Label>
+                <div className="flex items-center space-x-3">
+                  <Switch
+                    checked={isActive}
+                    onCheckedChange={(checked) => setValue("isActive", checked)}
+                  />
+                  <div className="flex items-center gap-2">
+                    <ToggleLeft className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground dark:text-foreground">
+                      {isActive ? "Aktif" : "Tidak Aktif"}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Supplier aktif dapat menerima pesanan dan transaksi
+                </p>
               </div>
             </CardContent>
           </Card>

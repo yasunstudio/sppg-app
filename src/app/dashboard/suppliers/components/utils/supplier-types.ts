@@ -26,7 +26,9 @@ export interface PaginationData {
   currentPage: number
   totalPages: number
   totalCount: number
-  hasMore: boolean
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+  limit: number
 }
 
 export interface SuppliersResponse {
