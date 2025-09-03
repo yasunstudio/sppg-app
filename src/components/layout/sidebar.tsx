@@ -185,27 +185,68 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
 
   // Set initial expanded state based on current pathname
   useEffect(() => {
-    setProductionExpanded(
-      pathname.startsWith("/dashboard/production") || 
+    const hasProductionActive = pathname.startsWith("/dashboard/production") || 
       pathname.startsWith("/dashboard/production-plans") || 
       pathname.startsWith("/dashboard/resource-usage")
-    )
-    setMenuPlanningExpanded(
-      pathname.startsWith("/dashboard/menu-planning") || 
+    
+    const hasMenuPlanningActive = pathname.startsWith("/dashboard/menu-planning") || 
       pathname.startsWith("/dashboard/recipes")
-    )
-    setDistributionExpanded(
-      pathname.startsWith("/dashboard/distributions") || 
+    
+    const hasDistributionActive = pathname.startsWith("/dashboard/distributions") || 
       pathname.startsWith("/dashboard/distribution")
-    )
-    setMonitoringExpanded(pathname.startsWith("/dashboard/monitoring"))
-    setQualityExpanded(
-      pathname.startsWith("/dashboard/quality") || 
+    
+    const hasMonitoringActive = pathname.startsWith("/dashboard/monitoring")
+    
+    const hasQualityActive = pathname.startsWith("/dashboard/quality") || 
       pathname.startsWith("/dashboard/quality-checks") ||
       pathname.startsWith("/dashboard/food-samples") || 
       pathname.startsWith("/dashboard/nutrition-consultations")
-    )
+
+    setProductionExpanded(hasProductionActive)
+    setMenuPlanningExpanded(hasMenuPlanningActive)
+    setDistributionExpanded(hasDistributionActive)
+    setMonitoringExpanded(hasMonitoringActive)
+    setQualityExpanded(hasQualityActive)
   }, [pathname])
+
+  // Auto-expand menu when it has active submenu (even when collapsed)
+  useEffect(() => {
+    if (isCollapsed) return // Only apply when sidebar is expanded
+
+    const hasProductionActive = pathname.startsWith("/dashboard/production") || 
+      pathname.startsWith("/dashboard/production-plans") || 
+      pathname.startsWith("/dashboard/resource-usage")
+    
+    const hasMenuPlanningActive = pathname.startsWith("/dashboard/menu-planning") || 
+      pathname.startsWith("/dashboard/recipes")
+    
+    const hasDistributionActive = pathname.startsWith("/dashboard/distributions") || 
+      pathname.startsWith("/dashboard/distribution")
+    
+    const hasMonitoringActive = pathname.startsWith("/dashboard/monitoring")
+    
+    const hasQualityActive = pathname.startsWith("/dashboard/quality") || 
+      pathname.startsWith("/dashboard/quality-checks") ||
+      pathname.startsWith("/dashboard/food-samples") || 
+      pathname.startsWith("/dashboard/nutrition-consultations")
+
+    // Auto-expand parent menu if it has active submenu
+    if (hasProductionActive && !productionExpanded) {
+      setProductionExpanded(true)
+    }
+    if (hasMenuPlanningActive && !menuPlanningExpanded) {
+      setMenuPlanningExpanded(true)
+    }
+    if (hasDistributionActive && !distributionExpanded) {
+      setDistributionExpanded(true)
+    }
+    if (hasMonitoringActive && !monitoringExpanded) {
+      setMonitoringExpanded(true)
+    }
+    if (hasQualityActive && !qualityExpanded) {
+      setQualityExpanded(true)
+    }
+  }, [isCollapsed, pathname, productionExpanded, menuPlanningExpanded, distributionExpanded, monitoringExpanded, qualityExpanded])
 
   const menuPlanningSubMenus = [
     {
