@@ -380,7 +380,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
   // Group navigation items by logical sections
   const coreNavigation = [
     {
-      name: "Dasbor",
+      name: "Beranda",
       href: "/dashboard",
       icon: LayoutGrid,
       current: pathname === "/dashboard",
