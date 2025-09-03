@@ -3,8 +3,14 @@ import { PermissionGuard } from '@/components/guards/permission-guard'
 import { SuppliersManagement } from "./components"
 
 export const metadata: Metadata = {
-  title: "Suppliers Management | SPPG",
-  description: "Comprehensive suppliers management system for SPPG application.",
+  title: "Manajemen Supplier | SPPG",
+  description: "Sistem manajemen supplier komprehensif untuk aplikasi SPPG dengan fitur pencarian, filter, dan pagination.",
+  keywords: ["supplier", "manajemen", "SPPG", "sekolah", "pembelian", "inventori"],
+  openGraph: {
+    title: "Manajemen Supplier | SPPG",
+    description: "Kelola data supplier untuk distribusi makanan sekolah",
+    type: "website",
+  }
 }
 
 export default async function SuppliersPage() {

@@ -4,7 +4,13 @@ import { PermissionGuard } from '@/components/guards/permission-guard'
 
 export const metadata: Metadata = {
   title: "Detail Supplier | SPPG",
-  description: "Lihat detail informasi dan riwayat transaksi supplier",
+  description: "Lihat detail informasi supplier, riwayat transaksi, dan statistik lengkap dalam sistem SPPG",
+  keywords: ["detail supplier", "informasi supplier", "riwayat transaksi", "statistik supplier", "SPPG"],
+  openGraph: {
+    title: "Detail Supplier | SPPG",
+    description: "Informasi lengkap dan riwayat transaksi supplier",
+    type: "website",
+  }
 }
 
 interface SupplierDetailsPageProps {

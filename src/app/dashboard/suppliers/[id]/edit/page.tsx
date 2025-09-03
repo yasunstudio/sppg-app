@@ -4,7 +4,13 @@ import { PermissionGuard } from '@/components/guards/permission-guard'
 
 export const metadata: Metadata = {
   title: "Edit Supplier | SPPG",
-  description: "Edit informasi dan detail kontak supplier",
+  description: "Edit dan perbarui informasi supplier, detail kontak, dan alamat dalam sistem SPPG",
+  keywords: ["edit supplier", "perbarui supplier", "informasi kontak", "alamat supplier", "SPPG"],
+  openGraph: {
+    title: "Edit Supplier | SPPG",
+    description: "Form untuk mengedit informasi supplier yang sudah ada",
+    type: "website",
+  }
 }
 
 interface SupplierEditPageProps {
