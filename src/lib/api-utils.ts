@@ -42,7 +42,17 @@ export async function safeJsonParse<T = any>(response: Response): Promise<ApiRes
 
     // Parse JSON
     const data = await response.json()
-    return data
+    
+    // If the data already has success/error structure, return as is
+    if (data && typeof data === 'object' && ('success' in data || 'error' in data)) {
+      return data
+    }
+    
+    // Otherwise, wrap in success structure
+    return {
+      success: true,
+      data: data
+    }
   } catch (error) {
     return {
       success: false,
