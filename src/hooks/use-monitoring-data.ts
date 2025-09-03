@@ -27,10 +27,22 @@ export function useMonitoringData() {
         throw new Error(result.error || 'Failed to fetch monitoring data')
       }
       
-      setData(result.data || null)
+      // Ensure we have valid data structure
+      if (result.data && typeof result.data === 'object') {
+        setData(result.data)
+      } else {
+        // If API returned direct data (not wrapped in result), use it
+        const directData = result as unknown as MonitoringData
+        if (directData && directData.metrics) {
+          setData(directData)
+        } else {
+          throw new Error('Invalid data format received from API')
+        }
+      }
     } catch (err) {
       console.error('Error fetching monitoring data:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch monitoring data')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch monitoring data'
+      setError(errorMessage)
       setData(null)
     } finally {
       setLoading(false)

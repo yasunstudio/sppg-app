@@ -199,12 +199,16 @@ export async function GET(request: NextRequest) {
       alertsCount: recentAlerts.length
     })
 
-    return NextResponse.json(monitoringData)
+    return NextResponse.json({
+      success: true,
+      data: monitoringData
+    })
 
   } catch (error) {
     console.error('Error fetching monitoring data:', error)
     return NextResponse.json(
       { 
+        success: false,
         error: 'Internal server error',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
