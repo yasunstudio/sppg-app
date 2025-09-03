@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { SupplierDetails } from "../components/supplier-details-v2"
+import { SupplierDetails } from "../components"
 import { PermissionGuard } from '@/components/guards/permission-guard'
 
 export const metadata: Metadata = {
