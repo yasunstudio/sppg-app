@@ -50,10 +50,13 @@ interface Delivery {
   deliveryDate: string
   status: string
   school: {
+    id: string
     name: string
     address: string
   }
-  createdAt: string
+  portionsDelivered?: number
+  notes?: string
+  distributionId: string
 }
 
 const typeColors = {
@@ -66,254 +69,202 @@ const typeColors = {
 
 const statusColors = {
   "PENDING": "bg-yellow-100 text-yellow-800 border-yellow-200",
-  "IN_PROGRESS": "bg-blue-100 text-blue-800 border-blue-200",
+  "IN_TRANSIT": "bg-blue-100 text-blue-800 border-blue-200",
   "DELIVERED": "bg-green-100 text-green-800 border-green-200",
-  "CANCELLED": "bg-red-100 text-red-800 border-red-200",
+  "FAILED": "bg-red-100 text-red-800 border-red-200",
+  "CANCELLED": "bg-gray-100 text-gray-800 border-gray-200",
 }
 
 interface VehicleDetailsProps {
   vehicleId: string
 }
 
-export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
+const formatDate = (dateString: string) => {
+  return new Intl.DateTimeFormat('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(new Date(dateString))
+}
+
+const formatDateShort = (dateString: string) => {
+  return new Intl.DateTimeFormat('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  }).format(new Date(dateString))
+}
+
+const statusTranslations = {
+  "PENDING": "Menunggu",
+  "IN_TRANSIT": "Dalam Perjalanan", 
+  "DELIVERED": "Terkirim",
+  "FAILED": "Gagal",
+  "CANCELLED": "Dibatalkan"
+}
+
+export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
   const router = useRouter()
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [recentDeliveries, setRecentDeliveries] = useState<Delivery[]>([])
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isDeliveriesLoading, setIsDeliveriesLoading] = useState(true)
 
   useEffect(() => {
-    if (vehicleId) {
-      fetchVehicleDetails()
-      fetchRecentDeliveries()
-    }
+    fetchVehicle()
+    fetchRecentDeliveries()
   }, [vehicleId])
 
-  const fetchVehicleDetails = async () => {
+  const fetchVehicle = async () => {
     try {
       const response = await fetch(`/api/vehicles/${vehicleId}`)
-      if (response.ok) {
-        const result = await response.json()
-        if (result.success) {
-          setVehicle(result.data)
-        } else {
-          toast.error('Kendaraan tidak ditemukan')
-          router.push('/dashboard/vehicles')
-        }
-      } else {
-        toast.error('Gagal memuat detail kendaraan')
-        router.push('/dashboard/vehicles')
+      if (!response.ok) {
+        throw new Error('Failed to fetch vehicle')
+      }
+      const result = await response.json()
+      if (result.success) {
+        setVehicle(result.data)
       }
     } catch (error) {
       console.error('Error fetching vehicle:', error)
-      toast.error('Gagal memuat detail kendaraan')
+      toast.error('Gagal memuat data kendaraan')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
   const fetchRecentDeliveries = async () => {
     try {
-      // This would be an API call to get recent deliveries for this vehicle
-      // For now, we'll simulate it
-      setRecentDeliveries([])
+      setIsDeliveriesLoading(true);
+      const response = await fetch(`/api/vehicles/${vehicleId}/deliveries`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch deliveries');
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setRecentDeliveries(result.data);
+      } else {
+        console.error('Error from API:', result.error);
+        setRecentDeliveries([]);
+      }
     } catch (error) {
-      console.error('Error fetching deliveries:', error)
+      console.error('Error fetching recent deliveries:', error);
+      setRecentDeliveries([]);
+    } finally {
+      setIsDeliveriesLoading(false);
     }
-  }
+  };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  const formatDateShort = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
-  const getTypeBadge = (type: string) => {
-    const colorClass = typeColors[type as keyof typeof typeColors] || "bg-gray-100 text-gray-800 border-gray-200"
-    
+  if (isLoading || !vehicle) {
     return (
-      <Badge variant="outline" className={colorClass}>
-        {type}
-      </Badge>
-    )
-  }
-
-  const getStatusBadge = (isActive: boolean) => {
-    return isActive ? (
-      <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
-        <CircleCheck className="mr-1 h-3 w-3" />
-        Aktif
-      </Badge>
-    ) : (
-      <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
-        <CircleX className="mr-1 h-3 w-3" />
-        Tidak Aktif
-      </Badge>
-    )
-  }
-
-  const getServiceStatus = (lastService: string | null | undefined) => {
-    if (!lastService) {
-      return (
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-yellow-500" />
-          <span className="text-sm text-yellow-600">Belum Ada Riwayat Service</span>
-        </div>
-      )
-    }
-
-    const serviceDate = new Date(lastService)
-    const now = new Date()
-    const daysDiff = Math.floor((now.getTime() - serviceDate.getTime()) / (1000 * 60 * 60 * 24))
-
-    if (daysDiff > 180) { // 6 months
-      return (
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-red-500" />
-          <span className="text-sm text-red-600">Perlu Service ({daysDiff} hari lalu)</span>
-        </div>
-      )
-    } else if (daysDiff > 90) { // 3 months
-      return (
-        <div className="flex items-center gap-2">
-          <Timer className="h-4 w-4 text-yellow-500" />
-          <span className="text-sm text-yellow-600">Segera Service ({daysDiff} hari lalu)</span>
-        </div>
-      )
-    } else {
-      return (
-        <div className="flex items-center gap-2">
-          <CircleCheck className="h-4 w-4 text-green-500" />
-          <span className="text-sm text-green-600">Baru Service ({daysDiff} hari lalu)</span>
-        </div>
-      )
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex items-center gap-2">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span>Memuat detail kendaraan...</span>
-        </div>
-      </div>
-    )
-  }
-
-  if (!vehicle) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <Truck className="h-12 w-12 text-muted-foreground" />
-        <div className="text-center">
-          <h3 className="text-lg font-semibold">Kendaraan tidak ditemukan</h3>
-          <p className="text-muted-foreground">Kendaraan yang Anda cari tidak ada.</p>
-        </div>
-        <Button onClick={() => router.push('/dashboard/vehicles')}>
-          Kembali ke Kendaraan
-        </Button>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Truck className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">{vehicle.plateNumber}</h1>
-                <div className="flex items-center gap-2">
-                  {getTypeBadge(vehicle.type)}
-                  {getStatusBadge(vehicle.isActive)}
-                </div>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Truck className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{vehicle.plateNumber}</h1>
+              <p className="text-gray-600">Detail Kendaraan</p>
             </div>
           </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge 
+            variant="outline" 
+            className={vehicle.isActive ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"}
+          >
+            {vehicle.isActive ? "Aktif" : "Tidak Aktif"}
+          </Badge>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Details */}
+        {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Informasi Kendaraan</CardTitle>
               <CardDescription>
-                Detail dasar tentang kendaraan ini
+                Detail lengkap dan spesifikasi kendaraan
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Nomor Plat</label>
-                    <p className="text-lg font-semibold">{vehicle.plateNumber}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Jenis Kendaraan</label>
-                    <p className="text-lg">{vehicle.type}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <FileText className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Nomor Plat</p>
+                      <p className="text-lg font-semibold text-gray-900">{vehicle.plateNumber}</p>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Kapasitas</label>
-                    <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-lg font-semibold">{vehicle.capacity} kg</span>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Truck className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Jenis Kendaraan</p>
+                      <Badge 
+                        variant="outline" 
+                        className={typeColors[vehicle.type as keyof typeof typeColors] || "bg-gray-100 text-gray-800 border-gray-200"}
+                      >
+                        {vehicle.type}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Package className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Kapasitas</p>
+                      <p className="text-lg font-semibold text-gray-900">{vehicle.capacity} kg</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Status</label>
-                    <div className="mt-1">
-                      {getStatusBadge(vehicle.isActive)}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <CircleCheck className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Status</p>
+                      <Badge 
+                        variant="outline" 
+                        className={vehicle.isActive ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"}
+                      >
+                        {vehicle.isActive ? "Aktif" : "Tidak Aktif"}
+                      </Badge>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Service Terakhir</label>
-                    <div className="mt-1">
-                      {vehicle.lastService ? (
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span>{formatDateShort(vehicle.lastService)}</span>
-                          </div>
-                          {getServiceStatus(vehicle.lastService)}
-                        </div>
-                      ) : (
-                        getServiceStatus(null)
-                      )}
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Timer className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Servis Terakhir</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {vehicle.lastService ? formatDateShort(vehicle.lastService) : "Belum ada data"}
+                      </p>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Total Pengiriman</label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Activity className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-lg font-semibold">{vehicle._count.deliveries}</span>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Calendar className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Terdaftar</p>
+                      <p className="text-lg font-semibold text-gray-900">{formatDateShort(vehicle.createdAt)}</p>
                     </div>
                   </div>
                 </div>
@@ -322,31 +273,38 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
               {vehicle.notes && (
                 <>
                   <Separator />
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Catatan
-                    </label>
-                    <p className="mt-1 text-sm leading-relaxed">{vehicle.notes}</p>
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-700">Catatan</p>
+                        <p className="text-sm text-blue-600 mt-1">{vehicle.notes}</p>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          {/* Riwayat Pengiriman Terbaru */}
+          {/* Recent Deliveries */}
           <Card>
             <CardHeader>
               <CardTitle>Riwayat Pengiriman Terbaru</CardTitle>
               <CardDescription>
-                Riwayat pengiriman terbaru menggunakan kendaraan ini
+                10 pengiriman terakhir yang dilakukan kendaraan ini
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {recentDeliveries.length === 0 ? (
+              {isDeliveriesLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                </div>
+              ) : recentDeliveries.length === 0 ? (
                 <div className="text-center py-8">
-                  <Activity className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">Belum ada riwayat pengiriman</p>
+                  <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Belum Ada Riwayat Pengiriman</h3>
+                  <p className="text-gray-600">Kendaraan ini belum pernah melakukan pengiriman.</p>
                 </div>
               ) : (
                 <Table>
@@ -355,6 +313,7 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
                       <TableHead>Tanggal</TableHead>
                       <TableHead>Sekolah</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Porsi</TableHead>
                       <TableHead>Lokasi</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -375,8 +334,11 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
                             variant="outline" 
                             className={statusColors[delivery.status as keyof typeof statusColors] || "bg-gray-100 text-gray-800 border-gray-200"}
                           >
-                            {delivery.status.replace('_', ' ')}
+                            {statusTranslations[delivery.status as keyof typeof statusTranslations] || delivery.status}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm">{delivery.portionsDelivered || 0} porsi</span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -438,32 +400,21 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
             <CardHeader>
               <CardTitle>Informasi Sistem</CardTitle>
               <CardDescription>
-                Data registrasi dan pemeliharaan sistem
+                Data teknis dan metadata kendaraan
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-muted">
-                <span className="text-sm text-muted-foreground">Terdaftar Sejak</span>
-                <span className="text-sm font-medium">{formatDateShort(vehicle.createdAt)}</span>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">ID Kendaraan</span>
+                <span className="text-sm font-mono text-gray-900">{vehicle.id}</span>
               </div>
-              
-              <div className="flex justify-between items-center py-2 border-b border-muted">
-                <span className="text-sm text-muted-foreground">Terakhir Diperbarui</span>
-                <span className="text-sm font-medium">{formatDateShort(vehicle.updatedAt)}</span>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Dibuat</span>
+                <span className="text-sm text-gray-900">{formatDate(vehicle.createdAt)}</span>
               </div>
-
-              {vehicle.lastService && (
-                <div className="flex justify-between items-center py-2 border-b border-muted">
-                  <span className="text-sm text-muted-foreground">Service Terakhir</span>
-                  <span className="text-sm font-medium">{formatDateShort(vehicle.lastService)}</span>
-                </div>
-              )}
-
-              <div className="pt-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">ID Kendaraan</span>
-                  <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{vehicle.id}</code>
-                </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm text-gray-600">Diperbarui</span>
+                <span className="text-sm text-gray-900">{formatDate(vehicle.updatedAt)}</span>
               </div>
             </CardContent>
           </Card>

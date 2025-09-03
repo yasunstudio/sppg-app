@@ -1,6 +1,6 @@
 // Vehicle Components
 export { CreateVehicle } from './create-vehicle'
-export { VehicleDetails } from './vehicle-details'
+export { default as VehicleDetails } from './vehicle-details'
 export { EditVehicle } from './edit-vehicle'
 
 // Main modular components
