@@ -296,12 +296,11 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
         </Card>
 
         {/* Form Actions */}
-        <div className="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-4">
+        <div className="flex items-center justify-end space-x-4">
           <Button 
             type="button" 
             variant="outline" 
-            onClick={() => router.push(`/dashboard/vehicles/${vehicleId}`)}
-            className="w-full sm:w-auto bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input hover:bg-accent dark:hover:bg-accent"
+            onClick={() => router.push('/dashboard/vehicles')}
           >
             Batal
           </Button>
