@@ -977,10 +977,10 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               
               <div className="flex-1 ml-4 transition-all duration-300 ease-in-out">
                 <h1 className="text-xl font-bold text-primary-foreground tracking-tight leading-tight">
-                  SPPG System
+                  Aplikasi SPPG
                 </h1>
                 <p className="text-xs text-primary-foreground/75 font-medium">
-                  Sistem Manajemen Program Gizi Sekolah
+                  Sistem Program Pangan Gizi Sekolah
                 </p>
               </div>
               
@@ -1098,10 +1098,10 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               
               <div className="flex-1 ml-3">
                 <h1 className="text-lg font-bold text-primary-foreground tracking-tight leading-tight">
-                  SPPG System
+                  Aplikasi SPPG
                 </h1>
                 <p className="text-xs text-primary-foreground/75 font-medium">
-                  Sistem Manajemen Program Gizi
+                  Sistem Program Pangan Gizi Sekolah
                 </p>
               </div>
               
