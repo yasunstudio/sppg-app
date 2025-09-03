@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { PermissionGuard } from '@/components/guards/permission-guard';
 import { QualityChecksManagement } from './components';
 import { QualityCheck, QualityCheckType, QualityStatus } from '@/generated/prisma';
 
@@ -106,17 +107,19 @@ export default function QualityChecksPage() {
   }
 
   return (
-    <QualityChecksManagement
-      qualityChecks={qualityChecks}
-      totalCount={totalCount}
-      page={page}
-      limit={limit}
-      onPageChange={handlePageChange}
-      onSearch={handleSearch}
-      onFilterChange={handleFilterChange}
-      onRefresh={handleRefresh}
-      statusDistribution={statusDistribution}
-      typeDistribution={typeDistribution}
-    />
+    <PermissionGuard permission="quality.check">
+      <QualityChecksManagement
+        qualityChecks={qualityChecks}
+        totalCount={totalCount}
+        page={page}
+        limit={limit}
+        onPageChange={handlePageChange}
+        onSearch={handleSearch}
+        onFilterChange={handleFilterChange}
+        onRefresh={handleRefresh}
+        statusDistribution={statusDistribution}
+        typeDistribution={typeDistribution}
+      />
+    </PermissionGuard>
   );
 }

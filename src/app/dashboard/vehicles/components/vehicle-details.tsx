@@ -16,8 +16,6 @@ import {
 } from "@/components/ui/table"
 import { 
   ArrowLeft, 
-  Edit, 
-  Trash2, 
   Truck,
   Package,
   CircleCheck,
@@ -82,7 +80,6 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [recentDeliveries, setRecentDeliveries] = useState<Delivery[]>([])
   const [loading, setLoading] = useState(true)
-  const [deleteLoading, setDeleteLoading] = useState(false)
 
   useEffect(() => {
     if (vehicleId) {
@@ -99,16 +96,16 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
         if (result.success) {
           setVehicle(result.data)
         } else {
-          toast.error('Vehicle not found')
+          toast.error('Kendaraan tidak ditemukan')
           router.push('/dashboard/vehicles')
         }
       } else {
-        toast.error('Failed to fetch vehicle details')
+        toast.error('Gagal memuat detail kendaraan')
         router.push('/dashboard/vehicles')
       }
     } catch (error) {
       console.error('Error fetching vehicle:', error)
-      toast.error('Failed to fetch vehicle details')
+      toast.error('Gagal memuat detail kendaraan')
     } finally {
       setLoading(false)
     }
@@ -121,37 +118,6 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
       setRecentDeliveries([])
     } catch (error) {
       console.error('Error fetching deliveries:', error)
-    }
-  }
-
-  const handleDelete = async () => {
-    if (!vehicle) return
-    
-    if (!confirm(`Are you sure you want to delete vehicle "${vehicle.plateNumber}"? This action cannot be undone.`)) {
-      return
-    }
-
-    setDeleteLoading(true)
-    try {
-      const response = await fetch(`/api/vehicles/${vehicleId}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        if (result.success) {
-          toast.success('Vehicle deleted successfully')
-          router.push('/dashboard/vehicles')
-        }
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to delete vehicle')
-      }
-    } catch (error) {
-      console.error('Error deleting vehicle:', error)
-      toast.error('Failed to delete vehicle')
-    } finally {
-      setDeleteLoading(false)
     }
   }
 
@@ -187,12 +153,12 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
     return isActive ? (
       <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
         <CircleCheck className="mr-1 h-3 w-3" />
-        Active
+        Aktif
       </Badge>
     ) : (
       <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
         <CircleX className="mr-1 h-3 w-3" />
-        Inactive
+        Tidak Aktif
       </Badge>
     )
   }
@@ -202,7 +168,7 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
       return (
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-yellow-500" />
-          <span className="text-sm text-yellow-600">No Service Record</span>
+          <span className="text-sm text-yellow-600">Belum Ada Riwayat Service</span>
         </div>
       )
     }
@@ -215,21 +181,21 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
       return (
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-red-500" />
-          <span className="text-sm text-red-600">Service Due ({daysDiff} days ago)</span>
+          <span className="text-sm text-red-600">Perlu Service ({daysDiff} hari lalu)</span>
         </div>
       )
     } else if (daysDiff > 90) { // 3 months
       return (
         <div className="flex items-center gap-2">
           <Timer className="h-4 w-4 text-yellow-500" />
-          <span className="text-sm text-yellow-600">Service Soon ({daysDiff} days ago)</span>
+          <span className="text-sm text-yellow-600">Segera Service ({daysDiff} hari lalu)</span>
         </div>
       )
     } else {
       return (
         <div className="flex items-center gap-2">
           <CircleCheck className="h-4 w-4 text-green-500" />
-          <span className="text-sm text-green-600">Recently Serviced ({daysDiff} days ago)</span>
+          <span className="text-sm text-green-600">Baru Service ({daysDiff} hari lalu)</span>
         </div>
       )
     }
@@ -240,7 +206,7 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex items-center gap-2">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span>Loading vehicle details...</span>
+          <span>Memuat detail kendaraan...</span>
         </div>
       </div>
     )
@@ -251,11 +217,11 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <Truck className="h-12 w-12 text-muted-foreground" />
         <div className="text-center">
-          <h3 className="text-lg font-semibold">Vehicle not found</h3>
-          <p className="text-muted-foreground">The vehicle you're looking for doesn't exist.</p>
+          <h3 className="text-lg font-semibold">Kendaraan tidak ditemukan</h3>
+          <p className="text-muted-foreground">Kendaraan yang Anda cari tidak ada.</p>
         </div>
         <Button onClick={() => router.push('/dashboard/vehicles')}>
-          Back to Vehicles
+          Kembali ke Kendaraan
         </Button>
       </div>
     )
@@ -284,33 +250,6 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
             </div>
           </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => router.push(`/dashboard/vehicles/${vehicleId}/edit`)}
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-          <Button 
-            variant="destructive" 
-            onClick={handleDelete}
-            disabled={deleteLoading}
-          >
-            {deleteLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Deleting...
-              </>
-            ) : (
-              <>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </>
-            )}
-          </Button>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -318,26 +257,26 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Vehicle Information</CardTitle>
+              <CardTitle>Informasi Kendaraan</CardTitle>
               <CardDescription>
-                Basic details about this vehicle
+                Detail dasar tentang kendaraan ini
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Plate Number</label>
+                    <label className="text-sm font-medium text-muted-foreground">Nomor Plat</label>
                     <p className="text-lg font-semibold">{vehicle.plateNumber}</p>
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Vehicle Type</label>
+                    <label className="text-sm font-medium text-muted-foreground">Jenis Kendaraan</label>
                     <p className="text-lg">{vehicle.type}</p>
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Capacity</label>
+                    <label className="text-sm font-medium text-muted-foreground">Kapasitas</label>
                     <div className="flex items-center gap-2">
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <span className="text-lg font-semibold">{vehicle.capacity} kg</span>
@@ -354,7 +293,7 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Last Service</label>
+                    <label className="text-sm font-medium text-muted-foreground">Service Terakhir</label>
                     <div className="mt-1">
                       {vehicle.lastService ? (
                         <div className="space-y-1">
@@ -371,7 +310,7 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Total Deliveries</label>
+                    <label className="text-sm font-medium text-muted-foreground">Total Pengiriman</label>
                     <div className="flex items-center gap-2 mt-1">
                       <Activity className="h-4 w-4 text-muted-foreground" />
                       <span className="text-lg font-semibold">{vehicle._count.deliveries}</span>
@@ -386,7 +325,7 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
                   <div>
                     <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <FileText className="h-4 w-4" />
-                      Notes
+                      Catatan
                     </label>
                     <p className="mt-1 text-sm leading-relaxed">{vehicle.notes}</p>
                   </div>
@@ -395,28 +334,28 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
             </CardContent>
           </Card>
 
-          {/* Recent Deliveries */}
+          {/* Riwayat Pengiriman Terbaru */}
           <Card>
             <CardHeader>
-              <CardTitle>Recent Deliveries</CardTitle>
+              <CardTitle>Riwayat Pengiriman Terbaru</CardTitle>
               <CardDescription>
-                Latest delivery assignments for this vehicle
+                Riwayat pengiriman terbaru menggunakan kendaraan ini
               </CardDescription>
             </CardHeader>
             <CardContent>
               {recentDeliveries.length === 0 ? (
                 <div className="text-center py-8">
                   <Activity className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">No recent deliveries found</p>
+                  <p className="text-muted-foreground">Belum ada riwayat pengiriman</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>School</TableHead>
+                      <TableHead>Tanggal</TableHead>
+                      <TableHead>Sekolah</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Location</TableHead>
+                      <TableHead>Lokasi</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -458,69 +397,73 @@ export function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Vehicle Statistics</CardTitle>
+              <CardTitle>Statistik Kendaraan</CardTitle>
               <CardDescription>
-                Performance metrics for this vehicle
+                Metrik performa dan penggunaan kendaraan
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <div>
-                  <p className="text-sm font-medium">Total Deliveries</p>
-                  <p className="text-2xl font-bold">{vehicle._count.deliveries}</p>
+              <div className="grid grid-cols-1 gap-3">
+                <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium text-blue-700">Total Pengiriman</p>
+                    <p className="text-2xl font-bold text-blue-900">{vehicle._count.deliveries}</p>
+                    <p className="text-xs text-blue-600">pengiriman selesai</p>
+                  </div>
+                  <Activity className="h-8 w-8 text-blue-600" />
                 </div>
-                <Activity className="h-8 w-8 text-primary" />
-              </div>
 
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <div>
-                  <p className="text-sm font-medium">Distributions</p>
-                  <p className="text-2xl font-bold">{vehicle._count.distributions}</p>
+                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium text-green-700">Total Distribusi</p>
+                    <p className="text-2xl font-bold text-green-900">{vehicle._count.distributions}</p>
+                    <p className="text-xs text-green-600">distribusi dilakukan</p>
+                  </div>
+                  <Package className="h-8 w-8 text-green-600" />
                 </div>
-                <Package className="h-8 w-8 text-primary" />
-              </div>
 
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <div>
-                  <p className="text-sm font-medium">Capacity</p>
-                  <p className="text-2xl font-bold">{vehicle.capacity}</p>
-                  <p className="text-xs text-muted-foreground">kg</p>
+                <div className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium text-orange-700">Kapasitas Maksimal</p>
+                    <p className="text-2xl font-bold text-orange-900">{vehicle.capacity}</p>
+                    <p className="text-xs text-orange-600">kilogram</p>
+                  </div>
+                  <Truck className="h-8 w-8 text-orange-600" />
                 </div>
-                <Truck className="h-8 w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Vehicle Details</CardTitle>
+              <CardTitle>Informasi Sistem</CardTitle>
               <CardDescription>
-                Registration and maintenance information
+                Data registrasi dan pemeliharaan sistem
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Registered</span>
+              <div className="flex justify-between items-center py-2 border-b border-muted">
+                <span className="text-sm text-muted-foreground">Terdaftar Sejak</span>
                 <span className="text-sm font-medium">{formatDateShort(vehicle.createdAt)}</span>
               </div>
               
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Last Updated</span>
+              <div className="flex justify-between items-center py-2 border-b border-muted">
+                <span className="text-sm text-muted-foreground">Terakhir Diperbarui</span>
                 <span className="text-sm font-medium">{formatDateShort(vehicle.updatedAt)}</span>
               </div>
 
               {vehicle.lastService && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Last Service</span>
+                <div className="flex justify-between items-center py-2 border-b border-muted">
+                  <span className="text-sm text-muted-foreground">Service Terakhir</span>
                   <span className="text-sm font-medium">{formatDateShort(vehicle.lastService)}</span>
                 </div>
               )}
 
-              <Separator />
-
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Vehicle ID</span>
-                <code className="text-xs bg-muted px-2 py-1 rounded">{vehicle.id}</code>
+              <div className="pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">ID Kendaraan</span>
+                  <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{vehicle.id}</code>
+                </div>
               </div>
             </CardContent>
           </Card>

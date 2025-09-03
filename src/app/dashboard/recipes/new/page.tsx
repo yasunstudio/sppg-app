@@ -1,4 +1,4 @@
-import { EnhancedPermissionGuard } from '@/components/guards/enhanced-permission-guard'
+import { PermissionGuard } from '@/components/guards/permission-guard'
 import { RecipeCreate } from '../components'
 import { Metadata } from 'next'
 
@@ -12,8 +12,8 @@ export const dynamic = 'force-dynamic'
 
 export default function NewRecipePage() {
   return (
-    <EnhancedPermissionGuard permission="recipes.create">
+    <PermissionGuard permission="recipes.create">
       <RecipeCreate />
-    </EnhancedPermissionGuard>
+    </PermissionGuard>
   )
 }

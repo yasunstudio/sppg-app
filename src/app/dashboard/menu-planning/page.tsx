@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import { PermissionGuard } from '@/components/guards/permission-guard'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -60,9 +61,11 @@ interface MenuRecipe {
 
 export default function MenuPlanningPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <MenuPlanningContent />
-    </Suspense>
+    <PermissionGuard permission="menus.view">
+      <Suspense fallback={<div>Loading...</div>}>
+        <MenuPlanningContent />
+      </Suspense>
+    </PermissionGuard>
   )
 }
 

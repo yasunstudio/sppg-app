@@ -12,12 +12,20 @@ const PROTECTED_ROUTES = {
   '/dashboard/system-config': ['system.config'],
   '/dashboard/audit-logs': ['audit.view'],
   '/dashboard/admin': ['system.config'],
-  '/dashboard/financial': ['finance.view'],
+  '/dashboard/financial': ['financial.view'],
   '/dashboard/inventory': ['inventory.view'],
+  '/dashboard/suppliers': ['suppliers.view'],
+  '/dashboard/purchase-orders': ['purchase_orders.view'],
   '/dashboard/production': ['production.view'],
   '/dashboard/quality': ['quality.check'],
-  '/dashboard/menu-planning': ['menus.view', 'nutrition.read'],
-  '/dashboard/recipes': ['menus.view', 'nutrition.read'],
+  '/dashboard/quality-checks': ['quality.check'],
+  '/dashboard/menu-planning': ['menus.view'],
+  '/dashboard/recipes': ['recipes.view'],
+  '/dashboard/nutrition-consultations': ['nutrition.consult'],
+  '/dashboard/students': ['students.view'],
+  '/dashboard/food-samples': ['quality.check'],
+  '/dashboard/drivers': ['drivers.view'],
+  '/dashboard/waste-management': ['waste.view'],
 } as const
 
 export async function middleware(request: NextRequest) {

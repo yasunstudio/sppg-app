@@ -1,10 +1,29 @@
 import { prisma } from "@/lib/prisma"
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth"
+import { hasPermission } from "@/lib/permissions"
 
 // prisma imported from lib;
 
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
+    if (!hasPermission(userRoles, 'waste.view')) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -123,6 +142,23 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
+    if (!hasPermission(userRoles, 'waste.create')) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json();
     const {
       schoolId,

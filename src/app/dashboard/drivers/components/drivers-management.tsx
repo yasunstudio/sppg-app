@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Users, RefreshCw, Plus, Download } from 'lucide-react'
 
+// Permission Guard
+import { usePermission } from '@/components/guards/permission-guard'
+
 // Modular Components
 import { DriverStatsCards } from './driver-stats/driver-stats-cards'
 import { DriverSearchFilters } from './driver-filters/driver-search-filters'
@@ -21,9 +24,14 @@ import { useDrivers } from './hooks/use-drivers'
 // Types
 import type { FilterState, PaginationState } from './utils/driver-types'
 
-export function DriversManagementV2() {
+export function DriversManagement() {
   const router = useRouter()
   const { isMobile } = useResponsive()
+  
+  // Permission checks
+  const canCreateDriver = usePermission('drivers.create')
+  const canEditDriver = usePermission('drivers.edit')
+  const canDeleteDriver = usePermission('drivers.delete')
   
   // UI State
   const [showStats, setShowStats] = useState(true)
@@ -122,13 +130,15 @@ export function DriversManagementV2() {
             <Download className="mr-2 h-4 w-4" />
             Ekspor
           </Button>
-          <Button 
-            onClick={() => router.push('/dashboard/drivers/create')}
-            className="w-full sm:w-auto"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Tambah Driver
-          </Button>
+          {canCreateDriver && (
+            <Button 
+              onClick={() => router.push('/dashboard/drivers/create')}
+              className="w-full sm:w-auto"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Tambah Driver
+            </Button>
+          )}
         </div>
       </div>
 

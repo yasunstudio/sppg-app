@@ -15,19 +15,19 @@ export const PERMISSIONS = {
   'menus.approve': ['SUPER_ADMIN', 'ADMIN'],
   'nutrition.consult': ['NUTRITIONIST'],
   
-  // Schools & Students
+  // Schools & Students - NUTRITIONIST can view for meal planning context
   'schools.view': ['ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN', 'DISTRIBUTION_MANAGER', 'DRIVER', 'OPERATIONS_SUPERVISOR'],
   'schools.manage': ['ADMIN', 'SUPER_ADMIN'],
-  'students.view': ['ADMIN', 'SCHOOL_ADMIN', 'NUTRITIONIST', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'students.view': ['ADMIN', 'SCHOOL_ADMIN', 'NUTRITIONIST', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'], // NUTRITIONIST kept for meal planning
   'students.manage': ['ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN'],
   
-  // Inventory & Raw Materials
+  // Inventory & Raw Materials - NUTRITIONIST removed from most inventory access
   'inventory.create': ['ADMIN', 'CHEF', 'SUPER_ADMIN'],
-  'inventory.view': ['ADMIN', 'CHEF', 'NUTRITIONIST', 'QUALITY_CONTROL', 'SUPER_ADMIN'],
+  'inventory.view': ['ADMIN', 'CHEF', 'QUALITY_CONTROL', 'SUPER_ADMIN'], // NUTRITIONIST removed
   'inventory.edit': ['ADMIN', 'CHEF', 'SUPER_ADMIN'],
-  'suppliers.view': ['ADMIN', 'CHEF', 'NUTRITIONIST', 'QUALITY_CONTROL', 'SUPER_ADMIN'],
+  'suppliers.view': ['ADMIN', 'CHEF', 'QUALITY_CONTROL', 'SUPER_ADMIN'], // NUTRITIONIST removed
   'suppliers.manage': ['ADMIN', 'SUPER_ADMIN'],
-  'purchase_orders.view': ['ADMIN', 'CHEF', 'NUTRITIONIST', 'QUALITY_CONTROL', 'SUPER_ADMIN'],
+  'purchase_orders.view': ['ADMIN', 'CHEF', 'QUALITY_CONTROL', 'SUPER_ADMIN'], // NUTRITIONIST removed
   'purchase_orders.create': ['ADMIN', 'CHEF', 'SUPER_ADMIN'],
   'purchase_orders.edit': ['ADMIN', 'CHEF', 'SUPER_ADMIN'],
   'purchase_orders.delete': ['ADMIN', 'SUPER_ADMIN'],
@@ -39,22 +39,19 @@ export const PERMISSIONS = {
   'recipes.delete': ['CHEF', 'SUPER_ADMIN'],
   'recipes.manage': ['CHEF', 'NUTRITIONIST', 'SUPER_ADMIN'],
 
-  // Production Management
+  // Production Management - NUTRITIONIST access limited to viewing only
   'production.create': ['CHEF', 'SUPER_ADMIN'],
-  'production.view': ['CHEF', 'NUTRITIONIST', 'QUALITY_CONTROL', 'ADMIN', 'SUPER_ADMIN'],
+  'production.view': ['CHEF', 'QUALITY_CONTROL', 'ADMIN', 'SUPER_ADMIN'], // NUTRITIONIST removed
   'production.manage': ['CHEF', 'SUPER_ADMIN'],
-  'quality.check': ['CHEF', 'NUTRITIONIST', 'QUALITY_CONTROL', 'SUPER_ADMIN'],
+  'quality.check': ['CHEF', 'NUTRITIONIST', 'QUALITY_CONTROL', 'SUPER_ADMIN'], // NUTRITIONIST kept for quality
   'quality.create': ['QUALITY_CONTROL', 'ADMIN', 'SUPER_ADMIN'],
   'quality.edit': ['QUALITY_CONTROL', 'ADMIN', 'SUPER_ADMIN'],
   
-  // Financial Management
-  'finance.view': ['ADMIN', 'SUPER_ADMIN', 'FINANCIAL_ANALYST'],
+    // Financial & Budget - NUTRITIONIST removed from all financial permissions
+  'finance.view': ['ADMIN', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
   'finance.manage': ['ADMIN', 'SUPER_ADMIN'],
-  'budget.create': ['ADMIN', 'SUPER_ADMIN', 'FINANCIAL_ANALYST'],
-  'budget.view': ['ADMIN', 'SUPER_ADMIN', 'FINANCIAL_ANALYST'],
-  'budget.approve': ['SUPER_ADMIN'],
-  'transactions.create': ['ADMIN'],
-  'transactions.view': ['ADMIN', 'SUPER_ADMIN', 'FINANCIAL_ANALYST'],
+  'budget.view': ['ADMIN', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'budget.manage': ['ADMIN', 'SUPER_ADMIN'],
   
   // Delivery & Logistics
   'delivery.manage': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN'],
@@ -68,13 +65,36 @@ export const PERMISSIONS = {
   'distribution_schools.create': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
   'distribution_schools.edit': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
   
+  // Driver Management
+  'drivers.create': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'drivers.view': ['DISTRIBUTION_MANAGER', 'ADMIN', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'drivers.edit': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'drivers.delete': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN'],
+  'drivers.manage': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  
+  // Distribution Management
+  'distributions.create': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'distributions.view': ['DISTRIBUTION_MANAGER', 'ADMIN', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR', 'SCHOOL_ADMIN'],
+  'distributions.edit': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'distributions.delete': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN'],
+  'distributions.manage': ['DISTRIBUTION_MANAGER', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'distributions.track': ['DISTRIBUTION_MANAGER', 'ADMIN', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR', 'SCHOOL_ADMIN'],
+  
+  // Waste Management
+  'waste.create': ['QUALITY_CONTROL', 'CHEF', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'waste.view': ['QUALITY_CONTROL', 'CHEF', 'ADMIN', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR', 'FINANCIAL_ANALYST'],
+  'waste.edit': ['QUALITY_CONTROL', 'CHEF', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'waste.delete': ['QUALITY_CONTROL', 'SUPER_ADMIN'],
+  'waste.manage': ['QUALITY_CONTROL', 'CHEF', 'SUPER_ADMIN', 'OPERATIONS_SUPERVISOR'],
+  'waste.analyze': ['QUALITY_CONTROL', 'ADMIN', 'SUPER_ADMIN', 'FINANCIAL_ANALYST'],
+  
   // Training & Compliance
   'training.manage': ['SUPER_ADMIN', 'ADMIN'],
   'compliance.audit': ['SUPER_ADMIN', 'QUALITY_CONTROLLER'],
   
-  // Reporting & Analytics
-  'reports.view': ['SUPER_ADMIN', 'ADMIN', 'QUALITY_CONTROL', 'DISTRIBUTION_MANAGER', 'FINANCIAL_ANALYST'],
-  'analytics.view': ['SUPER_ADMIN', 'ADMIN', 'FINANCIAL_ANALYST'],
+  // Reporting & Analytics - NUTRITIONIST can view nutrition-related reports
+  'reports.view': ['SUPER_ADMIN', 'ADMIN', 'CHEF', 'NUTRITIONIST', 'QUALITY_CONTROL', 'DISTRIBUTION_MANAGER', 'FINANCIAL_ANALYST'],
+  'analytics.view': ['SUPER_ADMIN', 'ADMIN', 'NUTRITIONIST', 'FINANCIAL_ANALYST'],
   
   // System Administration
   'system.config': ['SUPER_ADMIN', 'ADMIN'],

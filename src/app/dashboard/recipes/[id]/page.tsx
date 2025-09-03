@@ -1,4 +1,4 @@
-import { EnhancedPermissionGuard } from '@/components/guards/enhanced-permission-guard'
+import { PermissionGuard } from '@/components/guards/permission-guard'
 import { RecipeDetails } from '../components'
 import { Metadata } from 'next'
 
@@ -16,8 +16,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
   const { id } = await params
   
   return (
-    <EnhancedPermissionGuard permission="recipes.view">
+    <PermissionGuard permission="recipes.view">
       <RecipeDetails recipeId={id} />
-    </EnhancedPermissionGuard>
+    </PermissionGuard>
   )
 }

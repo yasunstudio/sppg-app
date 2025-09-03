@@ -1,4 +1,5 @@
 import { Metadata } from "next"
+import { PermissionGuard } from '@/components/guards/permission-guard'
 import { SuppliersManagement } from "./components"
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default async function SuppliersPage() {
-  return <SuppliersManagement />
+  return (
+    <PermissionGuard permission="suppliers.view">
+      <SuppliersManagement />
+    </PermissionGuard>
+  )
 }

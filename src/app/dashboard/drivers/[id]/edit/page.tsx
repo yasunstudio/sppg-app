@@ -1,4 +1,5 @@
-import { EditDriver } from '@/components/dashboard/drivers/components/edit-driver'
+import { EditDriver } from '../../components/edit-driver'
+import { PermissionGuard } from "@/components/guards/permission-guard"
 
 interface EditDriverPageProps {
   params: Promise<{
@@ -8,5 +9,9 @@ interface EditDriverPageProps {
 
 export default async function EditDriverPage({ params }: EditDriverPageProps) {
   const { id } = await params
-  return <EditDriver driverId={id} />
+  return (
+    <PermissionGuard permission="drivers.edit" redirectTo="/dashboard/drivers">
+      <EditDriver driverId={id} />
+    </PermissionGuard>
+  )
 }

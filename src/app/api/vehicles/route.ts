@@ -34,14 +34,48 @@ export async function GET(request: NextRequest) {
       prisma.vehicle.count({ where })
     ])
 
+    // Calculate stats
+    const allVehicles = await prisma.vehicle.findMany({
+      where: { deletedAt: null },
+      include: {
+        _count: {
+          select: {
+            distributions: true,
+            deliveries: true
+          }
+        }
+      }
+    })
+
+    const stats = {
+      totalVehicles: allVehicles.length,
+      activeVehicles: allVehicles.filter(v => v.isActive).length,
+      inactiveVehicles: allVehicles.filter(v => !v.isActive).length,
+      totalCapacity: allVehicles.reduce((sum, v) => sum + v.capacity, 0),
+      averageCapacity: allVehicles.length > 0 ? Math.round(allVehicles.reduce((sum, v) => sum + v.capacity, 0) / allVehicles.length) : 0,
+      totalDeliveries: allVehicles.reduce((sum, v) => sum + (v._count?.deliveries || 0), 0),
+      vehicleTypeBreakdown: Object.entries(
+        allVehicles.reduce((acc: Record<string, number>, vehicle) => {
+          acc[vehicle.type] = (acc[vehicle.type] || 0) + 1
+          return acc
+        }, {})
+      ).map(([type, count]) => ({
+        type,
+        count,
+        percentage: parseFloat(((count / allVehicles.length) * 100).toFixed(1))
+      }))
+    }
+
     return NextResponse.json({
       success: true,
       data: vehicles,
+      stats,
       pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total
+        currentPage: Math.floor(offset / limit) + 1,
+        totalPages: Math.ceil(total / limit),
+        totalCount: total,
+        hasMore: offset + limit < total,
+        itemsPerPage: limit
       }
     })
 

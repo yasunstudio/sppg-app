@@ -1,4 +1,5 @@
 import { WasteRecordDetails } from '../components'
+import { PermissionGuard } from "@/components/guards/permission-guard"
 
 interface WasteRecordDetailPageProps {
   params: Promise<{
@@ -8,5 +9,9 @@ interface WasteRecordDetailPageProps {
 
 export default async function WasteRecordDetailPage({ params }: WasteRecordDetailPageProps) {
   const { id } = await params
-  return <WasteRecordDetails recordId={id} />
+  return (
+    <PermissionGuard permission="waste.view" redirectTo="/dashboard">
+      <WasteRecordDetails recordId={id} />
+    </PermissionGuard>
+  )
 }

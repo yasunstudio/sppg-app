@@ -1,5 +1,6 @@
 "use client"
 
+import { PermissionGuard } from '@/components/guards/permission-guard'
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -54,6 +55,14 @@ const getStatusColor = (status: string) => {
 }
 
 export default function ProductionPage() {
+  return (
+    <PermissionGuard permission="production.view">
+      <ProductionContent />
+    </PermissionGuard>
+  )
+}
+
+function ProductionContent() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["production-overview"],
     queryFn: fetchProductionOverview,

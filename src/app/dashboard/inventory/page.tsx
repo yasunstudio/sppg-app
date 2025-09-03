@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { PermissionGuard } from '@/components/guards/permission-guard'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -46,6 +47,14 @@ interface InventoryItem {
 }
 
 export default function InventoryPage() {
+  return (
+    <PermissionGuard permission="inventory.view">
+      <InventoryContent />
+    </PermissionGuard>
+  )
+}
+
+function InventoryContent() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<InventoryStatus | 'ALL'>('ALL')
   const [categoryFilter, setCategoryFilter] = useState<MaterialCategory | 'ALL'>('ALL')

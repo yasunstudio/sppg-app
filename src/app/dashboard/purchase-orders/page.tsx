@@ -1,4 +1,5 @@
 import { Metadata } from "next"
+import { PermissionGuard } from '@/components/guards/permission-guard'
 import { PurchaseOrdersManagement } from "./components/purchase-orders-management"
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default async function PurchaseOrdersPage() {
-  return <PurchaseOrdersManagement />
+  return (
+    <PermissionGuard permission="purchase_orders.view">
+      <PurchaseOrdersManagement />
+    </PermissionGuard>
+  )
 }

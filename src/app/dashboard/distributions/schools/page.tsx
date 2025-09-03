@@ -3,7 +3,7 @@ import { DistributionSchoolsList } from '../components'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
-import { EnhancedPermissionGuard } from '@/components/guards/enhanced-permission-guard'
+import { PermissionGuard } from '@/components/guards/permission-guard'
 
 export const metadata: Metadata = {
   title: 'Distribution Schools | SPPG Dashboard',
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function DistributionSchoolsPage() {
   return (
-    <EnhancedPermissionGuard permission="distribution_schools.view">
+    <PermissionGuard permission="distributions.view">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -22,19 +22,19 @@ export default function DistributionSchoolsPage() {
               Manage school-specific distribution tracking and delivery confirmation
             </p>
           </div>
-          <EnhancedPermissionGuard permission="distribution_schools.create">
+          <PermissionGuard permission="distributions.create">
             <Link href="/dashboard/distributions/schools/new">
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Distribution Schools
               </Button>
             </Link>
-          </EnhancedPermissionGuard>
+          </PermissionGuard>
         </div>
 
         {/* Main Content */}
         <DistributionSchoolsList />
       </div>
-    </EnhancedPermissionGuard>
+    </PermissionGuard>
   )
 }

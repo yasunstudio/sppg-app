@@ -1,4 +1,5 @@
-import { DriverDetails } from '@/components/dashboard/drivers/components/driver-details'
+import { DriverDetails } from '../components/driver-details'
+import { PermissionGuard } from "@/components/guards/permission-guard"
 
 interface DriverDetailPageProps {
   params: Promise<{
@@ -8,5 +9,9 @@ interface DriverDetailPageProps {
 
 export default async function DriverDetailPage({ params }: DriverDetailPageProps) {
   const { id } = await params
-  return <DriverDetails driverId={id} />
+  return (
+    <PermissionGuard permission="drivers.view" redirectTo="/dashboard">
+      <DriverDetails driverId={id} />
+    </PermissionGuard>
+  )
 }

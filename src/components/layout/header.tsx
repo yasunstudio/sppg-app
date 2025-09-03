@@ -115,7 +115,7 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
   }
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/auth/signin" })
+    signOut({ callbackUrl: "/auth/login" })
   }
 
   return (

@@ -1,5 +1,5 @@
 // Driver Management Components
-export { DriversManagementV2 } from './drivers-management-v2'
+export { DriversManagement } from './drivers-management'
 
 // Individual Components (if needed for external use)
 export { DriverStatsCards } from './driver-stats/driver-stats-cards'

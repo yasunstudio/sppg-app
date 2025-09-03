@@ -1,8 +1,27 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+import { hasPermission } from "@/lib/permissions"
 
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
+    if (!hasPermission(userRoles, 'drivers.view')) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      )
+    }
+
     const searchParams = request.nextUrl.searchParams
     const limit = parseInt(searchParams.get("limit") || "20")
     const offset = parseInt(searchParams.get("offset") || "0")
@@ -58,6 +77,23 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
+    if (!hasPermission(userRoles, 'drivers.create')) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
     
     const {

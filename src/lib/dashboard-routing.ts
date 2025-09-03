@@ -37,6 +37,14 @@ export async function getDashboardRoute(userRoles: string[]): Promise<string> {
       return '/dashboard/financial';
     }
     
+    // Kitchen Operations Dashboard - Main dashboard with full sidebar access
+    if (allPermissions.includes('production.view') || 
+        allPermissions.includes('production.create') ||
+        allPermissions.includes('recipes.view') ||
+        allPermissions.includes('inventory.view')) {
+      return '/dashboard';
+    }
+    
     // Default Basic Dashboard - Limited access
     return '/dashboard/basic';
     
@@ -60,6 +68,11 @@ export function getDashboardRouteSync(userRoles: string[]): string {
   // Financial roles - Financial dashboard
   if (userRoles.some(role => ['FINANCIAL_ANALYST'].includes(role))) {
     return '/dashboard/financial';
+  }
+  
+  // Kitchen operations roles - Main dashboard (with full sidebar access)
+  if (userRoles.some(role => ['CHEF', 'NUTRITIONIST'].includes(role))) {
+    return '/dashboard';
   }
   
   // All other roles - Basic dashboard

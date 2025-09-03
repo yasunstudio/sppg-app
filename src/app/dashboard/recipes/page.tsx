@@ -1,4 +1,4 @@
-import { EnhancedPermissionGuard } from '@/components/guards/enhanced-permission-guard'
+import { PermissionGuard } from '@/components/guards/permission-guard'
 import { RecipesList } from './components'
 import { Metadata } from 'next'
 
@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function RecipesPage() {
   return (
-    <EnhancedPermissionGuard permission="recipes.view">
+    <PermissionGuard permission="recipes.view">
       <RecipesList />
-    </EnhancedPermissionGuard>
+    </PermissionGuard>
   )
 }

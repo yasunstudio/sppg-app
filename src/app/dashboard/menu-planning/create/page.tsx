@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { EnhancedPermissionGuard } from '@/components/guards/enhanced-permission-guard'
+import { PermissionGuard } from '@/components/guards/permission-guard'
 import { MenuCreateManagement } from './components'
 
 export const metadata: Metadata = {
@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 
 export default function MenuCreatePage() {
   return (
-    <EnhancedPermissionGuard permission="menu.create">
+    <PermissionGuard permission="menus.create">
       <div className="space-y-6">
         <MenuCreateManagement />
       </div>
-    </EnhancedPermissionGuard>
+    </PermissionGuard>
   )
 }

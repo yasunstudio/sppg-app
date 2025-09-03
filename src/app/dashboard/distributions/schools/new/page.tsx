@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { DistributionSchoolForm } from '../../components'
-import { EnhancedPermissionGuard } from '@/components/guards/enhanced-permission-guard'
+import { PermissionGuard } from '@/components/guards/permission-guard'
 
 export const metadata: Metadata = {
   title: 'Create Distribution Schools | SPPG Dashboard',
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function CreateDistributionSchoolsPage() {
   return (
-    <EnhancedPermissionGuard permission="distribution_schools.create">
+    <PermissionGuard permission="distributions.create">
       <DistributionSchoolForm />
-    </EnhancedPermissionGuard>
+    </PermissionGuard>
   )
 }

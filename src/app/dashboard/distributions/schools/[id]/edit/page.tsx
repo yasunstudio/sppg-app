@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { DistributionSchoolEdit } from '../../../components'
-import { EnhancedPermissionGuard } from '@/components/guards/enhanced-permission-guard'
+import { PermissionGuard } from '@/components/guards/permission-guard'
 
 export const metadata: Metadata = {
   title: 'Edit Distribution School | SPPG Dashboard',
@@ -16,8 +16,8 @@ interface PageProps {
 export default async function DistributionSchoolEditPage({ params }: PageProps) {
   const { id } = await params
   return (
-    <EnhancedPermissionGuard permission="distribution_schools.edit">
+    <PermissionGuard permission="distributions.edit">
       <DistributionSchoolEdit id={id} />
-    </EnhancedPermissionGuard>
+    </PermissionGuard>
   )
 }

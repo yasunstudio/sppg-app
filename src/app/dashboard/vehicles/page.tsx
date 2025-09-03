@@ -1,5 +1,10 @@
-import { VehiclesManagement } from "./components"
+import { VehicleManagement } from "./components/vehicle-management"
+import { PermissionGuard } from "@/components/guards/permission-guard"
 
 export default function VehiclesPage() {
-  return <VehiclesManagement />
+  return (
+    <PermissionGuard permission="production.view" redirectTo="/dashboard">
+      <VehicleManagement />
+    </PermissionGuard>
+  )
 }

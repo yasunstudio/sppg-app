@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { EnhancedPermissionGuard } from '@/components/guards/enhanced-permission-guard'
+import { PermissionGuard } from '@/components/guards/permission-guard'
 import { DistributionsOverview } from './components/distributions-overview'
 
 export const metadata: Metadata = {
@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 
 export default function DistributionsOverviewPage() {
   return (
-    <EnhancedPermissionGuard permission="distribution_schools.view">
+    <PermissionGuard permission="distributions.view">
       <div className="space-y-6">
         <DistributionsOverview />
       </div>
-    </EnhancedPermissionGuard>
+    </PermissionGuard>
   )
 }

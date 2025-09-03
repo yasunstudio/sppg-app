@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Trash2, RefreshCw, Plus, Download } from 'lucide-react'
 
+// Permission Guard
+import { usePermission } from '@/components/guards/permission-guard'
+
 // Modular Components
 import { WasteStatsCards } from './waste-stats/waste-stats-cards'
 import { WasteSearchFilters } from './waste-filters/waste-search-filters'
@@ -24,6 +27,12 @@ import type { FilterState, PaginationState } from './utils/waste-types'
 export function WasteRecordsManagement() {
   const router = useRouter()
   const { isMobile } = useResponsive()
+  
+  // Permission checks
+  const canCreateWaste = usePermission('waste.create')
+  const canEditWaste = usePermission('waste.edit')
+  const canDeleteWaste = usePermission('waste.delete')
+  const canAnalyzeWaste = usePermission('waste.analyze')
   
   // UI State
   const [showStats, setShowStats] = useState(true)
@@ -112,13 +121,15 @@ export function WasteRecordsManagement() {
             <Download className="mr-2 h-4 w-4" />
             Ekspor
           </Button>
-          <Button 
-            onClick={() => router.push('/dashboard/waste-management/create')}
-            className="w-full sm:w-auto"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Tambah Catatan
-          </Button>
+          {canCreateWaste && (
+            <Button 
+              onClick={() => router.push('/dashboard/waste-management/create')}
+              className="w-full sm:w-auto"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Tambah Catatan
+            </Button>
+          )}
         </div>
       </div>
 

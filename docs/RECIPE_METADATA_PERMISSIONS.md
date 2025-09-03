@@ -56,35 +56,35 @@ Ditambahkan permissions khusus untuk recipe management:
 'recipes.manage': ['CHEF', 'NUTRITIONIST', 'SUPER_ADMIN'],
 ```
 
-### 3. Enhanced Permission Guards
-Setiap halaman recipe dilindungi dengan `EnhancedPermissionGuard`:
+### 3. Permission Guards
+Setiap halaman recipe dilindungi dengan `PermissionGuard`:
 
 #### Halaman Utama
 ```typescript
-<EnhancedPermissionGuard permission="recipes.view">
+<PermissionGuard permission="recipes.view">
   <RecipesList />
-</EnhancedPermissionGuard>
+</PermissionGuard>
 ```
 
 #### Halaman Create
 ```typescript
-<EnhancedPermissionGuard permission="recipes.create">
+<PermissionGuard permission="recipes.create">
   <RecipeCreate />
-</EnhancedPermissionGuard>
+</PermissionGuard>
 ```
 
 #### Halaman Detail
 ```typescript
-<EnhancedPermissionGuard permission="recipes.view">
-  <RecipeDetails recipeId={id} />
-</EnhancedPermissionGuard>
+<PermissionGuard permission="recipes.view">
+  <RecipeDetails />
+</PermissionGuard>
 ```
 
 #### Halaman Edit
 ```typescript
-<EnhancedPermissionGuard permission="recipes.edit">
-  <RecipeEdit recipeId={id} />
-</EnhancedPermissionGuard>
+<PermissionGuard permission="recipes.edit">
+  <RecipeEdit />
+</PermissionGuard>
 ```
 
 ### 4. Conditional UI Elements

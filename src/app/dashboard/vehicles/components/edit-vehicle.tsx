@@ -16,13 +16,9 @@ interface Vehicle {
   id: string
   plateNumber: string
   type: string
-  model: string
-  year: number
   capacity: number
-  fuelType: string
-  status: 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE'
-  lastMaintenanceDate?: string
-  nextMaintenanceDate?: string
+  isActive: boolean
+  lastService?: string
   notes?: string
   createdAt: string
   updatedAt: string
@@ -40,13 +36,9 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
   const [formData, setFormData] = useState({
     plateNumber: '',
     type: '',
-    model: '',
-    year: new Date().getFullYear(),
     capacity: 0,
-    fuelType: 'GASOLINE',
-    status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE',
-    lastMaintenanceDate: '',
-    nextMaintenanceDate: '',
+    isActive: true,
+    lastService: '',
     notes: ''
   })
 
@@ -67,30 +59,24 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
           setFormData({
             plateNumber: vehicleData.plateNumber || '',
             type: vehicleData.type || '',
-            model: vehicleData.model || '',
-            year: vehicleData.year || new Date().getFullYear(),
             capacity: vehicleData.capacity || 0,
-            fuelType: vehicleData.fuelType || 'GASOLINE',
-            status: vehicleData.status || 'ACTIVE',
-            lastMaintenanceDate: vehicleData.lastMaintenanceDate 
-              ? new Date(vehicleData.lastMaintenanceDate).toISOString().split('T')[0] 
-              : '',
-            nextMaintenanceDate: vehicleData.nextMaintenanceDate 
-              ? new Date(vehicleData.nextMaintenanceDate).toISOString().split('T')[0] 
+            isActive: vehicleData.isActive ?? true,
+            lastService: vehicleData.lastService 
+              ? new Date(vehicleData.lastService).toISOString().split('T')[0] 
               : '',
             notes: vehicleData.notes || ''
           })
         } else {
-          toast.error('Vehicle not found')
+          toast.error('Kendaraan tidak ditemukan')
           router.push('/dashboard/vehicles')
         }
       } else {
-        toast.error('Failed to fetch vehicle details')
+        toast.error('Gagal memuat detail kendaraan')
         router.push('/dashboard/vehicles')
       }
     } catch (error) {
       console.error('Error fetching vehicle:', error)
-      toast.error('Failed to fetch vehicle details')
+      toast.error('Gagal memuat detail kendaraan')
       router.push('/dashboard/vehicles')
     } finally {
       setLoading(false)
@@ -101,17 +87,24 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
     e.preventDefault()
     
     // Validation
-    if (!formData.plateNumber || !formData.type || !formData.model) {
-      toast.error('Please fill in all required fields')
+    if (!formData.plateNumber || !formData.type) {
+      toast.error('Mohon isi semua field yang wajib')
+      return
+    }
+
+    if (formData.capacity <= 0) {
+      toast.error('Kapasitas harus lebih dari 0 kg')
       return
     }
 
     setSaving(true)
     try {
       const submitData = {
-        ...formData,
-        lastMaintenanceDate: formData.lastMaintenanceDate || null,
-        nextMaintenanceDate: formData.nextMaintenanceDate || null,
+        plateNumber: formData.plateNumber.toUpperCase(),
+        type: formData.type,
+        capacity: formData.capacity,
+        isActive: formData.isActive,
+        lastService: formData.lastService || null,
         notes: formData.notes || null
       }
 
@@ -126,47 +119,42 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
       const result = await response.json()
 
       if (response.ok && result.success) {
-        toast.success('Vehicle updated successfully')
+        toast.success('Kendaraan berhasil diperbarui')
         router.push(`/dashboard/vehicles/${vehicleId}`)
       } else {
-        toast.error(result.error || 'Failed to update vehicle')
+        toast.error(result.error || 'Gagal memperbarui kendaraan')
       }
     } catch (error) {
       console.error('Error updating vehicle:', error)
-      toast.error('Failed to update vehicle')
+      toast.error('Gagal memperbarui kendaraan')
     } finally {
       setSaving(false)
     }
   }
 
   const vehicleTypes = [
-    { value: 'TRUCK', label: 'Truck' },
-    { value: 'VAN', label: 'Van' },
-    { value: 'PICKUP', label: 'Pickup' },
-    { value: 'CAR', label: 'Car' },
-    { value: 'MOTORCYCLE', label: 'Motorcycle' }
+    { value: 'Pickup Truck', label: 'Pickup Truck' },
+    { value: 'Mini Truck', label: 'Mini Truck' },
+    { value: 'Van', label: 'Van' },
+    { value: 'Motorcycle', label: 'Motor' },
+    { value: 'Sedan', label: 'Sedan' },
+    { value: 'SUV', label: 'SUV' }
   ]
 
-  const fuelTypes = [
-    { value: 'GASOLINE', label: 'Gasoline' },
-    { value: 'DIESEL', label: 'Diesel' },
-    { value: 'ELECTRIC', label: 'Electric' },
-    { value: 'HYBRID', label: 'Hybrid' }
-  ]
-
-  const statusOptions = [
-    { value: 'ACTIVE', label: 'Active' },
-    { value: 'INACTIVE', label: 'Inactive' },
-    { value: 'MAINTENANCE', label: 'Under Maintenance' }
+  const commonCapacities = [
+    { value: 50, label: 'Kecil (50 kg)' },
+    { value: 200, label: 'Sedang (200 kg)' },
+    { value: 300, label: 'Besar (300 kg)' },
+    { value: 500, label: 'Sangat Besar (500 kg)' },
+    { value: 1000, label: 'Heavy Duty (1000+ kg)' }
   ]
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="h-64 bg-gray-200 rounded"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+      <div className="flex items-center justify-center min-h-[200px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Memuat detail kendaraan...</p>
         </div>
       </div>
     )
@@ -174,14 +162,8 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
 
   if (!vehicle) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold mb-2">Vehicle Not Found</h2>
-        <p className="text-muted-foreground mb-4">
-          The vehicle you're trying to edit doesn't exist or has been removed.
-        </p>
-        <Link href="/dashboard/vehicles">
-          <Button>Back to Vehicles</Button>
-        </Link>
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">Kendaraan tidak ditemukan</p>
       </div>
     )
   }
@@ -193,12 +175,12 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
           <Link href={`/dashboard/vehicles/${vehicleId}`}>
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Vehicle
+              Kembali ke Detail
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">Edit Vehicle</h1>
-            <p className="text-muted-foreground">Update vehicle information and details</p>
+            <h1 className="text-2xl font-bold">Edit Kendaraan</h1>
+            <p className="text-muted-foreground">Perbarui informasi dan detail kendaraan</p>
           </div>
         </div>
       </div>
@@ -208,29 +190,29 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Vehicle identification and basic details</CardDescription>
+              <CardTitle>Informasi Dasar</CardTitle>
+              <CardDescription>Identifikasi kendaraan dan detail dasar</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="plateNumber">Plate Number *</Label>
+                <Label htmlFor="plateNumber">Nomor Plat *</Label>
                 <Input
                   id="plateNumber"
                   value={formData.plateNumber}
                   onChange={(e) => setFormData({ ...formData, plateNumber: e.target.value.toUpperCase() })}
-                  placeholder="e.g., B 1234 ABC"
+                  placeholder="contoh: B 1234 ABC"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="type">Vehicle Type *</Label>
+                <Label htmlFor="type">Jenis Kendaraan *</Label>
                 <Select
                   value={formData.type}
                   onValueChange={(value) => setFormData({ ...formData, type: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select vehicle type" />
+                    <SelectValue placeholder="Pilih jenis kendaraan" />
                   </SelectTrigger>
                   <SelectContent>
                     {vehicleTypes.map((type) => (
@@ -243,37 +225,29 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="model">Model *</Label>
-                <Input
-                  id="model"
-                  value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  placeholder="e.g., Toyota Hiace"
-                  required
-                />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
+                <Label htmlFor="capacity">Kapasitas (kg) *</Label>
                 <div className="space-y-2">
-                  <Label htmlFor="year">Year</Label>
+                  <Select
+                    value={formData.capacity.toString()}
+                    onValueChange={(value) => setFormData({ ...formData, capacity: parseInt(value) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih kapasitas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {commonCapacities.map((cap) => (
+                        <SelectItem key={cap.value} value={cap.value.toString()}>
+                          {cap.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Input
-                    id="year"
                     type="number"
-                    min="1990"
-                    max="2030"
-                    value={formData.year}
-                    onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="capacity">Capacity (kg)</Label>
-                  <Input
-                    id="capacity"
-                    type="number"
-                    min="0"
-                    value={formData.capacity}
+                    min="1"
+                    value={formData.capacity || ''}
                     onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 0 })}
+                    placeholder="Atau masukkan kapasitas custom"
                   />
                 </div>
               </div>
@@ -283,68 +257,35 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
           {/* Operational Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Operational Information</CardTitle>
-              <CardDescription>Fuel type, status, and operational details</CardDescription>
+              <CardTitle>Informasi Operasional</CardTitle>
+              <CardDescription>Status dan detail operasional</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="fuelType">Fuel Type</Label>
+                <Label htmlFor="isActive">Status Kendaraan</Label>
                 <Select
-                  value={formData.fuelType}
-                  onValueChange={(value) => setFormData({ ...formData, fuelType: value })}
+                  value={formData.isActive.toString()}
+                  onValueChange={(value) => setFormData({ ...formData, isActive: value === 'true' })}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {fuelTypes.map((fuel) => (
-                      <SelectItem key={fuel.value} value={fuel.value}>
-                        {fuel.label}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="true">Aktif</SelectItem>
+                    <SelectItem value="false">Tidak Aktif</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value: 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE') => 
-                    setFormData({ ...formData, status: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusOptions.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="lastMaintenanceDate">Last Maintenance Date</Label>
+                <Label htmlFor="lastService">Tanggal Service Terakhir</Label>
                 <Input
-                  id="lastMaintenanceDate"
+                  id="lastService"
                   type="date"
-                  value={formData.lastMaintenanceDate}
-                  onChange={(e) => setFormData({ ...formData, lastMaintenanceDate: e.target.value })}
+                  value={formData.lastService}
+                  onChange={(e) => setFormData({ ...formData, lastService: e.target.value })}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="nextMaintenanceDate">Next Maintenance Date</Label>
-                <Input
-                  id="nextMaintenanceDate"
-                  type="date"
-                  value={formData.nextMaintenanceDate}
-                  onChange={(e) => setFormData({ ...formData, nextMaintenanceDate: e.target.value })}
-                />
+                <p className="text-xs text-muted-foreground">Kosongkan jika belum pernah service</p>
               </div>
             </CardContent>
           </Card>
@@ -353,17 +294,17 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
         {/* Notes */}
         <Card>
           <CardHeader>
-            <CardTitle>Additional Notes</CardTitle>
-            <CardDescription>Any additional information or notes about this vehicle</CardDescription>
+            <CardTitle>Catatan Tambahan</CardTitle>
+            <CardDescription>Informasi tambahan tentang kendaraan ini</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">Catatan</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Enter any additional notes or comments about this vehicle..."
+                placeholder="Masukkan catatan atau komentar tambahan tentang kendaraan ini..."
                 rows={4}
               />
             </div>
@@ -377,11 +318,11 @@ export function EditVehicle({ vehicleId }: EditVehicleProps) {
             variant="outline" 
             onClick={() => router.push(`/dashboard/vehicles/${vehicleId}`)}
           >
-            Cancel
+            Batal
           </Button>
           <Button type="submit" disabled={saving}>
             <Save className="h-4 w-4 mr-2" />
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
           </Button>
         </div>
       </form>

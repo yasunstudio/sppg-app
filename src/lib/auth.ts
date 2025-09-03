@@ -51,6 +51,7 @@ const config: NextAuthConfig = {
   },
   pages: {
     signIn: "/auth/login",
+    signOut: "/auth/login",
   },
   providers: [
     CredentialsProvider({

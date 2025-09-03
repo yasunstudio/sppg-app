@@ -52,12 +52,13 @@ export async function seedRoles() {
       description: 'Ahli gizi SPPG Purwakarta untuk konsultasi dan perencanaan menu',
       permissions: [
         'menus.create', 'menus.view', 'menus.edit',
+        'recipes.create', 'recipes.view', 'recipes.edit',
         'nutrition.consult',
         'students.view',
-        'inventory.view',
-        'production.view',
         'quality.check',
-        'reports.view'
+        'reports.view',
+        'analytics.view',
+        'feedback.view'
       ]
     },
     {
@@ -66,7 +67,10 @@ export async function seedRoles() {
       description: 'Kepala koki produksi makanan SPPG Purwakarta',
       permissions: [
         'menus.create', 'menus.view', 'menus.edit',
+        'recipes.create', 'recipes.view', 'recipes.edit', 'recipes.delete', 'recipes.manage',
         'inventory.create', 'inventory.view', 'inventory.edit',
+        'suppliers.view',
+        'purchase_orders.view', 'purchase_orders.create', 'purchase_orders.edit',
         'production.create', 'production.view', 'production.manage',
         'quality.check',
         'reports.view'

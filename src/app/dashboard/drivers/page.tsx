@@ -1,5 +1,10 @@
-import { DriversManagementV2 } from "./components"
+import { DriversManagement } from "./components"
+import { PermissionGuard } from "@/components/guards/permission-guard"
 
 export default function DriversPage() {
-  return <DriversManagementV2 />
+  return (
+    <PermissionGuard permission="drivers.view" redirectTo="/dashboard">
+      <DriversManagement />
+    </PermissionGuard>
+  )
 }

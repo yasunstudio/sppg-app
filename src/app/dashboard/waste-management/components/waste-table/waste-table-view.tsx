@@ -26,6 +26,7 @@ import {
   Trash2,
   Plus
 } from 'lucide-react'
+import { usePermission } from '@/components/guards/permission-guard'
 import type { WasteRecord } from '../utils/waste-types'
 import { getWasteTypeColor, getSourceColor, formatWasteType, formatSource, formatDateShort } from '../utils/waste-formatters'
 
@@ -36,6 +37,12 @@ interface WasteTableViewProps {
 
 export function WasteTableView({ wasteRecords, isFiltering }: WasteTableViewProps) {
   const router = useRouter()
+  
+  // Permission checks
+  const canViewWaste = usePermission('waste.view')
+  const canEditWaste = usePermission('waste.edit')
+  const canDeleteWaste = usePermission('waste.delete')
+  const canCreateWaste = usePermission('waste.create')
 
   return (
     <div className={`rounded-md border transition-opacity duration-200 ${isFiltering ? 'opacity-50' : 'opacity-100'}`}>
@@ -101,26 +108,34 @@ export function WasteTableView({ wasteRecords, isFiltering }: WasteTableViewProp
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => router.push(`/dashboard/waste-management/${record.id}`)}
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        Lihat Detail
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => router.push(`/dashboard/waste-management/${record.id}/edit`)}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit Catatan
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => {/* TODO: Delete functionality */}}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Hapus Catatan
-                      </DropdownMenuItem>
+                      {canViewWaste && (
+                        <DropdownMenuItem
+                          onClick={() => router.push(`/dashboard/waste-management/${record.id}`)}
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          Lihat Detail
+                        </DropdownMenuItem>
+                      )}
+                      {canEditWaste && (
+                        <DropdownMenuItem
+                          onClick={() => router.push(`/dashboard/waste-management/${record.id}/edit`)}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Catatan
+                        </DropdownMenuItem>
+                      )}
+                      {canDeleteWaste && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => {/* TODO: Delete functionality */}}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Hapus Catatan
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -132,13 +147,15 @@ export function WasteTableView({ wasteRecords, isFiltering }: WasteTableViewProp
                 <div className="flex flex-col items-center space-y-2">
                   <Trash2 className="h-12 w-12 text-muted-foreground" />
                   <p className="text-muted-foreground">Tidak ada catatan limbah ditemukan</p>
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push('/dashboard/waste-management/create')}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Tambah Catatan Pertama
-                  </Button>
+                  {canCreateWaste && (
+                    <Button
+                      variant="outline"
+                      onClick={() => router.push('/dashboard/waste-management/create')}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Tambah Catatan Pertama
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

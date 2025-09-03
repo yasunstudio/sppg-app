@@ -4,7 +4,9 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { hasPermission } from "@/lib/permissions"
 import {
   LayoutGrid,
   Users,
@@ -58,6 +60,115 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen = false, onMobileClose, ...props }: SidebarProps) {
   const pathname = usePathname()
+  const { data: session } = useSession()
+  
+  // Get user roles for permission checking
+  const userRoles = session?.user?.roles?.map((ur: any) => ur.role.name) || []
+  
+  // Helper function to check if user has permission
+  const checkPermission = (permissions: Permission[] | null): boolean => {
+    if (!permissions || permissions.length === 0) return true // No permission required
+    return permissions.some(permission => hasPermission(userRoles, permission))
+  }
+  
+  // Helper function to check if user has access to any submenu items
+  const hasAnySubMenuAccess = (subMenus: any[]): boolean => {
+    return subMenus.some(subItem => checkPermission(getMenuPermissions(subItem.href)))
+  }
+  
+  // Define permission requirements for each menu item
+  const getMenuPermissions = (href: string): Permission[] | null => {
+    switch (href) {
+      case '/dashboard':
+        return ['system.config']; // Only for admin dashboards
+      case '/dashboard/basic':
+        return null; // Available for all authenticated users
+      case '/dashboard/schools':
+        return ['schools.view'];
+      case '/dashboard/students':
+        return ['students.view'];
+      case '/dashboard/classes':
+        return ['students.view']; // Using existing permission since classes don't have separate permission
+      case '/dashboard/vehicles':
+        return ['production.view']; // Using production permission for logistics management
+      case '/dashboard/drivers':
+        return ['drivers.view']; // Updated to use new driver permission
+      case '/dashboard/raw-materials':
+        return ['inventory.view'];
+      case '/dashboard/suppliers':
+        return ['suppliers.view'];
+      case '/dashboard/purchase-orders':
+        return ['purchase_orders.view'];
+      case '/dashboard/purchase-orders/analytics':
+        return ['purchase_orders.view'];
+      case '/dashboard/inventory':
+        return ['inventory.view'];
+      case '/dashboard/distribution':
+        return ['production.view'];
+      case '/dashboard/distributions':
+        return ['distributions.view']; // Updated to use new distribution permission
+      case '/dashboard/distributions/schools':
+        return ['distributions.view']; // Updated to use new distribution permission
+      case '/dashboard/distributions/tracking':
+        return ['distributions.track']; // Updated to use new distribution permission
+      case '/dashboard/distributions/routes':
+        return ['distributions.view']; // Updated to use new distribution permission
+      case '/dashboard/delivery-tracking':
+        return ['production.view'];
+      case '/dashboard/production':
+        return ['production.view'];
+      case '/dashboard/production-plans':
+        return ['production.view'];
+      case '/dashboard/resource-usage':
+        return ['production.view'];
+      case '/dashboard/production/execution':
+        return ['production.view'];
+      case '/dashboard/production/quality':
+        return ['quality.check'];
+      case '/dashboard/quality-checks':
+        return ['quality.check'];
+      case '/dashboard/quality-checkpoints':
+        return ['quality.check'];
+      case '/dashboard/quality':
+        return ['quality.check'];
+      case '/dashboard/recipes':
+        return ['recipes.view']; // Updated to use new recipe permission
+      case '/dashboard/menu-planning':
+        return ['menus.view']; // Updated to use new menu permission
+      case '/dashboard/menu-planning/create':
+        return ['menus.create'];
+      case '/dashboard/menu-planning/planning':
+        return ['menus.view'];
+      case '/dashboard/recipes/new':
+        return ['recipes.create'];
+      case '/dashboard/feedback':
+        return ['feedback.view'];
+      case '/dashboard/nutrition-consultations':
+        return ['nutrition.consult'];
+      case '/dashboard/food-samples':
+        return ['quality.check'];
+      case '/dashboard/quality-standards':
+        return ['quality.check'];
+      case '/dashboard/waste-management':
+        return ['waste.view']; // Updated to use new waste permission
+      case '/dashboard/financial':
+        return ['finance.view'];
+      case '/dashboard/users':
+        return ['users.view'];
+      case '/dashboard/roles':
+        return ['system.config'];
+      case '/dashboard/user-roles':
+        return ['users.edit', 'system.config'];
+      case '/dashboard/system-config':
+        return ['system.config'];
+      case '/dashboard/audit-logs':
+        return ['audit.view'];
+      case '/dashboard/admin':
+        return ['system.config'];
+      default:
+        return null;
+    }
+  };
   
   // Helper function to handle link clicks on mobile
   const handleMobileLinkClick = () => {
@@ -66,26 +177,37 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
     }
   }
   
-  const [productionExpanded, setProductionExpanded] = useState(
-    pathname.startsWith("/dashboard/production") || 
-    pathname.startsWith("/dashboard/production-plans") || 
-    pathname.startsWith("/dashboard/resource-usage")
-  )
-  const [menuPlanningExpanded, setMenuPlanningExpanded] = useState(pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes"))
-  const [distributionExpanded, setDistributionExpanded] = useState(
-    pathname.startsWith("/dashboard/distributions") || 
-    pathname.startsWith("/dashboard/distribution")
-  )
-  const [monitoringExpanded, setMonitoringExpanded] = useState(pathname.startsWith("/dashboard/monitoring"))
-  const [qualityExpanded, setQualityExpanded] = useState(
-    pathname.startsWith("/dashboard/quality") || 
-    pathname.startsWith("/dashboard/quality-checks") ||
-    pathname.startsWith("/dashboard/food-samples") || 
-    pathname.startsWith("/dashboard/nutrition-consultations")
-  )
-  const [purchaseOrdersExpanded, setPurchaseOrdersExpanded] = useState(
-    pathname.startsWith("/dashboard/purchase-orders")
-  )
+  const [productionExpanded, setProductionExpanded] = useState(false)
+  const [menuPlanningExpanded, setMenuPlanningExpanded] = useState(false)
+  const [distributionExpanded, setDistributionExpanded] = useState(false)
+  const [monitoringExpanded, setMonitoringExpanded] = useState(false)
+  const [qualityExpanded, setQualityExpanded] = useState(false)
+  const [purchaseOrdersExpanded, setPurchaseOrdersExpanded] = useState(false)
+
+  // Set initial expanded state based on current pathname
+  useEffect(() => {
+    setProductionExpanded(
+      pathname.startsWith("/dashboard/production") || 
+      pathname.startsWith("/dashboard/production-plans") || 
+      pathname.startsWith("/dashboard/resource-usage")
+    )
+    setMenuPlanningExpanded(
+      pathname.startsWith("/dashboard/menu-planning") || 
+      pathname.startsWith("/dashboard/recipes")
+    )
+    setDistributionExpanded(
+      pathname.startsWith("/dashboard/distributions") || 
+      pathname.startsWith("/dashboard/distribution")
+    )
+    setMonitoringExpanded(pathname.startsWith("/dashboard/monitoring"))
+    setQualityExpanded(
+      pathname.startsWith("/dashboard/quality") || 
+      pathname.startsWith("/dashboard/quality-checks") ||
+      pathname.startsWith("/dashboard/food-samples") || 
+      pathname.startsWith("/dashboard/nutrition-consultations")
+    )
+    setPurchaseOrdersExpanded(pathname.startsWith("/dashboard/purchase-orders"))
+  }, [pathname])
 
   const menuPlanningSubMenus = [
     {
@@ -493,91 +615,12 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
           </div>
         )}
         {items.map((item) => {
-          // Define permission requirements for each menu item
-          const getMenuPermissions = (href: string): Permission[] | null => {
-            switch (href) {
-              case '/dashboard':
-                return ['system.config']; // Only for admin dashboards
-              case '/dashboard/basic':
-                return null; // Available for all authenticated users
-              case '/dashboard/schools':
-                return ['schools.view'];
-              case '/dashboard/students':
-                return ['students.view'];
-              case '/dashboard/classes':
-                return ['students.view']; // Using existing permission since classes don't have separate permission
-              case '/dashboard/vehicles':
-                return ['production.view']; // Using production permission for logistics management
-              case '/dashboard/drivers':
-                return ['production.view']; // Using production permission for driver management
-              case '/dashboard/raw-materials':
-                return ['inventory.view'];
-              case '/dashboard/suppliers':
-                return ['suppliers.view'];
-              case '/dashboard/purchase-orders':
-                return ['purchase_orders.view'];
-              case '/dashboard/purchase-orders/analytics':
-                return ['purchase_orders.view'];
-              case '/dashboard/inventory':
-                return ['inventory.view'];
-              case '/dashboard/distribution':
-                return ['production.view'];
-              case '/dashboard/distributions':
-                return ['distribution_schools.view'];
-              case '/dashboard/distributions/schools':
-                return ['distribution_schools.view'];
-              case '/dashboard/distributions/tracking':
-                return ['delivery.view'];
-              case '/dashboard/distributions/routes':
-                return ['logistics.plan'];
-              case '/dashboard/delivery-tracking':
-                return ['production.view'];
-              case '/dashboard/production':
-                return ['production.view'];
-              case '/dashboard/production-plans':
-                return ['production.view'];
-              case '/dashboard/resource-usage':
-                return ['production.view'];
-              case '/dashboard/production/execution':
-                return ['production.view'];
-              case '/dashboard/production/quality':
-                return ['quality.check'];
-              case '/dashboard/quality-checks':
-                return ['quality.check'];
-              case '/dashboard/quality-checkpoints':
-                return ['quality.check'];
-              case '/dashboard/quality':
-                return ['quality.check'];
-              case '/dashboard/feedback':
-                return ['feedback.view'];
-              case '/dashboard/nutrition-consultations':
-                return ['nutrition.consult'];
-              case '/dashboard/food-samples':
-                return ['quality.check'];
-              case '/dashboard/quality-standards':
-                return ['quality.check'];
-              case '/dashboard/waste-management':
-                return ['production.view'];
-              case '/dashboard/financial':
-                return ['finance.view'];
-              case '/dashboard/users':
-                return ['users.view'];
-              case '/dashboard/roles':
-                return ['system.config'];
-              case '/dashboard/user-roles':
-                return ['users.edit', 'system.config'];
-              case '/dashboard/system-config':
-                return ['system.config'];
-              case '/dashboard/audit-logs':
-                return ['audit.view'];
-              case '/dashboard/admin':
-                return ['system.config'];
-              default:
-                return null;
-            }
-          };
-
           const requiredPermissions = getMenuPermissions(item.href);
+          
+          // Skip rendering this menu item if user doesn't have required permissions
+          if (!checkPermission(requiredPermissions)) {
+            return null;
+          }
 
           return (
             <Link
@@ -638,6 +681,11 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
     subMenus: any[],
     pathMatch: string
   ) => {
+    // Check if user has access to any submenu items
+    if (!hasAnySubMenuAccess(subMenus)) {
+      return null; // Don't render the section if user has no access to any submenu
+    }
+    
     // When collapsed, render as dropdown
     if (isCollapsed) {
       return (
@@ -677,24 +725,33 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 {title}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {subMenus.map((subItem) => (
-                <DropdownMenuItem key={subItem.name} asChild>
-                  <Link
-                    href={subItem.href}
-                    onClick={handleMobileLinkClick}
-                    className={cn(
-                      "flex items-center gap-3 w-full px-3 py-2 cursor-pointer",
-                      subItem.current && "bg-accent text-accent-foreground"
-                    )}
-                  >
-                    <subItem.icon className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">{subItem.name}</span>
-                    {subItem.current && (
-                      <div className="ml-auto w-1.5 h-1.5 bg-primary rounded-full" />
-                    )}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
+              {subMenus.map((subItem) => {
+                const subMenuPermissions = getMenuPermissions(subItem.href);
+                
+                // Skip rendering this submenu item if user doesn't have required permissions
+                if (!checkPermission(subMenuPermissions)) {
+                  return null;
+                }
+                
+                return (
+                  <DropdownMenuItem key={subItem.name} asChild>
+                    <Link
+                      href={subItem.href}
+                      onClick={handleMobileLinkClick}
+                      className={cn(
+                        "flex items-center gap-3 w-full px-3 py-2 cursor-pointer",
+                        subItem.current && "bg-accent text-accent-foreground"
+                      )}
+                    >
+                      <subItem.icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{subItem.name}</span>
+                      {subItem.current && (
+                        <div className="ml-auto w-1.5 h-1.5 bg-primary rounded-full" />
+                      )}
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -757,28 +814,37 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
             {/* Animated connector line */}
             <div className="absolute -left-[2px] top-0 w-0.5 h-full bg-gradient-to-b from-primary/30 to-transparent rounded-full" />
             
-            {subMenus.map((subItem) => (
-              <Link
-                key={subItem.name}
-                href={subItem.href}
-                onClick={handleMobileLinkClick}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out",
-                  "hover:bg-accent/50 hover:text-accent-foreground hover:shadow-sm hover:scale-[1.01]",
-                  "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/40",
-                  "active:scale-[0.98] group relative",
-                  subItem.current 
-                    ? "bg-accent/70 text-accent-foreground shadow-sm border border-accent/30" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <subItem.icon className="h-4 w-4 flex-shrink-0 transition-colors duration-200" />
-                <span className="truncate">{subItem.name}</span>
-                {subItem.current && (
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary rounded-full shadow-sm" />
-                )}
-              </Link>
-            ))}
+            {subMenus.map((subItem) => {
+              const subMenuPermissions = getMenuPermissions(subItem.href);
+              
+              // Skip rendering this submenu item if user doesn't have required permissions
+              if (!checkPermission(subMenuPermissions)) {
+                return null;
+              }
+              
+              return (
+                <Link
+                  key={subItem.name}
+                  href={subItem.href}
+                  onClick={handleMobileLinkClick}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out",
+                    "hover:bg-accent/50 hover:text-accent-foreground hover:shadow-sm hover:scale-[1.01]",
+                    "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/40",
+                    "active:scale-[0.98] group relative",
+                    subItem.current 
+                      ? "bg-accent/70 text-accent-foreground shadow-sm border border-accent/30" 
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <subItem.icon className="h-4 w-4 flex-shrink-0 transition-colors duration-200" />
+                  <span className="truncate">{subItem.name}</span>
+                  {subItem.current && (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary rounded-full shadow-sm" />
+                  )}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
