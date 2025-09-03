@@ -177,6 +177,43 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
     }
   }
   
+  // Helper function to determine if a menu has active submenu
+  const hasActiveSubmenu = (menuType: string): boolean => {
+    switch (menuType) {
+      case 'production':
+        return pathname.startsWith("/dashboard/production") || 
+               pathname.startsWith("/dashboard/production-plans") || 
+               pathname.startsWith("/dashboard/resource-usage")
+      case 'menuPlanning':
+        return pathname.startsWith("/dashboard/menu-planning") || 
+               pathname.startsWith("/dashboard/recipes")
+      case 'distribution':
+        return pathname.startsWith("/dashboard/distributions") || 
+               pathname.startsWith("/dashboard/distribution")
+      case 'monitoring':
+        return pathname.startsWith("/dashboard/monitoring")
+      case 'quality':
+        return pathname.startsWith("/dashboard/quality") || 
+               pathname.startsWith("/dashboard/quality-checks") ||
+               pathname.startsWith("/dashboard/food-samples") || 
+               pathname.startsWith("/dashboard/nutrition-consultations")
+      default:
+        return false
+    }
+  }
+
+  // Professional menu toggle handler that preserves context
+  const handleMenuToggle = (menuType: string, currentExpanded: boolean, setExpanded: (value: boolean) => void) => {
+    const hasActive = hasActiveSubmenu(menuType)
+    
+    // Professional UX: Don't allow collapsing if there's an active submenu
+    if (hasActive && currentExpanded) {
+      return // Prevent collapsing menu with active submenu
+    }
+    
+    setExpanded(!currentExpanded)
+  }
+
   const [productionExpanded, setProductionExpanded] = useState(false)
   const [menuPlanningExpanded, setMenuPlanningExpanded] = useState(false)
   const [distributionExpanded, setDistributionExpanded] = useState(false)
@@ -209,7 +246,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
     setQualityExpanded(hasQualityActive)
   }, [pathname])
 
-  // Auto-expand menu when it has active submenu (even when collapsed)
+  // Auto-expand menu when it has active submenu - Enhanced with professional behavior
   useEffect(() => {
     if (isCollapsed) return // Only apply when sidebar is expanded
 
@@ -230,23 +267,39 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       pathname.startsWith("/dashboard/food-samples") || 
       pathname.startsWith("/dashboard/nutrition-consultations")
 
-    // Auto-expand parent menu if it has active submenu
-    if (hasProductionActive && !productionExpanded) {
+    // Auto-expand parent menu if it has active submenu (Professional UX)
+    // This ensures user context is preserved even when clicking outside
+    if (hasProductionActive) {
       setProductionExpanded(true)
     }
-    if (hasMenuPlanningActive && !menuPlanningExpanded) {
+    if (hasMenuPlanningActive) {
       setMenuPlanningExpanded(true)
     }
-    if (hasDistributionActive && !distributionExpanded) {
+    if (hasDistributionActive) {
       setDistributionExpanded(true)
     }
-    if (hasMonitoringActive && !monitoringExpanded) {
+    if (hasMonitoringActive) {
       setMonitoringExpanded(true)
     }
-    if (hasQualityActive && !qualityExpanded) {
+    if (hasQualityActive) {
       setQualityExpanded(true)
     }
-  }, [isCollapsed, pathname, productionExpanded, menuPlanningExpanded, distributionExpanded, monitoringExpanded, qualityExpanded])
+  }, [isCollapsed, pathname])
+
+  // Professional menu toggle handler - prevents collapsing when submenu is active
+  const handleMenuToggleWithContext = (toggleFunction: () => void, menuType: string) => {
+    const isActiveSubmenu = 
+      (menuType === 'production' && (pathname.startsWith("/dashboard/production") || pathname.startsWith("/dashboard/production-plans") || pathname.startsWith("/dashboard/resource-usage"))) ||
+      (menuType === 'menuPlanning' && (pathname.startsWith("/dashboard/menu-planning") || pathname.startsWith("/dashboard/recipes"))) ||
+      (menuType === 'distribution' && (pathname.startsWith("/dashboard/distributions") || pathname.startsWith("/dashboard/distribution"))) ||
+      (menuType === 'monitoring' && pathname.startsWith("/dashboard/monitoring")) ||
+      (menuType === 'quality' && (pathname.startsWith("/dashboard/quality") || pathname.startsWith("/dashboard/quality-checks") || pathname.startsWith("/dashboard/food-samples") || pathname.startsWith("/dashboard/nutrition-consultations")))
+    
+    // Don't allow collapsing if there's an active submenu - maintains professional UX
+    if (!isActiveSubmenu) {
+      toggleFunction()
+    }
+  }
 
   const menuPlanningSubMenus = [
     {
@@ -783,12 +836,15 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
     isExpanded: boolean,
     setExpanded: (value: boolean) => void,
     subMenus: any[],
-    pathMatch: string
+    pathMatch: string,
+    menuType: string
   ) => {
     // Check if user has access to any submenu items
     if (!hasAnySubMenuAccess(subMenus)) {
       return null; // Don't render the section if user has no access to any submenu
     }
+    
+    const hasActive = hasActiveSubmenu(menuType)
     
     // When collapsed, render as dropdown
     if (isCollapsed) {
@@ -877,20 +933,20 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
         </div>
         
         <button
-          onClick={() => setExpanded(!isExpanded)}
+          onClick={() => handleMenuToggle(menuType, isExpanded, setExpanded)}
           className={cn(
             "flex w-full items-center rounded-xl py-2 text-sm font-medium transition-all duration-200 ease-in-out",
             "hover:bg-accent/60 hover:text-accent-foreground hover:shadow-sm hover:scale-[1.02]",
             "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/40",
             "active:scale-[0.98] group relative overflow-hidden",
             "px-4 gap-3 mx-2",
-            pathname.startsWith(pathMatch) 
+            hasActive
               ? "bg-primary/15 text-primary border border-primary/25 shadow-md font-semibold" 
               : "text-muted-foreground hover:text-foreground"
           )}
         >
           {/* Animated background for active section */}
-          {pathname.startsWith(pathMatch) && (
+          {hasActive && (
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl" />
           )}
           
@@ -1048,7 +1104,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               menuPlanningExpanded,
               setMenuPlanningExpanded,
               menuPlanningSubMenus,
-              "/dashboard/menu-planning"
+              "/dashboard/menu-planning",
+              "menuPlanning"
             )}
 
             {/* 4. PROCUREMENT PHASE */}
@@ -1064,7 +1121,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               productionExpanded,
               setProductionExpanded,
               productionSubMenus,
-              "/dashboard/production"
+              "/dashboard/production",
+              "production"
             )}
 
             {/* 7. QUALITY CONTROL PHASE */}
@@ -1074,17 +1132,19 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               qualityExpanded,
               setQualityExpanded,
               qualitySubMenus,
-              "/dashboard/quality"
+              "/dashboard/quality",
+              "quality"
             )}
 
             {/* 8. DISTRIBUTION PHASE */}
             {renderExpandableSection(
               "Distribusi",
-              Package,
+              Truck,
               distributionExpanded,
               setDistributionExpanded,
               distributionSubMenus,
-              "/dashboard/distributions"
+              "/dashboard/distribution",
+              "distribution"
             )}
 
             {/* 9. MONITORING & ANALYTICS */}
@@ -1094,7 +1154,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
               monitoringExpanded,
               setMonitoringExpanded,
               monitoringSubMenus,
-              "/dashboard/monitoring"
+              "/dashboard/monitoring",
+              "monitoring"
             )}
 
             {/* 10. PROFESSIONAL SERVICES */}
@@ -1164,7 +1225,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 menuPlanningExpanded,
                 setMenuPlanningExpanded,
                 menuPlanningSubMenus,
-                "/dashboard/menu-planning"
+                "/dashboard/menu-planning",
+                "menuPlanning"
               )}
 
               {/* Procurement */}
@@ -1180,7 +1242,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 productionExpanded,
                 setProductionExpanded,
                 productionSubMenus,
-                "/dashboard/production"
+                "/dashboard/production",
+                "production"
               )}
 
               {/* Quality Management */}
@@ -1190,7 +1253,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 qualityExpanded,
                 setQualityExpanded,
                 qualitySubMenus,
-                "/dashboard/quality"
+                "/dashboard/quality",
+                "quality"
               )}
 
               {/* Distribution */}
@@ -1200,7 +1264,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 distributionExpanded,
                 setDistributionExpanded,
                 distributionSubMenus,
-                "/dashboard/distributions"
+                "/dashboard/distributions",
+                "distribution"
               )}
 
               {/* Monitoring */}
@@ -1210,7 +1275,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 monitoringExpanded,
                 setMonitoringExpanded,
                 monitoringSubMenus,
-                "/dashboard/monitoring"
+                "/dashboard/monitoring",
+                "monitoring"
               )}
 
               {/* Professional Services */}
