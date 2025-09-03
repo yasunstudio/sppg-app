@@ -385,12 +385,6 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
       icon: LayoutGrid,
       current: pathname === "/dashboard",
     },
-    {
-      name: "Dashboard Saya",
-      href: "/dashboard/basic",
-      icon: Activity,
-      current: pathname.startsWith("/dashboard/basic"),
-    },
   ]
 
   // DATA MASTER SECTION - Foundation data
