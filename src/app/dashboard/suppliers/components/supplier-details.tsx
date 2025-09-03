@@ -28,9 +28,13 @@ import {
   CheckCircle,
   XCircle,
   Trash2,
-  Activity
+  Activity,
+  Building2,
+  User,
+  Loader2
 } from "lucide-react"
 import { toast } from "sonner"
+import { formatSupplierStatus, formatDate, formatPhone } from './utils/supplier-formatters'
 
 interface Supplier {
   id: string
@@ -179,11 +183,46 @@ export function SupplierDetails() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="space-y-4">
-            <div className="h-64 bg-gray-200 rounded-lg"></div>
-            <div className="h-64 bg-gray-200 rounded-lg"></div>
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 bg-muted dark:bg-muted animate-pulse rounded-full" />
+            <div className="space-y-2">
+              <div className="h-8 w-48 bg-muted dark:bg-muted animate-pulse rounded" />
+              <div className="h-4 w-32 bg-muted dark:bg-muted animate-pulse rounded" />
+            </div>
+          </div>
+          <div className="h-10 w-24 bg-muted dark:bg-muted animate-pulse rounded" />
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="bg-card dark:bg-card border-border dark:border-border">
+              <CardHeader>
+                <div className="h-6 w-40 bg-muted dark:bg-muted animate-pulse rounded" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="h-4 w-4 bg-muted dark:bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-32 bg-muted dark:bg-muted animate-pulse rounded" />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+          <div className="space-y-6">
+            <Card className="bg-card dark:bg-card border-border dark:border-border">
+              <CardHeader>
+                <div className="h-6 w-32 bg-muted dark:bg-muted animate-pulse rounded" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-16 bg-muted dark:bg-muted animate-pulse rounded" />
+                ))}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -194,14 +233,18 @@ export function SupplierDetails() {
     return (
       <div className="space-y-6">
         <div className="text-center py-12">
-          <Truck className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-semibold">Supplier Not Found</h3>
-          <p className="text-muted-foreground">
-            {error || "The supplier you're looking for doesn't exist."}
+          <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+          <h3 className="text-lg font-medium text-foreground mb-2">
+            {error === 'Supplier not found' ? 'Supplier Tidak Ditemukan' : 'Terjadi Kesalahan'}
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            {error === 'Supplier not found' 
+              ? 'Supplier yang Anda cari tidak ditemukan atau telah dihapus.'
+              : 'Gagal memuat detail supplier. Silakan coba lagi.'
+            }
           </p>
-          <Button className="mt-4" onClick={() => router.push('/dashboard/suppliers')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Suppliers
+          <Button onClick={() => router.push('/dashboard/suppliers')}>
+            Kembali ke Daftar Supplier
           </Button>
         </div>
       </div>
@@ -211,17 +254,42 @@ export function SupplierDetails() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">{supplier.name}</h1>
-          <p className="text-muted-foreground">
-            Supplier details and transaction history
-          </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="icon"
+            onClick={() => router.push('/dashboard/suppliers')}
+            className="h-10 w-10 rounded-full bg-background dark:bg-background border-border dark:border-border hover:bg-accent dark:hover:bg-accent"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+              <Building2 className="h-6 w-6 text-primary dark:text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground dark:text-foreground">
+                {supplier.name}
+              </h1>
+              <p className="text-muted-foreground">
+                Detail informasi dan riwayat transaksi supplier
+              </p>
+            </div>
+          </div>
         </div>
+        <div className="flex items-center gap-2">
+          {formatSupplierStatus(supplier.isActive)}
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/dashboard/suppliers/${supplier.id}/edit`)}
+            className="gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            Edit
+          </Button>
+        </div>
+      </div>
         <div className="flex items-center space-x-2">
           <Button 
             variant="outline" 

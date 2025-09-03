@@ -1,11 +1,20 @@
 import { Metadata } from "next"
-import { SupplierDetails } from "../components"
+import { SupplierDetails } from "../components/supplier-details-v2"
+import { PermissionGuard } from '@/components/guards/permission-guard'
 
 export const metadata: Metadata = {
-  title: "Supplier Details | SPPG",
-  description: "View supplier details and transaction history",
+  title: "Detail Supplier | SPPG",
+  description: "Lihat detail informasi dan riwayat transaksi supplier",
 }
 
-export default async function SupplierDetailsPage() {
-  return <SupplierDetails />
+interface SupplierDetailsPageProps {
+  params: { id: string }
+}
+
+export default async function SupplierDetailsPage({ params }: SupplierDetailsPageProps) {
+  return (
+    <PermissionGuard permission="suppliers.view">
+      <SupplierDetails supplierId={params.id} />
+    </PermissionGuard>
+  )
 }
