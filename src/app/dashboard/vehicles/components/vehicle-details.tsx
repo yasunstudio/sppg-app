@@ -163,39 +163,39 @@ export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
   if (isLoading || !vehicle) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto px-4 py-6 space-y-8 max-w-7xl">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Truck className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{vehicle.plateNumber}</h1>
-              <p className="text-gray-600">Detail Kendaraan</p>
-            </div>
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Back Button */}
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-full h-10 w-10 shrink-0"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg shrink-0">
+            <Truck className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge 
-            variant="outline" 
-            className={vehicle.isActive ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"}
-          >
-            {vehicle.isActive ? "Aktif" : "Tidak Aktif"}
-          </Badge>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">{vehicle.plateNumber}</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Detail Kendaraan</p>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-6 lg:space-y-8">
           <Card>
             <CardHeader>
               <CardTitle>Informasi Kendaraan</CardTitle>
@@ -203,68 +203,68 @@ export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
                 Detail lengkap dan spesifikasi kendaraan
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <FileText className="h-5 w-5 text-gray-600" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Nomor Plat</p>
-                      <p className="text-lg font-semibold text-gray-900">{vehicle.plateNumber}</p>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <FileText className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Nomor Plat</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">{vehicle.plateNumber}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Truck className="h-5 w-5 text-gray-600" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Jenis Kendaraan</p>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <Truck className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Jenis Kendaraan</p>
                       <Badge 
                         variant="outline" 
-                        className={typeColors[vehicle.type as keyof typeof typeColors] || "bg-gray-100 text-gray-800 border-gray-200"}
+                        className={typeColors[vehicle.type as keyof typeof typeColors] || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"}
                       >
                         {vehicle.type}
                       </Badge>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Package className="h-5 w-5 text-gray-600" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Kapasitas</p>
-                      <p className="text-lg font-semibold text-gray-900">{vehicle.capacity} kg</p>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <Package className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Kapasitas</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{vehicle.capacity} kg</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <CircleCheck className="h-5 w-5 text-gray-600" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Status</p>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <CircleCheck className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</p>
                       <Badge 
                         variant="outline" 
-                        className={vehicle.isActive ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"}
+                        className={vehicle.isActive ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700" : "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-700"}
                       >
                         {vehicle.isActive ? "Aktif" : "Tidak Aktif"}
                       </Badge>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Timer className="h-5 w-5 text-gray-600" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Servis Terakhir</p>
-                      <p className="text-lg font-semibold text-gray-900">
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <Timer className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Servis Terakhir</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         {vehicle.lastService ? formatDateShort(vehicle.lastService) : "Belum ada data"}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Calendar className="h-5 w-5 text-gray-600" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Terdaftar</p>
-                      <p className="text-lg font-semibold text-gray-900">{formatDateShort(vehicle.createdAt)}</p>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <Calendar className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Terdaftar</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{formatDateShort(vehicle.createdAt)}</p>
                     </div>
                   </div>
                 </div>
@@ -273,12 +273,12 @@ export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
               {vehicle.notes && (
                 <>
                   <Separator />
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <div className="flex items-start gap-3">
-                      <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium text-blue-700">Catatan</p>
-                        <p className="text-sm text-blue-600 mt-1">{vehicle.notes}</p>
+                        <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Catatan</p>
+                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">{vehicle.notes}</p>
                       </div>
                     </div>
                   </div>
@@ -298,65 +298,104 @@ export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
             <CardContent>
               {isDeliveriesLoading ? (
                 <div className="flex items-center justify-center h-32">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div>
                 </div>
               ) : recentDeliveries.length === 0 ? (
                 <div className="text-center py-8">
-                  <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Belum Ada Riwayat Pengiriman</h3>
-                  <p className="text-gray-600">Kendaraan ini belum pernah melakukan pengiriman.</p>
+                  <AlertTriangle className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Belum Ada Riwayat Pengiriman</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Kendaraan ini belum pernah melakukan pengiriman.</p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Tanggal</TableHead>
-                      <TableHead>Sekolah</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Porsi</TableHead>
-                      <TableHead>Lokasi</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <div className="space-y-4">
+                  {/* Desktop Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Tanggal</TableHead>
+                          <TableHead>Sekolah</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Porsi</TableHead>
+                          <TableHead>Lokasi</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {recentDeliveries.map((delivery) => (
+                          <TableRow key={delivery.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm">{formatDateShort(delivery.deliveryDate)}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-medium">{delivery.school.name}</span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={statusColors[delivery.status as keyof typeof statusColors] || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"}
+                              >
+                                {statusTranslations[delivery.status as keyof typeof statusTranslations] || delivery.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm">{delivery.portionsDelivered || 0} porsi</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm text-muted-foreground truncate max-w-[200px]">{delivery.school.address}</span>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Mobile Cards */}
+                  <div className="md:hidden space-y-4">
                     {recentDeliveries.map((delivery) => (
-                      <TableRow key={delivery.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{formatDateShort(delivery.deliveryDate)}</span>
+                      <div key={delivery.id} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm font-medium">{formatDateShort(delivery.deliveryDate)}</span>
+                            </div>
+                            <h4 className="font-semibold text-gray-900 dark:text-gray-100">{delivery.school.name}</h4>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-medium">{delivery.school.name}</span>
-                        </TableCell>
-                        <TableCell>
                           <Badge 
                             variant="outline" 
-                            className={statusColors[delivery.status as keyof typeof statusColors] || "bg-gray-100 text-gray-800 border-gray-200"}
+                            className={statusColors[delivery.status as keyof typeof statusColors] || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"}
                           >
                             {statusTranslations[delivery.status as keyof typeof statusTranslations] || delivery.status}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm">{delivery.portionsDelivered || 0} porsi</span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">{delivery.school.address}</span>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-600 dark:text-gray-400">Porsi:</span>
+                            <span className="ml-2 font-medium">{delivery.portionsDelivered || 0} porsi</span>
                           </div>
-                        </TableCell>
-                      </TableRow>
+                          <div className="flex items-start gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                            <span className="text-gray-600 dark:text-gray-400 text-xs leading-relaxed">{delivery.school.address}</span>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
         </div>
 
         {/* Side Panel */}
-        <div className="space-y-6">
+        <div className="space-y-6 lg:space-y-8">
           <Card>
             <CardHeader>
               <CardTitle>Statistik Kendaraan</CardTitle>
@@ -365,32 +404,32 @@ export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-3">
-                <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-blue-700">Total Pengiriman</p>
-                    <p className="text-2xl font-bold text-blue-900">{vehicle._count.deliveries}</p>
-                    <p className="text-xs text-blue-600">pengiriman selesai</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 gap-4">
+                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Pengiriman</p>
+                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{vehicle._count.deliveries}</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400">pengiriman selesai</p>
                   </div>
-                  <Activity className="h-8 w-8 text-blue-600" />
+                  <Activity className="h-8 w-8 text-blue-600 dark:text-blue-400 shrink-0" />
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-green-700">Total Distribusi</p>
-                    <p className="text-2xl font-bold text-green-900">{vehicle._count.distributions}</p>
-                    <p className="text-xs text-green-600">distribusi dilakukan</p>
+                <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-green-700 dark:text-green-300">Total Distribusi</p>
+                    <p className="text-2xl font-bold text-green-900 dark:text-green-100">{vehicle._count.distributions}</p>
+                    <p className="text-xs text-green-600 dark:text-green-400">distribusi dilakukan</p>
                   </div>
-                  <Package className="h-8 w-8 text-green-600" />
+                  <Package className="h-8 w-8 text-green-600 dark:text-green-400 shrink-0" />
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-orange-700">Kapasitas Maksimal</p>
-                    <p className="text-2xl font-bold text-orange-900">{vehicle.capacity}</p>
-                    <p className="text-xs text-orange-600">kilogram</p>
+                <div className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Kapasitas Maksimal</p>
+                    <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{vehicle.capacity}</p>
+                    <p className="text-xs text-orange-600 dark:text-orange-400">kilogram</p>
                   </div>
-                  <Truck className="h-8 w-8 text-orange-600" />
+                  <Truck className="h-8 w-8 text-orange-600 dark:text-orange-400 shrink-0" />
                 </div>
               </div>
             </CardContent>
@@ -404,17 +443,17 @@ export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">ID Kendaraan</span>
-                <span className="text-sm font-mono text-gray-900">{vehicle.id}</span>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-800">
+                <span className="text-sm text-gray-600 dark:text-gray-400">ID Kendaraan</span>
+                <span className="text-sm font-mono text-gray-900 dark:text-gray-100">{vehicle.id}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">Dibuat</span>
-                <span className="text-sm text-gray-900">{formatDate(vehicle.createdAt)}</span>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-800">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Dibuat</span>
+                <span className="text-sm text-gray-900 dark:text-gray-100">{formatDate(vehicle.createdAt)}</span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-sm text-gray-600">Diperbarui</span>
-                <span className="text-sm text-gray-900">{formatDate(vehicle.updatedAt)}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Diperbarui</span>
+                <span className="text-sm text-gray-900 dark:text-gray-100">{formatDate(vehicle.updatedAt)}</span>
               </div>
             </CardContent>
           </Card>
