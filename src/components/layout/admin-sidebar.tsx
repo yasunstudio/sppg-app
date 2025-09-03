@@ -109,7 +109,7 @@ export function AdminSidebar({ className, ...props }: AdminSidebarProps) {
             
             {/* Back to Dashboard Link */}
             <Link
-              href="/dashboard"
+              href="/home"
               className="flex items-center px-4 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors mb-4"
             >
               <ArrowLeft className="mr-3 h-4 w-4" />

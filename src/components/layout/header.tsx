@@ -220,7 +220,7 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
                 </div>
                 <DropdownMenuSeparator className="dark:border-slate-600" />
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/notifications" className="w-full text-center font-medium dark:text-slate-200 dark:hover:bg-slate-700">
+                  <Link href="/notifications" className="w-full text-center font-medium dark:text-slate-200 dark:hover:bg-slate-700">
                     Lihat semua notifikasi
                   </Link>
                 </DropdownMenuItem>
@@ -281,13 +281,13 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="dark:border-slate-600" />
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/profile" className="cursor-pointer hover:bg-muted/50 dark:text-slate-200 dark:hover:bg-slate-700">
+                  <Link href="/profile" className="cursor-pointer hover:bg-muted/50 dark:text-slate-200 dark:hover:bg-slate-700">
                     <User className="mr-2 h-4 w-4" />
                     Profil Saya
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings" className="cursor-pointer hover:bg-muted/50 dark:text-slate-200 dark:hover:bg-slate-700">
+                  <Link href="/settings" className="cursor-pointer hover:bg-muted/50 dark:text-slate-200 dark:hover:bg-slate-700">
                     <Settings className="mr-2 h-4 w-4" />
                     Pengaturan
                   </Link>
