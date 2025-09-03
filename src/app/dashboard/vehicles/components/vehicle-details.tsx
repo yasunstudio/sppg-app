@@ -169,7 +169,7 @@ export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-8 max-w-7xl">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3 sm:gap-4">
         {/* Back Button */}
@@ -193,9 +193,9 @@ export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Main Content */}
-        <div className="xl:col-span-2 space-y-6 lg:space-y-8">
+        <div className="xl:col-span-2 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Informasi Kendaraan</CardTitle>
@@ -395,7 +395,7 @@ export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
         </div>
 
         {/* Side Panel */}
-        <div className="space-y-6 lg:space-y-8">
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Statistik Kendaraan</CardTitle>
