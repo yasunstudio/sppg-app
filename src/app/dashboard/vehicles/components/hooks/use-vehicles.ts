@@ -62,19 +62,14 @@ export const useVehicles = ({ filters, pagination }: UseVehiclesProps) => {
   // Initial load
   useEffect(() => {
     fetchVehicles()
-  }, [fetchVehicles])
+  }, [])
 
-  // Filter changes (with debouncing for search)
+  // Filter/pagination changes
   useEffect(() => {
-    if (filters.searchTerm) {
-      const timeoutId = setTimeout(() => {
-        fetchVehicles(true)
-      }, 300)
-      return () => clearTimeout(timeoutId)
-    } else {
+    if (!loading) {
       fetchVehicles(true)
     }
-  }, [filters.selectedType, filters.selectedStatus, filters.searchTerm, fetchVehicles])
+  }, [filters, pagination, fetchVehicles, loading])
 
   const deleteVehicle = useCallback(async (vehicleId: string): Promise<boolean> => {
     try {
