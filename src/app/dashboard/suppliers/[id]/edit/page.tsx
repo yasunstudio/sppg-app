@@ -1,11 +1,20 @@
 import { Metadata } from "next"
-import { SupplierEdit } from "../../components"
+import { SupplierEdit } from "../../components/supplier-edit-v2"
+import { PermissionGuard } from '@/components/guards/permission-guard'
 
 export const metadata: Metadata = {
   title: "Edit Supplier | SPPG",
-  description: "Edit supplier information and contact details",
+  description: "Edit informasi dan detail kontak supplier",
 }
 
-export default async function SupplierEditPage() {
-  return <SupplierEdit />
+interface SupplierEditPageProps {
+  params: { id: string }
+}
+
+export default async function SupplierEditPage({ params }: SupplierEditPageProps) {
+  return (
+    <PermissionGuard permission="suppliers.view">
+      <SupplierEdit supplierId={params.id} />
+    </PermissionGuard>
+  )
 }
