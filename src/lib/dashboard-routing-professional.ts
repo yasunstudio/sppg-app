@@ -2,6 +2,58 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 
 /**
+ * Professional URL mapping for cleaner routes
+ */
+export const PROFESSIONAL_ROUTES = {
+  // Internal routes to clean URLs
+  '/dashboard': '/home',
+  '/dashboard/basic': '/home',
+  '/dashboard/admin': '/admin',
+  '/dashboard/financial': '/financial',
+  '/dashboard/users': '/users',
+  '/dashboard/schools': '/schools',
+  '/dashboard/students': '/students',
+  '/dashboard/classes': '/classes',
+  '/dashboard/inventory': '/inventory',
+  '/dashboard/raw-materials': '/materials',
+  '/dashboard/suppliers': '/suppliers',
+  '/dashboard/purchase-orders': '/orders',
+  '/dashboard/production': '/production',
+  '/dashboard/menu-planning': '/menu-planning',
+  '/dashboard/recipes': '/recipes',
+  '/dashboard/quality': '/quality',
+  '/dashboard/distributions': '/distribution',
+  '/dashboard/vehicles': '/vehicles',
+  '/dashboard/drivers': '/drivers',
+  '/dashboard/monitoring/reports': '/reports',
+  '/dashboard/monitoring/analytics': '/analytics',
+  '/dashboard/settings': '/settings',
+  '/dashboard/notifications': '/notifications',
+} as const
+
+/**
+ * Convert internal dashboard route to professional clean URL
+ */
+export function toProfessionalUrl(internalRoute: string): string {
+  return PROFESSIONAL_ROUTES[internalRoute as keyof typeof PROFESSIONAL_ROUTES] || internalRoute.replace('/dashboard', '') || '/home'
+}
+
+/**
+ * Convert clean URL back to internal dashboard route
+ */
+export function toInternalRoute(cleanUrl: string): string {
+  for (const [internalRoute, cleanRoute] of Object.entries(PROFESSIONAL_ROUTES)) {
+    if (cleanRoute === cleanUrl) {
+      return internalRoute
+    }
+  }
+  
+  // Fallback: prepend /dashboard
+  if (cleanUrl === '/home') return '/dashboard'
+  return `/dashboard${cleanUrl}`
+}
+
+/**
  * Get appropriate dashboard route based on user roles (database-driven)
  * Returns professional clean URL
  */
@@ -115,15 +167,39 @@ export async function requireDashboardAccess(
 
 /**
  * Redirect to appropriate dashboard based on user roles (database-driven)
+ * Uses professional clean URLs
  */
 export async function redirectToDashboard(userRoles: string[]) {
   const dashboardRoute = await getDashboardRoute(userRoles);
   redirect(dashboardRoute);
 }
 
-// Dashboard role mapping for reference (from database)
+// Dashboard role mapping for reference (returns clean URLs)
 export const DASHBOARD_ROLES = {
   ADMIN: ['SUPER_ADMIN', 'ADMIN'],
   FINANCIAL: ['FINANCIAL_ANALYST'],
-  BASIC: ['NUTRITIONIST', 'CHEF', 'QUALITY_CONTROLLER', 'DELIVERY_MANAGER', 'OPERATIONS_SUPERVISOR']
-} as const;
+  KITCHEN: ['CHEF', 'NUTRITIONIST'],
+  DELIVERY: ['DRIVER'],
+  QUALITY: ['QUALITY_OFFICER'],
+  BASIC: [], // Default for all other roles
+} as const
+
+/**
+ * Get dashboard route by role type (returns clean URL)
+ */
+export function getDashboardByRoleType(roleType: keyof typeof DASHBOARD_ROLES): string {
+  switch (roleType) {
+    case 'ADMIN':
+      return '/admin'
+    case 'FINANCIAL':
+      return '/financial'
+    case 'KITCHEN':
+      return '/home'
+    case 'DELIVERY':
+      return '/home'
+    case 'QUALITY':
+      return '/home'
+    default:
+      return '/home'
+  }
+}

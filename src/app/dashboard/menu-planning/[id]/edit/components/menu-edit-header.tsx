@@ -24,7 +24,7 @@ export function MenuEditHeader({ menu, isLoading }: MenuEditHeaderProps) {
             className="flex items-center space-x-2 hover:bg-muted transition-colors shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
+            <span>Kembali</span>
           </Button>
           <div className="space-y-2">
             <div className="flex items-center space-x-3">
@@ -50,17 +50,17 @@ export function MenuEditHeader({ menu, isLoading }: MenuEditHeaderProps) {
             className="flex items-center space-x-2 hover:bg-muted transition-colors shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
+            <span>Kembali</span>
           </Button>
           <div className="space-y-2">
             <h1 className="text-2xl md:text-3xl font-bold flex items-center space-x-3 text-foreground">
               <div className="p-2 bg-destructive rounded-xl">
                 <Edit className="w-6 h-6 text-destructive-foreground" />
               </div>
-              <span>Menu Not Found</span>
+              <span>Menu Tidak Ditemukan</span>
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              The menu you're trying to edit could not be found
+              Menu yang ingin Anda edit tidak dapat ditemukan
             </p>
           </div>
         </div>
@@ -77,7 +77,7 @@ export function MenuEditHeader({ menu, isLoading }: MenuEditHeaderProps) {
           className="flex items-center space-x-2 hover:bg-muted transition-colors shrink-0"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
+          <span>Kembali</span>
         </Button>
         <div className="space-y-2">
           <h1 className="text-2xl md:text-3xl font-bold flex items-center space-x-3 text-foreground">
@@ -87,7 +87,7 @@ export function MenuEditHeader({ menu, isLoading }: MenuEditHeaderProps) {
             <span>Edit Menu</span>
           </h1>
           <p className="text-muted-foreground text-sm md:text-base">
-            Edit nutritious menus for the SPPG program with proper nutritional guidelines
+            Edit menu bergizi untuk program SPPG dengan panduan nutrisi yang tepat
           </p>
         </div>
       </div>

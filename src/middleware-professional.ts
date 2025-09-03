@@ -41,8 +41,9 @@ const URL_REWRITES = {
   '/notifications': '/dashboard/notifications',
 } as const
 
-// Define route-to-permission mapping (for internal dashboard routes)
+// Define route-to-permission mapping (updated for clean URLs)
 const PROTECTED_ROUTES = {
+  // Internal dashboard routes (for permission checking)
   '/dashboard/users': ['users.view'],
   '/dashboard/roles': ['system.config'],
   '/dashboard/user-roles': ['users.edit', 'system.config'],
@@ -74,16 +75,8 @@ export async function middleware(request: NextRequest) {
   const session = await auth()
   const { pathname } = request.nextUrl
 
-  // Skip middleware for static files and API routes
-  if (pathname.startsWith('/_next') || 
-      pathname.startsWith('/api') || 
-      pathname.startsWith('/favicon.ico') ||
-      /\.(png|jpg|jpeg|gif|svg)$/.test(pathname)) {
-    return NextResponse.next()
-  }
-
   // Handle authentication
-  if (!session && !pathname.startsWith("/auth")) {
+  if (!session && !pathname.startsWith("/auth") && !pathname.startsWith("/_next") && !pathname.startsWith("/api")) {
     return NextResponse.redirect(new URL("/auth/login", request.url))
   }
 
@@ -93,15 +86,18 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith("/auth")) {
       const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
       const dashboardRoute = getDashboardRouteSync(userRoles)
-      return NextResponse.redirect(new URL(dashboardRoute, request.url))
+      // Convert internal dashboard route to clean URL
+      const cleanUrl = getCleanUrl(dashboardRoute)
+      return NextResponse.redirect(new URL(cleanUrl, request.url))
     }
 
-    // Handle clean URL rewrites to internal dashboard routes
+    // Handle clean URL rewrites
     const rewriteTarget = URL_REWRITES[pathname as keyof typeof URL_REWRITES]
     if (rewriteTarget) {
       // Check permissions for the internal route
       const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
       
+      // Check if rewrite target requires specific permissions
       const requiredPermissions = PROTECTED_ROUTES[rewriteTarget as keyof typeof PROTECTED_ROUTES]
       if (requiredPermissions) {
         const hasAccess = requiredPermissions.some(permission => 
@@ -111,7 +107,8 @@ export async function middleware(request: NextRequest) {
         if (!hasAccess) {
           // Redirect to appropriate dashboard with error message
           const dashboardRoute = getDashboardRouteSync(userRoles)
-          const url = new URL(dashboardRoute, request.url)
+          const cleanUrl = getCleanUrl(dashboardRoute)
+          const url = new URL(cleanUrl, request.url)
           url.searchParams.set('error', 'access_denied')
           url.searchParams.set('message', 'You do not have permission to access this page')
           return NextResponse.redirect(url)
@@ -124,21 +121,39 @@ export async function middleware(request: NextRequest) {
       return NextResponse.rewrite(url)
     }
 
-    // Handle direct access to internal dashboard routes (redirect to clean URLs)
+    // Handle internal dashboard routes (when accessed directly)
     if (pathname.startsWith("/dashboard")) {
-      const cleanUrl = getCleanUrl(pathname)
-      if (cleanUrl !== pathname) {
-        return NextResponse.redirect(new URL(cleanUrl, request.url))
+      const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
+
+      // Check permissions for internal dashboard routes
+      for (const [routePath, requiredPermissions] of Object.entries(PROTECTED_ROUTES)) {
+        if (pathname.startsWith(routePath)) {
+          const hasAccess = requiredPermissions.some(permission => 
+            hasPermission(userRoles, permission as any)
+          )
+
+          if (!hasAccess) {
+            // Redirect to appropriate dashboard with error message
+            const dashboardRoute = getDashboardRouteSync(userRoles)
+            const cleanUrl = getCleanUrl(dashboardRoute)
+            const url = new URL(cleanUrl, request.url)
+            url.searchParams.set('error', 'access_denied')
+            url.searchParams.set('message', 'You do not have permission to access this page')
+            return NextResponse.redirect(url)
+          }
+          break
+        }
       }
     }
 
     // Legacy admin route protection (for backward compatibility)
-    if (pathname.startsWith("/admin") && !URL_REWRITES[pathname as keyof typeof URL_REWRITES]) {
+    if (pathname.startsWith("/admin")) {
       const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
       const isAdmin = userRoles.some(role => ['SUPER_ADMIN', 'ADMIN'].includes(role))
       if (!isAdmin) {
         const dashboardRoute = getDashboardRouteSync(userRoles)
-        return NextResponse.redirect(new URL(dashboardRoute, request.url))
+        const cleanUrl = getCleanUrl(dashboardRoute)
+        return NextResponse.redirect(new URL(cleanUrl, request.url))
       }
     }
   }
@@ -154,14 +169,13 @@ function getCleanUrl(internalRoute: string): string {
     }
   }
   
-  // Special mappings
-  if (internalRoute === '/dashboard' || internalRoute === '/dashboard/basic') {
-    return '/home'
-  }
+  // Fallback mapping for routes not in URL_REWRITES
+  if (internalRoute === '/dashboard') return '/home'
+  if (internalRoute === '/dashboard/basic') return '/home'
+  if (internalRoute === '/dashboard/admin') return '/admin'
   
-  // If no mapping found, remove /dashboard prefix and redirect to home if empty
-  const cleanPath = internalRoute.replace('/dashboard', '')
-  return cleanPath || '/home'
+  // If no mapping found, return as is but remove /dashboard prefix
+  return internalRoute.replace('/dashboard', '') || '/home'
 }
 
 export const config = {

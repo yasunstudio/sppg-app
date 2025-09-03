@@ -3,8 +3,8 @@ import { Header } from "@/components/layout/header"
 import { AdminSidebar } from "@/components/layout/admin-sidebar"
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard",
-  description: "Admin dashboard for managing the application",
+  title: "Dasbor Admin",
+  description: "Dasbor admin untuk mengelola aplikasi",
 }
 
 export default function AdminLayout({

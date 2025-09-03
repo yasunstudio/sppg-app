@@ -11,10 +11,10 @@ export function MenuPlanningHeader() {
     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 bg-card rounded-xl border border-border shadow-sm">
       <div className="space-y-2">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-          Menu Planning
+          Perencanaan Menu
         </h1>
         <p className="text-muted-foreground">
-          Manage and plan daily menus for SPPG program
+          Kelola dan rencanakan menu harian untuk program SPPG
         </p>
       </div>
       <div className="flex flex-col sm:flex-row gap-2">
@@ -24,14 +24,14 @@ export function MenuPlanningHeader() {
           onClick={() => router.push('/dashboard/menu-planning/planning?view=calendar')}
         >
           <CalendarIcon className="w-4 h-4 mr-2" />
-          View Calendar
+          Lihat Kalender
         </Button>
         <Button 
           className="bg-primary hover:bg-primary/90 text-primary-foreground"
           onClick={() => router.push('/dashboard/menu-planning/create')}
         >
           <Plus className="w-4 h-4 mr-2" />
-          Create New Menu
+          Buat Menu Baru
         </Button>
       </div>
     </div>

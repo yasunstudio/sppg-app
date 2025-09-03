@@ -9,7 +9,7 @@ export default async function RootPage() {
     redirect("/auth/login")
   }
   
-  // Get user roles and redirect to appropriate dashboard
+  // Get user roles and redirect to appropriate clean URL dashboard
   const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
   const dashboardRoute = await getDashboardRoute(userRoles)
   redirect(dashboardRoute)

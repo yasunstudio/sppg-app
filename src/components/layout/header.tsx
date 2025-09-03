@@ -33,7 +33,7 @@ function ThemeToggle() {
       fallback={
         <Button variant="ghost" size="icon" className="h-9 w-9">
           <Sun className="h-4 w-4" />
-          <span className="sr-only">Toggle theme</span>
+          <span className="sr-only">Ubah tema</span>
         </Button>
       }
     >
@@ -42,7 +42,7 @@ function ThemeToggle() {
           <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-muted/50 dark:hover:bg-slate-700">
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
+            <span className="sr-only">Ubah tema</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48 dark:bg-slate-800 dark:border-slate-600">
@@ -88,12 +88,12 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
   const { profile } = useUserProfile()
   
   const getRoleDisplay = () => {
-    return profile?.roles?.[0]?.role?.name || 'User'
+    return profile?.roles?.[0]?.role?.name || 'Pengguna'
   }
 
   // Get page title based on current path
   const getPageTitle = () => {
-    if (pathname === "/dashboard") return "Dashboard"
+    if (pathname === "/dashboard") return "Dasbor"
     if (pathname === "/dashboard/users") return "Pengguna"
     if (pathname === "/dashboard/schools") return "Sekolah"
     if (pathname === "/dashboard/raw-materials") return "Bahan Baku"
@@ -136,7 +136,7 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
               ) : (
                 <Menu className="h-4 w-4" />
               )}
-              <span className="sr-only">Toggle menu</span>
+              <span className="sr-only">Buka/tutup menu</span>
             </Button>
           </div>
 
@@ -175,7 +175,7 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
               onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
             >
               <Search className="h-4 w-4" />
-              <span className="sr-only">Search</span>
+              <span className="sr-only">Cari</span>
             </Button>
           </div>
 
@@ -197,7 +197,7 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
                       {count > 9 ? '9+' : count}
                     </span>
                   )}
-                  <span className="sr-only">Notifications</span>
+                  <span className="sr-only">Notifikasi</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80 dark:bg-slate-800 dark:border-slate-600">
@@ -258,7 +258,7 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
                     </div>
                     <div className="hidden sm:flex sm:flex-col sm:items-start">
                       <span className="text-sm font-medium leading-none dark:text-slate-200">
-                        {profile?.name || session?.user?.name || "User"}
+                        {profile?.name || session?.user?.name || "Pengguna"}
                       </span>
                       <span className="text-xs text-muted-foreground dark:text-slate-400 leading-none mt-1">
                         {getRoleDisplay()}
@@ -272,7 +272,7 @@ export function Header({ onMobileSidebarToggle, sidebarOpen }: HeaderProps) {
                 <DropdownMenuLabel className="dark:text-slate-100">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {profile?.name || session?.user?.name || "User"}
+                      {profile?.name || session?.user?.name || "Pengguna"}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground dark:text-slate-400">
                       {session?.user?.email}
