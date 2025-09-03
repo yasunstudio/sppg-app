@@ -1,4 +1,4 @@
-import { VehicleManagement } from "./components/vehicle-management"
+import { VehicleManagement } from "./components/vehicle-management-simple"
 import { PermissionGuard } from "@/components/guards/permission-guard"
 
 export default function VehiclesPage() {
