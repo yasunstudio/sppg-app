@@ -30,35 +30,51 @@ export async function GET(request: NextRequest) {
       where.isActive = false
     }
 
-    // Get suppliers with pagination
-    const [suppliers, total] = await Promise.all([
+    // Get suppliers with pagination and stats
+    const [suppliers, total, activeCount, totalPurchaseOrders] = await Promise.all([
       prisma.supplier.findMany({
         where,
         include: {
           _count: {
             select: {
               purchaseOrders: true,
-              inventory: true,
+              inventoryItems: true,
             }
           }
         },
-        orderBy: { name: 'asc' },
+        orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.supplier.count({ where })
+      prisma.supplier.count({ where }),
+      prisma.supplier.count({ where: { isActive: true } }),
+      prisma.purchaseOrder.count()
     ])
 
     const totalPages = Math.ceil(total / limit)
+    const hasMore = page < totalPages
+
+    // Calculate stats
+    const inactiveCount = total - activeCount
+    const averageOrdersPerSupplier = total > 0 ? totalPurchaseOrders / total : 0
+
+    const stats = {
+      totalSuppliers: total,
+      activeSuppliers: activeCount,
+      inactiveSuppliers: inactiveCount,
+      totalPurchaseOrders,
+      averageOrdersPerSupplier
+    }
 
     return NextResponse.json({
       success: true,
       data: suppliers,
+      stats,
       pagination: {
-        page,
-        limit,
-        total,
+        currentPage: page,
         totalPages,
+        totalCount: total,
+        hasMore
       }
     })
   } catch (error) {
