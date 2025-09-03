@@ -697,14 +697,14 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 "active:scale-[0.98] group relative overflow-hidden",
                 isCollapsed ? "px-2 justify-center mx-1" : "px-4 gap-3 mx-2",
                 item.current 
-                  ? "bg-gradient-to-r from-accent to-accent/80 text-accent-foreground shadow-md border border-accent/20" 
+                  ? "bg-primary/15 text-primary border border-primary/25 shadow-md font-semibold" 
                   : "text-muted-foreground hover:text-foreground"
               )}
               title={isCollapsed ? item.name : undefined}
             >
-              {/* Animated background for active item */}
+              {/* Active indicator */}
               {item.current && (
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl" />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full shadow-sm" />
               )}
               
               <div className={cn(
@@ -714,7 +714,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                 <item.icon className={cn(
                   "flex-shrink-0 transition-colors duration-200",
                   isCollapsed ? "h-5 w-5" : "h-4 w-4",
-                  item.current ? "text-accent-foreground" : "text-muted-foreground group-hover:text-foreground"
+                  item.current ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                 )} />
                 
                 <div className={cn(
@@ -804,8 +804,8 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                       className={cn(
                         "flex items-center gap-3 w-full px-3 py-2 cursor-pointer",
                         subItem.current 
-                          ? "bg-accent text-accent-foreground font-semibold" 
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                       )}
                     >
                       <subItem.icon className="h-4 w-4 flex-shrink-0" />
@@ -844,7 +844,7 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
             "active:scale-[0.98] group relative overflow-hidden",
             "px-4 gap-3 mx-2",
             pathname.startsWith(pathMatch) 
-              ? "bg-gradient-to-r from-accent to-accent/80 text-accent-foreground shadow-md border border-accent/20" 
+              ? "bg-primary/15 text-primary border border-primary/25 shadow-md font-semibold" 
               : "text-muted-foreground hover:text-foreground"
           )}
         >
@@ -898,14 +898,16 @@ export function Sidebar({ className, isCollapsed = false, onToggle, isMobileOpen
                     "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/40",
                     "active:scale-[0.98] group relative",
                     subItem.current 
-                      ? "bg-accent text-accent-foreground shadow-sm border border-accent/30 font-semibold" 
+                      ? "bg-primary/10 text-primary border border-primary/20 font-semibold shadow-sm" 
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <subItem.icon className="h-4 w-4 flex-shrink-0 transition-colors duration-200" />
                   <span className="truncate">{subItem.name}</span>
                   {subItem.current && (
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary rounded-full shadow-sm" />
+                    <div className="ml-auto">
+                      <div className="w-2 h-2 bg-primary rounded-full shadow-sm" />
+                    </div>
                   )}
                 </Link>
               );
