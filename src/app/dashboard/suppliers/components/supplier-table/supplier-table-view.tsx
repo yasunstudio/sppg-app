@@ -147,7 +147,7 @@ export function SupplierTableView({ suppliers, isFiltering, onDelete }: Supplier
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="text-xs">
-                      {supplier._count.inventoryItems} item
+                      {supplier._count.inventory} item
                     </Badge>
                   </div>
                 </div>

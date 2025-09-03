@@ -188,7 +188,7 @@ export function SupplierGridView({ suppliers, isFiltering, onDelete }: SupplierG
               </Badge>
               <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                 <Package className="h-3 w-3" />
-                {supplier._count.inventoryItems}
+                {supplier._count.inventory}
               </Badge>
             </div>
 

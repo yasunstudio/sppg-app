@@ -10,7 +10,7 @@ export interface Supplier {
   updatedAt: string
   _count: {
     purchaseOrders: number
-    inventoryItems: number
+    inventory: number
   }
 }
 

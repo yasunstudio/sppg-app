@@ -44,7 +44,7 @@ interface Supplier {
   updatedAt: string
   _count: {
     purchaseOrders: number
-    inventoryItems: number
+    inventory: number
   }
   inventory?: Array<{
     id: string
@@ -306,7 +306,7 @@ export function SupplierDetails({ supplierId }: SupplierDetailsProps) {
                   <span className="text-sm text-muted-foreground">Item Inventori</span>
                 </div>
                 <span className="font-semibold text-foreground dark:text-foreground">
-                  {supplier._count.inventoryItems}
+                  {supplier._count.inventory}
                 </span>
               </div>
             </CardContent>

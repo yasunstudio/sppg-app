@@ -14,13 +14,14 @@ export const metadata: Metadata = {
 }
 
 interface SupplierEditPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function SupplierEditPage({ params }: SupplierEditPageProps) {
+  const { id } = await params
   return (
     <PermissionGuard permission="suppliers.view">
-      <SupplierEdit supplierId={params.id} />
+      <SupplierEdit supplierId={id} />
     </PermissionGuard>
   )
 }
