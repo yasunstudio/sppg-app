@@ -1,17 +1,27 @@
 "use client"
 
-import { Header } from "@/components/layout/header"
-import { Sidebar } from "@/components/layout/sidebar"
+import { Header } from "@/components/header"
+import { Sidebar } from "@/components/sidebar"
 import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const pathname = usePathname()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
+
+  // Check if current route is admin route
+  const isAdminRoute = pathname.startsWith('/dashboard/admin')
+
+  // If it's admin route, don't render sidebar - let admin layout handle it
+  if (isAdminRoute) {
+    return <>{children}</>
+  }
 
   // Load sidebar state from localStorage on mount
   useEffect(() => {
