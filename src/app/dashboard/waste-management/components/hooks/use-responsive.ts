@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from 'react'
 
 export const useResponsive = () => {
@@ -12,7 +14,7 @@ export const useResponsive = () => {
       setIsTablet(width >= 768 && width < 1024)
       setIsDesktop(width >= 1024)
     }
-    
+
     checkScreenSize()
     window.addEventListener('resize', checkScreenSize)
     return () => window.removeEventListener('resize', checkScreenSize)
