@@ -1,287 +1,277 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
+import { useRouter, useParams } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
-  ArrowLeft,
-  User,
-  Shield,
-  Mail,
-  Calendar,
+  ArrowLeft, 
+  Shield, 
+  User, 
+  Calendar, 
+  Clock,
   Edit,
-  RefreshCw
+  Trash2,
+  CheckCircle,
+  XCircle
 } from 'lucide-react'
+import { getInitials, formatDate, formatRoleName, getRoleColor, getStatusColor } from './utils/user-role-formatters'
 
-interface User {
-  id: string
-  name: string
-  email: string
-  avatar?: string | null
-  createdAt: string
-  roles: {
-    role: {
-      id: string
-      name: string
-      description: string | null
-      permissions: string[]
-    }
-    assignedAt: string
-  }[]
+// Mock data - replace with actual API calls
+const mockUserRole = {
+  id: '1',
+  user: {
+    id: '1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    avatar: undefined,
+    createdAt: new Date('2023-06-15'),
+  },
+  role: {
+    id: '2',
+    name: 'CHEF',
+    description: 'Chef dengan akses dapur dan menu management',
+    permissions: [
+      'kitchen.view',
+      'menu.create',
+      'menu.edit',
+      'menu.delete',
+      'ingredients.view',
+      'recipes.manage',
+    ],
+  },
+  isActive: true,
+  assignedAt: new Date('2024-01-15'),
+  updatedAt: new Date('2024-01-20'),
+  assignedByUser: {
+    name: 'Admin User',
+    email: 'admin@example.com',
+  },
 }
 
-interface UserRoleDetailsProps {
-  userId: string
+const permissionLabels: Record<string, string> = {
+  'kitchen.view': 'Lihat Dapur',
+  'menu.create': 'Buat Menu',
+  'menu.edit': 'Edit Menu',
+  'menu.delete': 'Hapus Menu',
+  'ingredients.view': 'Lihat Bahan',
+  'recipes.manage': 'Kelola Resep',
 }
 
-export function UserRoleDetails({ userId }: UserRoleDetailsProps) {
+export function UserRoleDetails() {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const params = useParams()
+  const userRole = mockUserRole
 
-  const fetchUserDetails = async () => {
-    try {
-      setError(null)
-      const response = await fetch(`/api/users/${userId}?include=roles`)
-      if (response.ok) {
-        const result = await response.json()
-        setUser(result.user || result.data)
-      } else if (response.status === 404) {
-        setError('User not found')
-      } else {
-        setError('Failed to fetch user details')
-      }
-    } catch (error) {
-      console.error('Error fetching user details:', error)
-      setError('Error fetching user details')
-    } finally {
-      setLoading(false)
-    }
+  const handleEdit = () => {
+    router.push(`/dashboard/user-roles/${params.id}/edit`)
   }
 
-  useEffect(() => {
-    fetchUserDetails()
-  }, [userId])
-
-  const handleRefresh = () => {
-    setLoading(true)
-    fetchUserDetails()
-  }
-
-  const handleEditRoles = () => {
-    router.push(`/dashboard/user-roles/${userId}/edit`)
-  }
-
-  if (loading) {
-    return (
-      <div className="container mx-auto py-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="text-muted-foreground">Loading user details...</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto py-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center space-y-4">
-            <div className="text-red-500 text-lg">⚠️</div>
-            <p className="text-red-600">{error}</p>
-            <div className="flex gap-2 justify-center">
-              <Button variant="outline" onClick={() => router.back()}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Go Back
-              </Button>
-              <Button onClick={handleRefresh}>
-                Try Again
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <div className="container mx-auto py-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center space-y-4">
-            <p className="text-muted-foreground">User not found</p>
-            <Button variant="outline" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Go Back
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
+  const handleDelete = () => {
+    // Implement delete functionality
+    console.log('Delete user role:', params.id)
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
+    <div className="container mx-auto py-6">
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Kembali
+        </Button>
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <User className="w-8 h-8" />
-              User Role Details
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Shield className="h-6 w-6" />
+              Detail Penugasan Role
             </h1>
             <p className="text-muted-foreground">
-              View detailed role information for this user
+              Informasi lengkap tentang penugasan role pengguna
             </p>
           </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" onClick={handleRefresh}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-          <Button onClick={handleEditRoles}>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Roles
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleEdit} className="flex items-center gap-2">
+              <Edit className="h-4 w-4" />
+              Edit
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDelete}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Hapus
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* User Information Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
-            User Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-start space-x-4">
-            <Avatar className="h-16 w-16">
-              {user.avatar ? (
-                <AvatarImage src={user.avatar} alt={user.name} />
-              ) : (
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* User Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Informasi Pengguna
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3 mb-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={userRole.user.avatar} alt={userRole.user.name} />
                 <AvatarFallback className="text-lg">
-                  {user.name?.charAt(0) || user.email.charAt(0)}
+                  {getInitials(userRole.user.name)}
                 </AvatarFallback>
-              )}
-            </Avatar>
-            <div className="flex-1 space-y-3">
+              </Avatar>
               <div>
-                <h3 className="text-xl font-semibold">{user.name}</h3>
-                <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                  <span className="flex items-center gap-1">
-                    <Mail className="h-4 w-4" />
-                    {user.email}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    Joined {new Date(user.createdAt).toLocaleDateString()}
-                  </span>
+                <h3 className="font-semibold text-lg">{userRole.user.name}</h3>
+                <p className="text-muted-foreground">{userRole.user.email}</p>
+              </div>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">User ID:</span>
+                <span className="font-mono">{userRole.user.id}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Bergabung:</span>
+                <span>{formatDate(userRole.user.createdAt.toISOString())}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Role Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Informasi Role
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Badge className={`${getRoleColor(userRole.role.name)} text-base px-3 py-1`}>
+                  <Shield className="mr-2 h-4 w-4" />
+                  {formatRoleName(userRole.role.name)}
+                </Badge>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Deskripsi:</h4>
+                <p className="text-sm text-muted-foreground">
+                  {userRole.role.description}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Permissions:</h4>
+                <div className="space-y-1">
+                  {userRole.role.permissions.map((permission) => (
+                    <div key={permission} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="h-3 w-3 text-green-600" />
+                      <span>{permissionLabels[permission] || permission}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Roles Card */}
-      <Card>
+        {/* Assignment Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Informasi Penugasan
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-2">Status:</h4>
+                <Badge className={getStatusColor(userRole.isActive)}>
+                  {userRole.isActive ? (
+                    <CheckCircle className="mr-2 h-3 w-3" />
+                  ) : (
+                    <XCircle className="mr-2 h-3 w-3" />
+                  )}
+                  {userRole.isActive ? 'Aktif' : 'Tidak Aktif'}
+                </Badge>
+              </div>
+              
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Ditugaskan:</span>
+                  <span>{formatDate(userRole.assignedAt.toISOString())}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Diperbarui:</span>
+                  <span>{formatDate(userRole.updatedAt.toISOString())}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-muted-foreground">Ditugaskan oleh:</span>
+                  <div className="pl-2 border-l-2 border-muted">
+                    <p className="font-medium">{userRole.assignedByUser?.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {userRole.assignedByUser?.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Assignment History */}
+      <Card className="mt-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5" />
-            Assigned Roles ({user.roles.length})
+            <Clock className="h-5 w-5" />
+            Riwayat Penugasan
           </CardTitle>
           <CardDescription>
-            Roles and permissions assigned to this user
+            Timeline perubahan role dan status pengguna
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {user.roles.length === 0 ? (
-            <div className="text-center py-8">
-              <Shield className="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
-              <p className="text-muted-foreground">No roles assigned to this user</p>
-              <Button 
-                className="mt-4" 
-                onClick={handleEditRoles}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Assign Roles
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {user.roles.map((userRole, index) => (
-                <div key={userRole.role.id}>
-                  <div className="flex items-start justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="default" className="font-medium">
-                          {userRole.role.name}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">
-                          Assigned {new Date(userRole.assignedAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      {userRole.role.description && (
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {userRole.role.description}
-                        </p>
-                      )}
-                      <div>
-                        <h4 className="text-sm font-medium mb-2">Permissions:</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                          {userRole.role.permissions.map((permission) => (
-                            <Badge key={permission} variant="outline" className="text-xs">
-                              {permission}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {index < user.roles.length - 1 && <Separator className="my-4" />}
+          <div className="space-y-4">
+            {/* Mock history items */}
+            <div className="flex items-start gap-3 pb-4 border-b last:border-b-0">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mt-2" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="font-medium">Role diperbarui</p>
+                  <span className="text-sm text-muted-foreground">
+                    {formatDate(userRole.updatedAt.toISOString())}
+                  </span>
                 </div>
-              ))}
+                <p className="text-sm text-muted-foreground">
+                  Status diubah menjadi aktif oleh Admin User
+                </p>
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={handleEditRoles}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Roles
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/user-roles">
-                View All Users
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/roles">
-                Manage Roles
-              </Link>
-            </Button>
+            
+            <div className="flex items-start gap-3 pb-4 border-b last:border-b-0">
+              <div className="w-2 h-2 bg-green-600 rounded-full mt-2" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="font-medium">Role ditugaskan</p>
+                  <span className="text-sm text-muted-foreground">
+                    {formatDate(userRole.assignedAt.toISOString())}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Role CHEF ditugaskan kepada {userRole.user.name} oleh {userRole.assignedByUser?.name}
+                </p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -14,5 +14,5 @@ interface PageProps {
 
 export default async function UserRoleDetailsPage({ params }: PageProps) {
   const { userId } = await params
-  return <UserRoleDetails userId={userId} />
+  return <UserRoleDetails />
 }

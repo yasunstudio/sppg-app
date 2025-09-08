@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { UserRoleEdit } from "../../components/user-role-edit"
+import { EditUserRole } from "../../components/edit-user-role"
 
 export const metadata: Metadata = {
   title: "Edit User Roles | SPPG",
@@ -14,5 +14,5 @@ interface PageProps {
 
 export default async function UserRoleEditPage({ params }: PageProps) {
   const { userId } = await params
-  return <UserRoleEdit userId={userId} />
+  return <EditUserRole />
 }
