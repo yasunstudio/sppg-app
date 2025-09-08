@@ -379,18 +379,41 @@ model DistributionSchool {
 }
 
 model Vehicle {
-  id            String         @id @default(cuid())
-  plateNumber   String         @unique
-  type          String
-  capacity      Int
-  isActive      Boolean        @default(true)
-  lastService   DateTime?
-  notes         String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  deletedAt     DateTime?
-  deliveries    Delivery[]
-  distributions Distribution[]
+  id                 String         @id @default(cuid())
+  plateNumber        String         @unique
+  type               String         // TRUCK, VAN, MOTORCYCLE, PICKUP
+  capacity           Int            // in kg
+  
+  // Basic Information
+  brand              String         @default("Unknown")
+  model              String         @default("Unknown")
+  year               Int            @default(2020)
+  fuelType           String         @default("DIESEL") // GASOLINE, DIESEL, ELECTRIC, HYBRID
+  
+  // Status & Operations
+  status             String         @default("ACTIVE") // ACTIVE, INACTIVE, MAINTENANCE, RETIRED
+  isActive           Boolean        @default(true)     // Legacy field, keep for compatibility
+  
+  // Service & Maintenance
+  lastService        DateTime?
+  nextService        DateTime?
+  mileage            Float?         // Current mileage in km
+  
+  // Documentation
+  insuranceExpiry    DateTime?
+  registrationExpiry DateTime?
+  
+  // Optional Fields
+  notes              String?
+  
+  // System Fields
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  deletedAt          DateTime?
+  
+  // Relations
+  deliveries         Delivery[]
+  distributions      Distribution[]
 
   @@map("vehicles")
 }

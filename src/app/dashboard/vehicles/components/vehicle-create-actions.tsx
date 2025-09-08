@@ -42,7 +42,7 @@ export function VehicleCreateActions({
         <Alert className="border-amber-200 bg-amber-50">
           <AlertCircle className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-amber-800">
-            You have unsaved changes. Are you sure you want to leave?
+            Anda memiliki perubahan yang belum disimpan. Yakin ingin meninggalkan halaman?
             <div className="mt-2 flex gap-2">
               <Button 
                 size="sm" 
@@ -50,7 +50,7 @@ export function VehicleCreateActions({
                 onClick={() => setShowUnsavedWarning(false)}
                 className="h-7"
               >
-                Cancel
+                Batal
               </Button>
               <Button 
                 size="sm" 
@@ -58,7 +58,7 @@ export function VehicleCreateActions({
                 onClick={confirmLeave}
                 className="h-7"
               >
-                Leave Without Saving
+                Tinggalkan Tanpa Menyimpan
               </Button>
             </div>
           </AlertDescription>
@@ -73,7 +73,7 @@ export function VehicleCreateActions({
           disabled={isSaving}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to List
+          Kembali ke Daftar
         </Button>
         
         {onReset && (
@@ -97,12 +97,12 @@ export function VehicleCreateActions({
             {isSaving ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                Saving...
+                Menyimpan...
               </>
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                Save Vehicle
+                Simpan Kendaraan
               </>
             )}
           </Button>

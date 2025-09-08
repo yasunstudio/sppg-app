@@ -2,6 +2,7 @@
 export { CreateVehicle } from './create-vehicle'
 export { default as VehicleDetails } from './vehicle-details'
 export { EditVehicle } from './edit-vehicle'
+export { VehicleFormLayout } from './vehicle-form-layout'
 
 // Main modular components
 export { VehicleManagement } from './vehicle-management'
@@ -22,7 +23,9 @@ export { VehiclePagination } from './vehicle-pagination/vehicle-pagination'
 // Hooks
 export { useVehicles } from './hooks/use-vehicles'
 export { useResponsive } from './hooks/use-responsive'
+export { useVehicleForm } from './hooks/use-vehicle-form'
 
 // Types and utilities
 export * from './utils/vehicle-types'
 export * from './utils/vehicle-formatters'
+export * from './utils/vehicle-schemas'

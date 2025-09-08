@@ -1,5 +1,5 @@
 // Waste Management Components
-export { WasteRecordsManagement } from './waste-records-management'
+export { WasteRecordManagement } from './waste-record-management'
 export { CreateWasteRecord } from './create-waste-record'
 export { WasteRecordDetails } from './waste-record-details'
 export { EditWasteRecord } from './edit-waste-record'
@@ -7,6 +7,8 @@ export { EditWasteRecord } from './edit-waste-record'
 // Page Components
 export { WastePageClient } from './waste-page-client'
 export { WastePageActions } from './waste-page-actions'
+export { WasteCreatePageClient } from './waste-create-page-client'
+export { WasteCreateActions } from './waste-create-actions'
 
 // Stats Components
 export { WasteStatsCards } from './waste-stats/waste-stats-cards'

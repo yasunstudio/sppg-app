@@ -40,14 +40,14 @@ export const useWasteRecords = ({ filters, pagination }: UseWasteRecordsProps) =
           setStats(result.stats)
           setPaginationData(result.pagination)
         } else {
-          toast.error('Gagal mengambil catatan limbah')
+          toast.error('Gagal mengambil data waste records')
         }
       } else {
-        toast.error('Gagal mengambil catatan limbah')
+        toast.error('Gagal mengambil data waste records')
       }
     } catch (error) {
       console.error('Error fetching waste records:', error)
-      toast.error('Gagal mengambil catatan limbah')
+      toast.error('Gagal mengambil data waste records')
     } finally {
       if (isFilteringRequest) {
         setIsFiltering(false)

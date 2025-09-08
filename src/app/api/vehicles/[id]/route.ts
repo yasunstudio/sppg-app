@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { vehicleUpdateSchema } from "@/app/dashboard/vehicles/components/utils/vehicle-schemas"
 
 interface RouteParams {
   id: string
@@ -213,6 +214,99 @@ export async function DELETE(
         success: false, 
         error: "Gagal menghapus kendaraan",
         details: error instanceof Error ? error.message : "Unknown error"
+      },
+      { status: 500 }
+    )
+  }
+}
+
+// Update vehicle
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<RouteParams> }
+) {
+  try {
+    const { id } = await params
+    const body = await request.json()
+
+    // Validate request body
+    const validatedData = vehicleUpdateSchema.parse(body)
+
+    // Check if vehicle exists
+    const existingVehicle = await prisma.vehicle.findUnique({
+      where: { 
+        id,
+        deletedAt: null 
+      }
+    })
+
+    if (!existingVehicle) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Kendaraan tidak ditemukan" 
+        },
+        { status: 404 }
+      )
+    }
+
+    // Check for duplicate plate number (if plate number is being updated)
+    if (validatedData.plateNumber && validatedData.plateNumber !== existingVehicle.plateNumber) {
+      const duplicatePlate = await prisma.vehicle.findFirst({
+        where: {
+          plateNumber: validatedData.plateNumber,
+          deletedAt: null,
+          id: { not: id }
+        }
+      })
+
+      if (duplicatePlate) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: "Nomor plat sudah digunakan kendaraan lain" 
+          },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Update vehicle data
+    const updatedVehicle = await prisma.vehicle.update({
+      where: { id },
+      data: {
+        ...validatedData,
+        id: undefined, // Remove id from update data
+        updatedAt: new Date()
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: "Kendaraan berhasil diperbarui",
+      data: updatedVehicle
+    })
+
+  } catch (error: any) {
+    console.error("Error updating vehicle:", error)
+    
+    // Handle Zod validation errors
+    if (error.name === 'ZodError') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Data tidak valid",
+          details: error.errors
+        },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: "Gagal memperbarui kendaraan",
+        details: error.message || "Unknown error"
       },
       { status: 500 }
     )

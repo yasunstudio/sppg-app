@@ -222,6 +222,8 @@ export interface BreadcrumbItem {
   label: string
   href?: string
   isActive?: boolean
+  icon?: string // Icon name for specific breadcrumb items
+  isDynamic?: boolean // Indicates if the label should be replaced with dynamic data
 }
 
 export interface PageConfig {

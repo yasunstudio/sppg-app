@@ -7,6 +7,8 @@ export { EditUser } from './edit-user'
 // Page Components
 export { UserPageClient } from './user-page-client'
 export { UserPageActions } from './user-page-actions'
+export { UserCreatePageClient } from './user-create-page-client'
+export { UserCreateActions } from './user-create-actions'
 
 // Stats Components
 export { UserStatsCards } from './user-stats/user-stats-cards'
@@ -22,7 +24,6 @@ export { UserTableView } from './user-table/user-table-view'
 export { UserPagination } from './user-pagination/user-pagination'
 
 // Form Components
-export { UserForm } from './user-form'
 export { UserAvatarUpload } from './user-avatar-upload'
 
 // Hooks

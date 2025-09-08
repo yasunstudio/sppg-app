@@ -15,6 +15,9 @@ export interface WasteRecord {
   updatedAt: string
 }
 
+// Keep alias for backward compatibility
+export type Waste = WasteRecord
+
 export interface WasteStats {
   total: number
   totalWeight: number
@@ -38,6 +41,9 @@ export interface WasteRecordsResponse {
   stats: WasteStats
   pagination: PaginationData
 }
+
+// Keep alias for backward compatibility
+export type WastesResponse = WasteRecordsResponse
 
 export interface FilterState {
   searchTerm: string

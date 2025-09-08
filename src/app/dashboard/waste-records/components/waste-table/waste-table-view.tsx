@@ -62,42 +62,42 @@ export function WasteTableView({ wasteRecords, isFiltering }: WasteTableViewProp
         </TableHeader>
         <TableBody>
           {wasteRecords.length > 0 ? (
-            wasteRecords.map((record) => (
-              <TableRow key={record.id}>
+            wasteRecords.map((wasteRecord) => (
+              <TableRow key={wasteRecord.id}>
                 <TableCell>
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm sm:text-base">{formatDateShort(record.recordDate)}</span>
+                    <span className="text-sm sm:text-base">{formatDateShort(wasteRecord.recordDate)}</span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge className={getWasteTypeColor(record.wasteType)}>
-                    {formatWasteType(record.wasteType)}
+                  <Badge className={getWasteTypeColor(wasteRecord.wasteType)}>
+                    {formatWasteType(wasteRecord.wasteType)}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge className={getSourceColor(record.source)}>
-                    {formatSource(record.source)}
+                  <Badge className={getSourceColor(wasteRecord.source)}>
+                    {formatSource(wasteRecord.source)}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-2">
                     <Weight className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{record.weight} kg</span>
+                    <span className="font-medium">{wasteRecord.weight} kg</span>
                   </div>
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
-                  {record.school && (
+                  {wasteRecord.school && (
                     <div className="flex items-center space-x-2 max-w-xs">
                       <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm truncate">{record.school.name}</span>
+                      <span className="text-sm truncate">{wasteRecord.school.name}</span>
                     </div>
                   )}
                 </TableCell>
                 <TableCell className="hidden xl:table-cell">
-                  {record.notes && (
+                  {wasteRecord.notes && (
                     <span className="text-sm text-muted-foreground max-w-xs block truncate">
-                      {record.notes}
+                      {wasteRecord.notes}
                     </span>
                   )}
                 </TableCell>
@@ -112,7 +112,7 @@ export function WasteTableView({ wasteRecords, isFiltering }: WasteTableViewProp
                     <DropdownMenuContent align="end">
                       {canViewWaste && (
                         <DropdownMenuItem
-                          onClick={() => router.push(`/dashboard/waste-management/${record.id}`)}
+                          onClick={() => router.push(`/dashboard/waste-records/${wasteRecord.id}`)}
                         >
                           <Eye className="mr-2 h-4 w-4" />
                           Lihat Detail
@@ -120,7 +120,7 @@ export function WasteTableView({ wasteRecords, isFiltering }: WasteTableViewProp
                       )}
                       {canEditWaste && (
                         <DropdownMenuItem
-                          onClick={() => router.push(`/dashboard/waste-management/${record.id}/edit`)}
+                          onClick={() => router.push(`/dashboard/waste-records/${wasteRecord.id}/edit`)}
                         >
                           <Edit className="mr-2 h-4 w-4" />
                           Edit Catatan
@@ -152,7 +152,7 @@ export function WasteTableView({ wasteRecords, isFiltering }: WasteTableViewProp
                   {canCreateWaste && (
                     <Button
                       variant="outline"
-                      onClick={() => router.push('/dashboard/waste-management/create')}
+                      onClick={() => router.push('/dashboard/waste-records/create')}
                     >
                       <Plus className="mr-2 h-4 w-4" />
                       Tambah Catatan Pertama

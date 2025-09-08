@@ -103,21 +103,21 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
   return (
     <PermissionGuard permission="production.view" redirectTo="/dashboard/vehicles">
       <PageContainer
-        title="Vehicle Details"
-        description="View detailed information about this vehicle and its maintenance history."
+        title="Detail Kendaraan"
+        description="Informasi lengkap kendaraan dan riwayat perawatan."
         showBreadcrumb={true}
         actions={
           <div className="flex gap-2">
             <Link href="/dashboard/vehicles">
               <Button variant="outline">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to List
+                Kembali ke Daftar
               </Button>
             </Link>
             <Link href={`/dashboard/vehicles/${id}/edit`}>
               <Button>
                 <Edit className="h-4 w-4 mr-2" />
-                Edit Vehicle
+                Ubah Kendaraan
               </Button>
             </Link>
           </div>

@@ -100,27 +100,71 @@ export async function POST(request: NextRequest) {
       plateNumber,
       type,
       capacity,
+      brand,
+      model,
+      year,
+      fuelType,
+      status,
       lastService,
+      nextService,
+      mileage,
+      insuranceExpiry,
+      registrationExpiry,
       notes
     } = body
 
+    // Validate required fields
+    if (!plateNumber || !type || !capacity || !brand || !model || !year || !fuelType) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Missing required fields: plateNumber, type, capacity, brand, model, year, fuelType"
+        },
+        { status: 400 }
+      )
+    }
+
     const vehicle = await prisma.vehicle.create({
       data: {
-        plateNumber,
+        plateNumber: plateNumber.toUpperCase().trim(),
         type,
-        capacity,
+        capacity: parseInt(capacity),
+        brand,
+        model,
+        year: parseInt(year),
+        fuelType,
+        status: status || 'ACTIVE',
         lastService: lastService ? new Date(lastService) : null,
-        notes
+        nextService: nextService ? new Date(nextService) : null,
+        mileage: mileage ? parseFloat(mileage) : null,
+        insuranceExpiry: insuranceExpiry ? new Date(insuranceExpiry) : null,
+        registrationExpiry: registrationExpiry ? new Date(registrationExpiry) : null,
+        notes: notes || null,
+        isActive: status !== 'RETIRED' && status !== 'INACTIVE' // Set legacy field based on status
       }
     })
 
     return NextResponse.json({
       success: true,
-      data: vehicle
+      data: vehicle,
+      message: "Vehicle created successfully"
     })
 
   } catch (error) {
     console.error("Error creating vehicle:", error)
+    
+    // Handle duplicate plate number
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Plate number already exists",
+          details: "A vehicle with this plate number is already registered"
+        },
+        { status: 409 }
+      )
+    }
+    
     return NextResponse.json(
       { 
         success: false, 

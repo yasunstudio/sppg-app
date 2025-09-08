@@ -111,7 +111,7 @@ export default async function EditVehiclePage({ params }: EditVehiclePageProps) 
             <Link href={`/dashboard/vehicles/${id}`}>
               <Button variant="outline">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Details
+                Kembali ke Detail
               </Button>
             </Link>
           </div>

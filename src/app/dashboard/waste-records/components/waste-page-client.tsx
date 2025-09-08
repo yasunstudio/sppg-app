@@ -1,6 +1,6 @@
 "use client"
 
-import { WasteRecordsManagement } from "./waste-records-management"
+import { WasteRecordManagement } from "./waste-record-management"
 import { WastePageActions } from "./waste-page-actions"
 import { PageContainer } from "@/components/layout"
 import { useState } from "react"
@@ -19,7 +19,7 @@ export function WastePageClient() {
       showBreadcrumb={true}
       actions={<WastePageActions onRefresh={handleRefresh} />}
     >
-      <WasteRecordsManagement key={refreshKey} />
+      <WasteRecordManagement key={refreshKey} />
     </PageContainer>
   )
 }

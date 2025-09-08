@@ -14,12 +14,12 @@ export function VehiclePageActions({ onRefresh }: VehiclePageActionsProps) {
     <div className="flex gap-2">
       <Button variant="outline" onClick={onRefresh}>
         <RefreshCw className="h-4 w-4 mr-2" />
-        Refresh
+        Muat Ulang
       </Button>
       <Link href="/dashboard/vehicles/create">
         <Button>
           <Plus className="h-4 w-4 mr-2" />
-          Add Vehicle
+          Tambah Kendaraan
         </Button>
       </Link>
     </div>

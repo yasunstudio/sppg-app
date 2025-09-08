@@ -87,6 +87,51 @@ export const PAGE_CONFIGS: RouteConfig = {
     keywords: ["distribution", "distribusi", "delivery", "logistics"]
   },
 
+  // Vehicle Management  
+  "/dashboard/vehicles": {
+    title: "Manajemen Kendaraan",
+    breadcrumbs: [
+      { label: "Dasbor", href: "/dashboard" },
+      { label: "Kendaraan", isActive: true, icon: "Truck" }
+    ],
+    description: "Manajemen armada kendaraan dan perawatan",
+    keywords: ["vehicles", "kendaraan", "fleet", "armada", "maintenance"]
+  },
+
+  "/dashboard/vehicles/create": {
+    title: "Tambah Kendaraan",
+    breadcrumbs: [
+      { label: "Dasbor", href: "/dashboard" },
+      { label: "Kendaraan", href: "/dashboard/vehicles", icon: "Truck" },
+      { label: "Tambah Baru", isActive: true }
+    ],
+    description: "Menambahkan kendaraan baru ke armada",
+    keywords: ["add vehicle", "tambah kendaraan", "new vehicle", "fleet"]
+  },
+
+  "/dashboard/vehicles/[id]": {
+    title: "Detail Kendaraan",
+    breadcrumbs: [
+      { label: "Dasbor", href: "/dashboard" },
+      { label: "Kendaraan", href: "/dashboard/vehicles", icon: "Truck" },
+      { label: "[PLATE_NUMBER]", isActive: true, isDynamic: true }
+    ],
+    description: "Informasi detail kendaraan dan riwayat perawatan",
+    keywords: ["vehicle details", "detail kendaraan", "vehicle info"]
+  },
+
+  "/dashboard/vehicles/[id]/edit": {
+    title: "Edit Kendaraan",
+    breadcrumbs: [
+      { label: "Dasbor", href: "/dashboard" },
+      { label: "Kendaraan", href: "/dashboard/vehicles", icon: "Truck" },
+      { label: "[PLATE_NUMBER]", href: "/dashboard/vehicles/[id]", isDynamic: true },
+      { label: "Edit", isActive: true }
+    ],
+    description: "Mengedit informasi kendaraan",
+    keywords: ["edit vehicle", "edit kendaraan", "update vehicle"]
+  },
+
   // Waste Management
   "/dashboard/waste-management": {
     title: "Manajemen Limbah",
@@ -100,10 +145,10 @@ export const PAGE_CONFIGS: RouteConfig = {
 
   // Quality Control
   "/dashboard/quality": {
-    title: "Quality Control",
+    title: "Kontrol Kualitas",
     breadcrumbs: [
       { label: "Dasbor", href: "/dashboard" },
-      { label: "Quality Control", isActive: true }
+      { label: "Kontrol Kualitas", isActive: true }
     ],
     description: "Kontrol kualitas makanan dan standar keamanan",
     keywords: ["quality", "kualitas", "control", "safety", "standards"]

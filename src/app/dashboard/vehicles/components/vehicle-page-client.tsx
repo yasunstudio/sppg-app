@@ -14,8 +14,8 @@ export function VehiclePageClient() {
 
   return (
     <PageContainer
-      title="Vehicle Management"
-      description="Manage your fleet of vehicles, track maintenance, and monitor delivery status."
+      title="Manajemen Kendaraan"
+      description="Kelola armada kendaraan, lacak jadwal perawatan, dan monitor status pengiriman."
       showBreadcrumb={true}
       actions={<VehiclePageActions onRefresh={handleRefresh} />}
     >

@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -15,7 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { 
-  ArrowLeft, 
   Truck,
   Package,
   CircleCheck,
@@ -25,55 +23,10 @@ import {
   Activity,
   MapPin,
   Timer,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from "lucide-react"
-import { toast } from "sonner"
-
-interface Vehicle {
-  id: string
-  plateNumber: string
-  type: string
-  capacity: number
-  isActive: boolean
-  lastService?: string | null
-  notes?: string | null
-  createdAt: string
-  updatedAt: string
-  _count: {
-    distributions: number
-    deliveries: number
-  }
-}
-
-interface Delivery {
-  id: string
-  deliveryDate: string
-  status: string
-  school: {
-    id: string
-    name: string
-    address: string
-  }
-  portionsDelivered?: number
-  notes?: string
-  distributionId: string
-}
-
-const typeColors = {
-  "Truck": "bg-blue-100 text-blue-800 border-blue-200",
-  "Van": "bg-green-100 text-green-800 border-green-200",
-  "Pickup": "bg-orange-100 text-orange-800 border-orange-200",
-  "Motorcycle": "bg-purple-100 text-purple-800 border-purple-200",
-  "Car": "bg-pink-100 text-pink-800 border-pink-200",
-}
-
-const statusColors = {
-  "PENDING": "bg-yellow-100 text-yellow-800 border-yellow-200",
-  "IN_TRANSIT": "bg-blue-100 text-blue-800 border-blue-200",
-  "DELIVERED": "bg-green-100 text-green-800 border-green-200",
-  "FAILED": "bg-red-100 text-red-800 border-red-200",
-  "CANCELLED": "bg-gray-100 text-gray-800 border-gray-200",
-}
+import { useVehicleDetails } from "./hooks/use-vehicle-details"
 
 interface VehicleDetailsProps {
   vehicleId: string
@@ -107,354 +60,287 @@ const statusTranslations = {
 
 export default function VehicleDetails({ vehicleId }: VehicleDetailsProps) {
   const router = useRouter()
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null)
-  const [recentDeliveries, setRecentDeliveries] = useState<Delivery[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isDeliveriesLoading, setIsDeliveriesLoading] = useState(true)
+  const { 
+    vehicle, 
+    deliveries, 
+    isLoading, 
+    isDeliveriesLoading, 
+    error,
+    refreshVehicle 
+  } = useVehicleDetails(vehicleId)
 
-  useEffect(() => {
-    fetchVehicle()
-    fetchRecentDeliveries()
-  }, [vehicleId])
-
-  const fetchVehicle = async () => {
-    try {
-      const response = await fetch(`/api/vehicles/${vehicleId}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch vehicle')
-      }
-      const result = await response.json()
-      if (result.success) {
-        setVehicle(result.data)
-      }
-    } catch (error) {
-      console.error('Error fetching vehicle:', error)
-      toast.error('Gagal memuat data kendaraan')
-    } finally {
-      setIsLoading(false)
-    }
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Memuat data kendaraan...</span>
+      </div>
+    )
   }
 
-  const fetchRecentDeliveries = async () => {
-    try {
-      setIsDeliveriesLoading(true);
-      const response = await fetch(`/api/vehicles/${vehicleId}/deliveries`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch deliveries');
-      }
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        setRecentDeliveries(result.data);
-      } else {
-        console.error('Error from API:', result.error);
-        setRecentDeliveries([]);
-      }
-    } catch (error) {
-      console.error('Error fetching recent deliveries:', error);
-      setRecentDeliveries([]);
-    } finally {
-      setIsDeliveriesLoading(false);
-    }
-  };
-
-  if (isLoading || !vehicle) {
+  // Error state
+  if (error || !vehicle) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <AlertTriangle className="h-12 w-12 text-red-500" />
+        <div className="text-center">
+          <h3 className="text-lg font-semibold">Kendaraan Tidak Ditemukan</h3>
+          <p className="text-muted-foreground">
+            {error || 'Data kendaraan tidak dapat dimuat'}
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <Button onClick={refreshVehicle} variant="outline">
+            Coba Lagi
+          </Button>
+        </div>
       </div>
+    )
+  }
+
+  const getStatusIcon = (isActive: boolean) => {
+    return isActive ? (
+      <CircleCheck className="w-4 h-4 text-green-500" />
+    ) : (
+      <CircleX className="w-4 h-4 text-red-500" />
+    )
+  }
+
+  const getStatusText = (isActive: boolean) => {
+    return isActive ? "Aktif" : "Tidak Aktif"
+  }
+
+  const getStatusVariant = (isActive: boolean) => {
+    return isActive ? "default" : "destructive"
+  }
+
+  const getDeliveryStatusBadge = (status: string) => {
+    const statusColor = {
+      "PENDING": "bg-yellow-100 text-yellow-800",
+      "IN_TRANSIT": "bg-blue-100 text-blue-800",
+      "DELIVERED": "bg-green-100 text-green-800",
+      "FAILED": "bg-red-100 text-red-800",
+      "CANCELLED": "bg-gray-100 text-gray-800"
+    }[status] || "bg-gray-100 text-gray-800"
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}`}>
+        {statusTranslations[status as keyof typeof statusTranslations] || status}
+      </span>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 sm:gap-4">
-        {/* Back Button */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="rounded-full h-10 w-10 shrink-0"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg shrink-0">
-            <Truck className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">{vehicle.plateNumber}</h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Detail Kendaraan</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="xl:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Info Card */}
+        <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Informasi Kendaraan</CardTitle>
-              <CardDescription>
-                Detail lengkap dan spesifikasi kendaraan
-              </CardDescription>
+              <div className="flex items-center space-x-2">
+                <Truck className="w-5 h-5" />
+                <CardTitle>Informasi Kendaraan</CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Basic Info */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                    <FileText className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Nomor Plat</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">{vehicle.plateNumber}</p>
-                    </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Nomor Plat</p>
+                    <p className="text-lg font-semibold">{vehicle.plateNumber}</p>
                   </div>
-
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                    <Truck className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Jenis Kendaraan</p>
-                      <Badge 
-                        variant="outline" 
-                        className={typeColors[vehicle.type as keyof typeof typeColors] || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"}
-                      >
-                        {vehicle.type}
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Jenis Kendaraan</p>
+                    <p className="text-sm">{vehicle.type}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Kapasitas</p>
+                    <p className="text-sm">{vehicle.capacity} kg</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Status</p>
+                    <div className="flex items-center space-x-2">
+                      {getStatusIcon(vehicle.isActive)}
+                      <Badge variant={getStatusVariant(vehicle.isActive)}>
+                        {getStatusText(vehicle.isActive)}
                       </Badge>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                    <Package className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Kapasitas</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{vehicle.capacity} kg</p>
                     </div>
                   </div>
                 </div>
 
+                {/* Additional Info */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                    <CircleCheck className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</p>
-                      <Badge 
-                        variant="outline" 
-                        className={vehicle.isActive ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700" : "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-700"}
-                      >
-                        {vehicle.isActive ? "Aktif" : "Tidak Aktif"}
-                      </Badge>
+                  {vehicle.brand && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Merek</p>
+                      <p className="text-sm">{vehicle.brand}</p>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                    <Timer className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Servis Terakhir</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {vehicle.lastService ? formatDateShort(vehicle.lastService) : "Belum ada data"}
-                      </p>
+                  )}
+                  {vehicle.model && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Model</p>
+                      <p className="text-sm">{vehicle.model}</p>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                    <Calendar className="h-5 w-5 text-gray-600 dark:text-gray-400 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Terdaftar</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{formatDateShort(vehicle.createdAt)}</p>
+                  )}
+                  {vehicle.year && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Tahun</p>
+                      <p className="text-sm">{vehicle.year}</p>
                     </div>
-                  </div>
+                  )}
+                  {vehicle.fuelType && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Jenis Bahan Bakar</p>
+                      <p className="text-sm">{vehicle.fuelType}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {vehicle.notes && (
                 <>
                   <Separator />
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Catatan</p>
-                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">{vehicle.notes}</p>
-                      </div>
-                    </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Catatan</p>
+                    <p className="text-sm">{vehicle.notes}</p>
                   </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          {/* Recent Deliveries */}
+          {/* Service Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Riwayat Pengiriman Terbaru</CardTitle>
-              <CardDescription>
-                10 pengiriman terakhir yang dilakukan kendaraan ini
-              </CardDescription>
+              <div className="flex items-center space-x-2">
+                <Activity className="w-5 h-5" />
+                <CardTitle>Informasi Service & Maintenance</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
-              {isDeliveriesLoading ? (
-                <div className="flex items-center justify-center h-32">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div>
-                </div>
-              ) : recentDeliveries.length === 0 ? (
-                <div className="text-center py-8">
-                  <AlertTriangle className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Belum Ada Riwayat Pengiriman</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Kendaraan ini belum pernah melakukan pengiriman.</p>
-                </div>
-              ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  {/* Desktop Table */}
-                  <div className="hidden md:block overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Tanggal</TableHead>
-                          <TableHead>Sekolah</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Porsi</TableHead>
-                          <TableHead>Lokasi</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {recentDeliveries.map((delivery) => (
-                          <TableRow key={delivery.id}>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">{formatDateShort(delivery.deliveryDate)}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <span className="font-medium">{delivery.school.name}</span>
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant="outline" 
-                                className={statusColors[delivery.status as keyof typeof statusColors] || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"}
-                              >
-                                {statusTranslations[delivery.status as keyof typeof statusTranslations] || delivery.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-sm">{delivery.portionsDelivered || 0} porsi</span>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm text-muted-foreground truncate max-w-[200px]">{delivery.school.address}</span>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  {/* Mobile Cards */}
-                  <div className="md:hidden space-y-4">
-                    {recentDeliveries.map((delivery) => (
-                      <div key={delivery.id} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-3">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm font-medium">{formatDateShort(delivery.deliveryDate)}</span>
-                            </div>
-                            <h4 className="font-semibold text-gray-900 dark:text-gray-100">{delivery.school.name}</h4>
-                          </div>
-                          <Badge 
-                            variant="outline" 
-                            className={statusColors[delivery.status as keyof typeof statusColors] || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"}
-                          >
-                            {statusTranslations[delivery.status as keyof typeof statusTranslations] || delivery.status}
-                          </Badge>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-600 dark:text-gray-400">Porsi:</span>
-                            <span className="ml-2 font-medium">{delivery.portionsDelivered || 0} porsi</span>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                            <span className="text-gray-600 dark:text-gray-400 text-xs leading-relaxed">{delivery.school.address}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  {vehicle.lastService && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Terakhir Service</p>
+                      <p className="text-sm">{formatDateShort(vehicle.lastService)}</p>
+                    </div>
+                  )}
+                  {vehicle.nextService && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Service Berikutnya</p>
+                      <p className="text-sm">{formatDateShort(vehicle.nextService)}</p>
+                    </div>
+                  )}
                 </div>
-              )}
+                <div className="space-y-4">
+                  {vehicle.mileage !== undefined && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Kilometer</p>
+                      <p className="text-sm">{vehicle.mileage.toLocaleString()} km</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Document Information */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <FileText className="w-5 h-5" />
+                <CardTitle>Informasi Dokumen</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  {vehicle.insuranceExpiry && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Masa Berlaku Asuransi</p>
+                      <p className="text-sm">{formatDateShort(vehicle.insuranceExpiry)}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-4">
+                  {vehicle.registrationExpiry && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Masa Berlaku STNK</p>
+                      <p className="text-sm">{formatDateShort(vehicle.registrationExpiry)}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Side Panel */}
         <div className="space-y-6">
+          {/* System Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Statistik Kendaraan</CardTitle>
-              <CardDescription>
-                Metrik performa dan penggunaan kendaraan
-              </CardDescription>
+              <CardTitle>Informasi Sistem</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 gap-4">
-                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Pengiriman</p>
-                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{vehicle._count.deliveries}</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400">pengiriman selesai</p>
-                  </div>
-                  <Activity className="h-8 w-8 text-blue-600 dark:text-blue-400 shrink-0" />
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-green-700 dark:text-green-300">Total Distribusi</p>
-                    <p className="text-2xl font-bold text-green-900 dark:text-green-100">{vehicle._count.distributions}</p>
-                    <p className="text-xs text-green-600 dark:text-green-400">distribusi dilakukan</p>
-                  </div>
-                  <Package className="h-8 w-8 text-green-600 dark:text-green-400 shrink-0" />
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Kapasitas Maksimal</p>
-                    <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{vehicle.capacity}</p>
-                    <p className="text-xs text-orange-600 dark:text-orange-400">kilogram</p>
-                  </div>
-                  <Truck className="h-8 w-8 text-orange-600 dark:text-orange-400 shrink-0" />
-                </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Dibuat</p>
+                <p className="text-sm">{formatDate(vehicle.createdAt)}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Terakhir Diperbarui</p>
+                <p className="text-sm">{formatDate(vehicle.updatedAt)}</p>
               </div>
             </CardContent>
           </Card>
 
+          {/* Recent Deliveries */}
           <Card>
             <CardHeader>
-              <CardTitle>Informasi Sistem</CardTitle>
+              <div className="flex items-center space-x-2">
+                <MapPin className="w-5 h-5" />
+                <CardTitle>Pengiriman Terbaru</CardTitle>
+              </div>
               <CardDescription>
-                Data teknis dan metadata kendaraan
+                5 pengiriman terakhir menggunakan kendaraan ini
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-800">
-                <span className="text-sm text-gray-600 dark:text-gray-400">ID Kendaraan</span>
-                <span className="text-sm font-mono text-gray-900 dark:text-gray-100">{vehicle.id}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-800">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Dibuat</span>
-                <span className="text-sm text-gray-900 dark:text-gray-100">{formatDate(vehicle.createdAt)}</span>
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Diperbarui</span>
-                <span className="text-sm text-gray-900 dark:text-gray-100">{formatDate(vehicle.updatedAt)}</span>
-              </div>
+            <CardContent>
+              {isDeliveriesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <span className="ml-2 text-sm">Memuat data pengiriman...</span>
+                </div>
+              ) : deliveries.length > 0 ? (
+                <div className="space-y-4">
+                  {deliveries.slice(0, 5).map((delivery) => (
+                    <div key={delivery.id} className="border-l-2 border-blue-200 pl-4 py-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-sm font-medium">{delivery.school?.name || 'N/A'}</p>
+                        {getDeliveryStatusBadge(delivery.status)}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDateShort(delivery.deliveryDate)}
+                      </p>
+                      {delivery.description && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {delivery.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Package className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Belum ada data pengiriman
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

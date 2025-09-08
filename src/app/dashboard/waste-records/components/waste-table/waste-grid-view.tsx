@@ -40,7 +40,7 @@ export function WasteGridView({ wasteRecords, isFiltering }: WasteGridViewProps)
           <p className="text-muted-foreground mb-4">Tidak ada catatan limbah ditemukan</p>
           <Button
             variant="outline"
-            onClick={() => router.push('/dashboard/waste-management/create')}
+            onClick={() => router.push('/dashboard/waste-records/create')}
           >
             <Plus className="mr-2 h-4 w-4" />
             Tambah Catatan Pertama
@@ -53,16 +53,16 @@ export function WasteGridView({ wasteRecords, isFiltering }: WasteGridViewProps)
   return (
     <div className={`transition-opacity duration-200 ${isFiltering ? 'opacity-50' : 'opacity-100'}`}>
       <div className="space-y-4">
-        {wasteRecords.map((record) => (
-          <Card key={record.id} className="hover:shadow-md transition-all duration-200">
+        {wasteRecords.map((wasteRecord) => (
+          <Card key={wasteRecord.id} className="hover:shadow-md transition-all duration-200">
             <CardContent className="p-4">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex flex-col gap-2">
-                  <Badge className={getWasteTypeColor(record.wasteType)}>
-                    {formatWasteType(record.wasteType)}
+                  <Badge className={getWasteTypeColor(wasteRecord.wasteType)}>
+                    {formatWasteType(wasteRecord.wasteType)}
                   </Badge>
-                  <Badge className={getSourceColor(record.source)}>
-                    {formatSource(record.source)}
+                  <Badge className={getSourceColor(wasteRecord.source)}>
+                    {formatSource(wasteRecord.source)}
                   </Badge>
                 </div>
                 <DropdownMenu>
@@ -73,13 +73,13 @@ export function WasteGridView({ wasteRecords, isFiltering }: WasteGridViewProps)
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      onClick={() => router.push(`/dashboard/waste-management/${record.id}`)}
+                      onClick={() => router.push(`/dashboard/waste-records/${wasteRecord.id}`)}
                     >
                       <Eye className="mr-2 h-4 w-4" />
                       Lihat Detail
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => router.push(`/dashboard/waste-management/${record.id}/edit`)}
+                      onClick={() => router.push(`/dashboard/waste-records/${wasteRecord.id}/edit`)}
                     >
                       <Edit className="mr-2 h-4 w-4" />
                       Edit Catatan
@@ -100,28 +100,28 @@ export function WasteGridView({ wasteRecords, isFiltering }: WasteGridViewProps)
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">
-                    {formatDate(record.recordDate)}
+                    {formatDate(wasteRecord.recordDate)}
                   </span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <Weight className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{record.weight} kg</span>
+                  <span className="font-medium">{wasteRecord.weight} kg</span>
                 </div>
                 
-                {record.school && (
+                {wasteRecord.school && (
                   <div className="flex items-center gap-2 min-w-0">
                     <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-sm text-muted-foreground truncate">
-                      {record.school.name}
+                      {wasteRecord.school.name}
                     </span>
                   </div>
                 )}
                 
-                {record.notes && (
+                {wasteRecord.notes && (
                   <div className="pt-2 border-t">
                     <p className="text-sm text-muted-foreground line-clamp-2">
-                      {record.notes}
+                      {wasteRecord.notes}
                     </p>
                   </div>
                 )}

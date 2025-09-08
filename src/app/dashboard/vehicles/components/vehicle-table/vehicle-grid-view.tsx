@@ -102,7 +102,7 @@ export function VehicleGridView({
                     {onEdit && (
                       <DropdownMenuItem onClick={() => onEdit(vehicle.id)}>
                         <Edit className="mr-2 h-4 w-4" />
-                        Edit
+                        Ubah
                       </DropdownMenuItem>
                     )}
                     {onDelete && (
