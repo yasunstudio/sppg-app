@@ -31,8 +31,8 @@ import {
   UserMinus,
   TrendingUp
 } from "lucide-react"
-import { UserTableView } from "./user-table-view"
-import { UserGridView } from "./user-grid-view"
+import { UserTableView } from "./user-table/user-table-view"
+import { UserGridView } from "./user-table/user-grid-view"
 import { useResponsive } from "@/hooks/use-responsive"
 import { toast } from "sonner"
 
