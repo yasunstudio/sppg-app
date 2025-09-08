@@ -9,20 +9,24 @@ import React from 'react'
 import { cn } from '../utils'
 import type { HeaderLeftProps } from '../types/header.types'
 import { MobileMenuToggle, PageTitle } from '.'
+import { SidebarToggle } from './SidebarToggle'
 
 /**
- * Left section of header (mobile menu + page title)
+ * Left section of header (mobile menu + sidebar toggle + page title)
  */
-export const HeaderLeft: React.FC<HeaderLeftProps> = ({
+const HeaderLeft: React.FC<HeaderLeftProps> = ({
   children,
   className,
   onMobileSidebarToggle,
   sidebarOpen,
-  pageTitle
+  pageTitle,
+  // Add sidebar collapse props
+  sidebarCollapsed,
+  onSidebarToggle
 }) => {
   return (
     <div className={cn(
-      'flex items-center space-x-3 flex-1 min-w-0',
+      "flex items-center gap-4 lg:gap-6 min-w-0 flex-1 pl-4 lg:pl-6 pr-2",
       className
     )}>
       {/* Mobile Menu Toggle */}
@@ -33,8 +37,20 @@ export const HeaderLeft: React.FC<HeaderLeftProps> = ({
         />
       </div>
 
+      {/* Sidebar Toggle Button (Desktop) */}
+      {onSidebarToggle && (
+        <div className="hidden lg:flex items-center">
+          <SidebarToggle
+            isCollapsed={sidebarCollapsed || false}
+            onToggle={onSidebarToggle}
+            variant="default"
+            size="sm"
+          />
+        </div>
+      )}
+
       {/* Page Title */}
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 ml-2 lg:ml-4">
         <PageTitle title={pageTitle} />
       </div>
 
@@ -43,3 +59,5 @@ export const HeaderLeft: React.FC<HeaderLeftProps> = ({
     </div>
   )
 }
+
+export { HeaderLeft }

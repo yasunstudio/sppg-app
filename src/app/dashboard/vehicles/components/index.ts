@@ -9,7 +9,7 @@ export { VehicleManagement } from './vehicle-management'
 // Stats components
 export { VehicleStatsCards } from './vehicle-stats/vehicle-stats-cards'
 
-// Filter components  
+// Filter components
 export { VehicleSearchFilters } from './vehicle-filters/vehicle-search-filters'
 
 // Table components

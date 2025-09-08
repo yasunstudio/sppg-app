@@ -22,7 +22,7 @@ export const HeaderRight: React.FC<HeaderRightProps> = ({
 }) => {
   return (
     <div className={cn(
-      'flex items-center space-x-1 sm:space-x-2 flex-shrink-0',
+      'flex items-center space-x-1 sm:space-x-2 flex-shrink-0 pr-0',
       className
     )}>
       {/* Mobile Search Toggle */}
@@ -36,7 +36,7 @@ export const HeaderRight: React.FC<HeaderRightProps> = ({
         {showNotifications && <NotificationButton />}
 
         {/* Theme Toggle */}
-        {showThemeToggle && <ThemeToggle />}
+        {showThemeToggle && <ThemeToggle variant="inline" />}
       </div>
 
       {/* User Menu - with separator */}

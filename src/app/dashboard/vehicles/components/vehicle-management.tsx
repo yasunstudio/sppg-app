@@ -1,152 +1,170 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, RefreshCw, Truck } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { VehicleStatsCards } from './vehicle-stats/vehicle-stats-cards'
-import { VehicleSearchFilters } from './vehicle-filters/vehicle-search-filters'
 import { VehicleTableView } from './vehicle-table/vehicle-table-view'
 import { VehicleGridView } from './vehicle-table/vehicle-grid-view'
+import { VehicleSearchFilters } from './vehicle-filters/vehicle-search-filters'
 import { VehiclePagination } from './vehicle-pagination/vehicle-pagination'
-import { useVehicles } from '@/hooks/use-vehicles'
-import { useResponsive } from '@/hooks/use-responsive'
-import { useRouter } from 'next/navigation'
-import type { FilterState, PaginationState } from './utils/vehicle-types'
+import { useVehicles } from './hooks/use-vehicles'
+import { useResponsive } from './hooks/use-responsive'
+import type { VehicleFilters } from './utils/vehicle-types'
 
 export function VehicleManagement() {
   const router = useRouter()
-  const { isMobile } = useResponsive()
+  const { isMobile, isTablet, isDesktop } = useResponsive()
   
-  const [filters, setFilters] = useState<FilterState>({
+  // State for filters and pagination
+  const [filters, setFilters] = useState<VehicleFilters>({
     searchTerm: '',
-    selectedType: 'all',
-    selectedStatus: 'all'
+    selectedStatus: 'all',
+    selectedType: 'all'
   })
+  
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
-  const [pagination, setPagination] = useState<PaginationState>({
-    currentPage: 1,
-    itemsPerPage: 10
-  })
-
+  // Use the vehicles hook with filters and pagination
   const {
     vehicles,
     stats,
-    paginationData,
+    pagination,
     loading,
-    isFiltering,
-    deleteVehicle,
-    refetch
-  } = useVehicles({ filters, pagination })
+    error,
+    refreshVehicles,
+    deleteVehicle
+  } = useVehicles({
+    filters,
+    page: currentPage,
+    limit: itemsPerPage
+  })
 
-  const handleSearchChange = (value: string) => {
-    setFilters(prev => ({ ...prev, searchTerm: value }))
-    setPagination(prev => ({ ...prev, currentPage: 1 }))
+  // Get pagination data from API response
+  const totalItems = pagination?.totalCount || 0
+  const totalPages = pagination?.totalPages || 0
+
+  // Handlers
+  const handleFiltersChange = (newFilters: VehicleFilters) => {
+    setFilters(newFilters)
+    setCurrentPage(1) // Reset to first page when filters change
   }
 
-  const handleVehicleTypeChange = (value: string) => {
-    setFilters(prev => ({ ...prev, selectedType: value }))
-    setPagination(prev => ({ ...prev, currentPage: 1 }))
-  }
-
-  const handleStatusChange = (value: string) => {
-    setFilters(prev => ({ ...prev, selectedStatus: value }))
-    setPagination(prev => ({ ...prev, currentPage: 1 }))
-  }
-
-  const handleItemsPerPageChange = (value: string) => {
-    setPagination(prev => ({ ...prev, itemsPerPage: parseInt(value), currentPage: 1 }))
+  const handleFiltersReset = () => {
+    setFilters({
+      searchTerm: '',
+      selectedStatus: 'all',
+      selectedType: 'all'
+    })
+    setCurrentPage(1)
   }
 
   const handlePageChange = (page: number) => {
-    setPagination(prev => ({ ...prev, currentPage: page }))
+    setCurrentPage(page)
   }
 
-  const handleCreateVehicle = () => {
-    router.push('/dashboard/vehicles/create')
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage)
+    setCurrentPage(1)
+  }
+
+  const handleViewVehicle = (vehicleId: string) => {
+    router.push(`/dashboard/vehicles/${vehicleId}`)
+  }
+
+  const handleEditVehicle = (vehicleId: string) => {
+    router.push(`/dashboard/vehicles/${vehicleId}/edit`)
+  }
+
+  const handleDeleteVehicle = async (vehicleId: string) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus kendaraan ini?')) {
+      return
+    }
+
+    try {
+      await deleteVehicle(vehicleId)
+      toast.success('Kendaraan berhasil dihapus')
+    } catch (error) {
+      toast.error('Gagal menghapus kendaraan')
+      console.error('Error deleting vehicle:', error)
+    }
+  }
+
+  const handleSort = (column: string, direction: 'asc' | 'desc') => {
+    // This would typically be handled by the API
+    console.log('Sort by:', column, direction)
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center py-12">
+          <div className="text-red-600 mb-4">Error: {error}</div>
+          <Button onClick={refreshVehicles}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Coba Lagi
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Manajemen Kendaraan</h1>
-          <p className="text-muted-foreground">
-            Kelola data kendaraan untuk distribusi makanan
-          </p>
-        </div>
-        <Button onClick={handleCreateVehicle}>
-          <Plus className="mr-2 h-4 w-4" />
-          Tambah Kendaraan
-        </Button>
-      </div>
-
-      {/* Stats */}
+    <div className="space-y-8">
+      {/* Stats Cards */}
       <VehicleStatsCards stats={stats} loading={loading} />
 
-      {/* Filters */}
+      {/* Search and Filters */}
       <VehicleSearchFilters
         filters={filters}
-        onSearchChange={handleSearchChange}
-        onVehicleTypeChange={handleVehicleTypeChange}
-        onStatusChange={handleStatusChange}
-        onItemsPerPageChange={handleItemsPerPageChange}
-        itemsPerPage={pagination.itemsPerPage}
+        onFiltersChange={handleFiltersChange}
+        onReset={handleFiltersReset}
+        loading={loading}
       />
 
-      {/* Data View */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <Truck className="h-5 w-5 flex-shrink-0" />
-              <span>Data Kendaraan</span>
-              {isFiltering && (
-                <div className="animate-spin flex-shrink-0">
-                  <RefreshCw className="h-4 w-4" />
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2 flex-wrap ml-auto">
-              <Badge variant="outline" className="text-xs whitespace-nowrap">
-                {isMobile ? 'Grid' : 'Tabel'}
-              </Badge>
-              {paginationData && (
-                <Badge variant="secondary" className="whitespace-nowrap">
-                  {paginationData.totalCount} total
-                </Badge>
-              )}
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6">
-          {isMobile ? (
-            <VehicleGridView 
-              vehicles={vehicles}
-              isFiltering={isFiltering}
-            />
-          ) : (
-            <div className="overflow-x-auto">
-              <VehicleTableView 
-                vehicles={vehicles}
-                isFiltering={isFiltering}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Summary Info */}
+      <div className="flex justify-start items-center py-2">
+        <div className="text-sm text-muted-foreground">
+          {totalItems > 0 && `Menampilkan ${totalItems} kendaraan`}
+        </div>
+      </div>
+
+      {/* Data View - Auto Responsive */}
+      {isMobile ? (
+        // Mobile: Always grid view
+        <VehicleGridView
+          vehicles={vehicles}
+          loading={loading}
+          onView={handleViewVehicle}
+          onEdit={handleEditVehicle}
+          onDelete={handleDeleteVehicle}
+        />
+      ) : (
+        // Tablet & Desktop: Always table view
+        <VehicleTableView
+          vehicles={vehicles}
+          loading={loading}
+          onView={handleViewVehicle}
+          onEdit={handleEditVehicle}
+          onDelete={handleDeleteVehicle}
+          onSort={handleSort}
+        />
+      )}
 
       {/* Pagination */}
-      {paginationData && (
+      {totalPages > 1 && (
         <VehiclePagination
-          currentPage={paginationData.currentPage}
-          totalPages={paginationData.totalPages}
-          totalItems={paginationData.totalCount}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
           onPageChange={handlePageChange}
-          hasMore={paginationData.hasMore}
-          loading={loading || isFiltering}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          loading={loading}
         />
       )}
     </div>

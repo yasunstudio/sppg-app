@@ -32,26 +32,29 @@ export function SidebarNavSection({
   }
 
   return (
-    <div className={cn("space-y-1", !isMainSection && "mt-6")}>
+    <div className={cn("space-y-1", !isMainSection && "mt-8")}>
       {!isMainSection && !isCollapsed && (
-        <div className="px-3 mb-3">
-          <h3 className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider mb-2 flex items-center">
-            <span className="bg-gradient-to-r from-muted-foreground/60 to-muted-foreground/40 bg-clip-text">
+        <div className="px-3 mb-4">
+          <h3 className="text-xs font-bold text-muted-foreground/90 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary to-primary/60 shadow-sm" />
+            <span className="bg-gradient-to-r from-muted-foreground/80 to-muted-foreground/60 bg-clip-text">
               {title}
             </span>
           </h3>
-          <div className="h-px bg-gradient-to-r from-border via-border/50 to-transparent"></div>
+          <div className="h-px bg-gradient-to-r from-border/60 via-primary/20 to-transparent shadow-sm"></div>
         </div>
       )}
       
-      {visibleItems.map((item) => (
-        <SidebarMenuItem
-          key={item.href}
-          item={item}
-          isCollapsed={isCollapsed}
-          onLinkClick={onLinkClick}
-        />
-      ))}
+      <div className="space-y-1">
+        {visibleItems.map((item) => (
+          <SidebarMenuItem
+            key={item.href}
+            item={item}
+            isCollapsed={isCollapsed}
+            onLinkClick={onLinkClick}
+          />
+        ))}
+      </div>
     </div>
   )
 }

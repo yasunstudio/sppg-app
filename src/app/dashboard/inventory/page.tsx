@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { PermissionGuard } from '@/components/guards/permission-guard'
+import { PageContainer } from '@/components/layout'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,11 +12,15 @@ import { Badge } from '../../../components/ui/badge'
 import { Plus, Search, Filter, Package, AlertTriangle, CheckCircle, XCircle, Bot, TrendingUp } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { 
-  InventoryTable, 
+  InventoryTableView,
+  InventoryGridView,
   InventoryStats, 
   InventoryAlerts,
   AIInventoryPredictor
 } from './components'
+import { useResponsive } from '@/hooks/use-responsive'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import Link from 'next/link'
 
 type InventoryStatus = 'AVAILABLE' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'EXPIRED'
@@ -55,6 +60,9 @@ export default function InventoryPage() {
 }
 
 function InventoryContent() {
+  const { isMobile } = useResponsive()
+  const queryClient = useQueryClient()
+  
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<InventoryStatus | 'ALL'>('ALL')
   const [categoryFilter, setCategoryFilter] = useState<MaterialCategory | 'ALL'>('ALL')
@@ -74,6 +82,34 @@ function InventoryContent() {
       return response.json()
     }
   })
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/inventory/${id}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete inventory item')
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      toast.success('Item inventory berhasil dihapus!')
+      queryClient.invalidateQueries({ queryKey: ['inventory'] })
+      refetch()
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Gagal menghapus item inventory')
+    }
+  })
+
+  const handleDelete = async (id: string, name: string) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus item "${name}"?`)) {
+      deleteMutation.mutate(id)
+    }
+  }
 
   const getStatusIcon = (status: InventoryStatus) => {
     switch (status) {
@@ -109,15 +145,11 @@ function InventoryContent() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Inventory Management</h1>
-          <p className="text-muted-foreground">
-            Kelola stok bahan baku dan pantau ketersediaan untuk produksi makanan
-          </p>
-        </div>
+    <PageContainer
+      title="Inventory Management"
+      description="Kelola stok bahan baku dan pantau ketersediaan untuk produksi makanan"
+      showBreadcrumb={true}
+      actions={
         <div className="flex gap-2">
           <Dialog open={isAIPredictorOpen} onOpenChange={setIsAIPredictorOpen}>
             <DialogTrigger asChild>
@@ -148,7 +180,9 @@ function InventoryContent() {
             </Link>
           </Button>
         </div>
-      </div>      {/* Stats Cards */}
+      }
+    >
+      {/* Stats Cards */}
       <InventoryStats />
 
       {/* Alerts */}
@@ -204,13 +238,26 @@ function InventoryContent() {
         </CardContent>
       </Card>
 
-      {/* Inventory Table */}
-      <InventoryTable
-        data={inventoryItems}
-        isLoading={isLoading}
-        onRefetch={refetch}
-        getStatusBadge={getStatusBadge}
-      />
-    </div>
+      {/* Data View - Auto Responsive */}
+      {isMobile ? (
+        // Mobile: Grid view
+        <InventoryGridView
+          data={inventoryItems}
+          isLoading={isLoading}
+          onRefetch={refetch}
+          getStatusBadge={getStatusBadge}
+          onDelete={handleDelete}
+        />
+      ) : (
+        // Tablet & Desktop: Table view
+        <InventoryTableView
+          data={inventoryItems}
+          isLoading={isLoading}
+          onRefetch={refetch}
+          getStatusBadge={getStatusBadge}
+          onDelete={handleDelete}
+        />
+      )}
+    </PageContainer>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import type { MenuItem } from "../types/sidebar.types"
 
@@ -17,6 +18,11 @@ export function SidebarMenuItem({
   onLinkClick,
   isSubmenuItem = false 
 }: SidebarMenuItemProps) {
+  const pathname = usePathname()
+  
+  // Dynamic current state based on actual pathname
+  const isCurrentItem = pathname === item.href || pathname.startsWith(item.href + '/')
+  
   const handleClick = () => {
     if (onLinkClick) {
       onLinkClick()
@@ -29,37 +35,43 @@ export function SidebarMenuItem({
         href={item.href}
         onClick={handleClick}
         className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
-          "hover:bg-accent/50 hover:text-accent-foreground hover:shadow-sm hover:scale-[1.01]",
-          "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/40",
-          "active:scale-[0.98] group relative",
-          "dark:hover:bg-accent/40 dark:hover:text-accent-foreground dark:focus:bg-accent/30",
-          item.current 
-            ? "bg-primary/15 text-primary border border-primary/20 font-semibold shadow-sm dark:bg-primary/20 dark:border-primary/30" 
-            : "text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
+          "flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out ml-2",
+          "hover:bg-accent/60 hover:text-accent-foreground hover:shadow-md hover:scale-[1.01]",
+          "focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 focus:bg-accent/50",
+          "active:scale-[0.98] group relative overflow-hidden",
+          "border-l-2 border-transparent hover:border-primary/30",
+          isCurrentItem 
+            ? "bg-primary/15 text-primary border-l-primary/60 shadow-md font-semibold ring-1 ring-primary/15" 
+            : "text-muted-foreground hover:text-foreground"
         )}
       >
-        {/* Professional: Active submenu indicator */}
-        {item.current && (
-          <div className="absolute -left-[29px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-primary rounded-full" />
+        {/* Enhanced submenu active indicator */}
+        {isCurrentItem && (
+          <>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-primary/60 to-primary rounded-r-full shadow-sm shadow-primary/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/3 via-transparent to-transparent rounded-xl" />
+          </>
         )}
         
         <div className={cn(
-          "flex items-center justify-center rounded-md transition-all duration-200",
-          "w-6 h-6 flex-shrink-0",
-          item.current 
-            ? "bg-primary/20 text-primary dark:bg-primary/25" 
-            : "bg-muted/40 text-muted-foreground group-hover:bg-accent/40 group-hover:text-accent-foreground dark:bg-muted/30 dark:group-hover:bg-accent/30"
+          "flex items-center justify-center rounded-lg transition-all duration-200 flex-shrink-0",
+          "w-6 h-6",
+          isCurrentItem 
+            ? "bg-primary/20 text-primary shadow-sm ring-1 ring-primary/15" 
+            : "bg-muted/40 text-muted-foreground group-hover:bg-accent/40 group-hover:text-accent-foreground"
         )}>
           <item.icon className="h-3.5 w-3.5" />
         </div>
         
-        <span className="truncate">{item.name}</span>
+        <span className="truncate flex-1">{item.name}</span>
         
-        {/* Professional: Active indicator dot */}
-        {item.current && (
-          <div className="ml-auto">
-            <div className="w-2 h-2 bg-primary rounded-full shadow-sm animate-pulse" />
+        {/* Enhanced active indicator with subtle animation */}
+        {isCurrentItem && (
+          <div className="ml-auto flex items-center">
+            <div className="relative">
+              <div className="w-1.5 h-1.5 bg-primary rounded-full shadow-sm" />
+              <div className="absolute inset-0 w-1.5 h-1.5 bg-primary rounded-full animate-pulse opacity-40" />
+            </div>
           </div>
         )}
       </Link>
@@ -71,37 +83,59 @@ export function SidebarMenuItem({
       href={item.href}
       onClick={handleClick}
       className={cn(
-        "flex items-center rounded-xl py-2 text-sm font-medium transition-all duration-200 ease-in-out",
-        "hover:bg-accent/60 hover:text-accent-foreground hover:shadow-sm hover:scale-[1.02]",
-        "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/40",
+        "flex items-center rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
+        "hover:bg-accent/70 hover:text-accent-foreground hover:shadow-lg hover:scale-[1.02]",
+        "focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:bg-accent/60",
         "active:scale-[0.98] group relative overflow-hidden",
-        isCollapsed ? "px-2 justify-center mx-1" : "px-4 gap-3 mx-2",
-        item.current 
-          ? "bg-primary/15 text-primary border border-primary/25 shadow-md font-semibold" 
-          : "text-muted-foreground hover:text-foreground"
+        "backdrop-blur-sm",
+        isCollapsed ? "px-2 justify-center mx-1" : "px-3 gap-2 mx-1",
+        isCurrentItem 
+          ? "bg-primary/20 text-primary border border-primary/30 shadow-lg font-semibold ring-1 ring-primary/20" 
+          : "text-muted-foreground hover:text-foreground border border-transparent hover:border-border/30"
       )}
       title={isCollapsed ? item.name : undefined}
     >
-      {/* Active indicator */}
-      {item.current && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full shadow-sm" />
+      {/* Enhanced Active indicator with glow */}
+      {isCurrentItem && (
+        <>
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-gradient-to-b from-primary/80 via-primary to-primary/80 rounded-r-full shadow-lg shadow-primary/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent rounded-xl" />
+        </>
       )}
       
       <div className={cn(
         "relative z-10 flex items-center",
         isCollapsed ? "justify-center" : "gap-3 w-full"
       )}>
-        <item.icon className={cn(
-          "flex-shrink-0 transition-colors duration-200",
-          isCollapsed ? "h-5 w-5" : "h-4 w-4",
-          item.current ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-        )} />
+        <div className={cn(
+          "flex items-center justify-center rounded-lg transition-all duration-200",
+          isCollapsed ? "w-6 h-6" : "w-7 h-7",
+          item.current 
+            ? "bg-primary/25 text-primary shadow-md ring-1 ring-primary/20" 
+            : "bg-muted/50 text-muted-foreground group-hover:bg-accent/50 group-hover:text-accent-foreground group-hover:shadow-sm"
+        )}>
+          <item.icon className={cn(
+            "flex-shrink-0 transition-all duration-200",
+            isCollapsed ? "h-4 w-4" : "h-4 w-4",
+            item.current ? "text-primary drop-shadow-sm" : "text-muted-foreground group-hover:text-foreground"
+          )} />
+        </div>
         
         <div className={cn(
-          "transition-all duration-300 ease-in-out overflow-hidden",
+          "transition-all duration-300 ease-in-out overflow-hidden flex items-center justify-between flex-1",
           isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
         )}>
           <span className="truncate font-medium">{item.name}</span>
+          
+          {/* Professional: Active indicator dot with pulse */}
+          {item.current && (
+            <div className="ml-auto flex items-center">
+              <div className="relative">
+                <div className="w-2 h-2 bg-primary rounded-full shadow-sm" />
+                <div className="absolute inset-0 w-2 h-2 bg-primary rounded-full animate-ping opacity-30" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Link>

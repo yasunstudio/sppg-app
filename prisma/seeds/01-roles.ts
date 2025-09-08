@@ -21,6 +21,7 @@ export async function seedRoles() {
         'finance.view', 'finance.manage', 'budget.create', 'budget.view', 'budget.approve',
         'transactions.create', 'transactions.view',
         'delivery.manage', 'delivery.view', 'logistics.plan', 'logistics.manage',
+        'vehicles.create', 'vehicles.view', 'vehicles.edit', 'vehicles.delete',
         'training.manage', 'compliance.audit',
         'reports.view', 'analytics.view',
         'system.config', 'audit.view',
@@ -40,7 +41,8 @@ export async function seedRoles() {
         'quality.create', 'quality.edit',
         'finance.view', 'finance.manage', 'budget.create', 'budget.view',
         'transactions.create', 'transactions.view',
-        'delivery.view', 'training.manage',
+        'delivery.view', 'vehicles.view', 'vehicles.edit', 'vehicles.create',
+        'training.manage',
         'reports.view', 'analytics.view',
         'system.config', 'audit.view',
         'feedback.view', 'feedback.respond'

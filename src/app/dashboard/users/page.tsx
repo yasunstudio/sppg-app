@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { UserManagement } from "./components/user-management"
+import { UserPageClient } from "./components/user-page-client"
 import { PermissionGuard } from "@/hooks/use-permissions"
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export default async function UsersPage() {
         </div>
       }
     >
-      <UserManagement />
+      <UserPageClient />
     </PermissionGuard>
   )
 }

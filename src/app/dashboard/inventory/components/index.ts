@@ -1,5 +1,7 @@
 export { InventoryForm } from './inventory-form'
 export { InventoryTable } from './inventory-table'
+export { InventoryTableView } from './inventory-table-view'
+export { InventoryGridView } from './inventory-grid-view'
 export { InventoryStats } from './inventory-stats'
 export { InventoryAlerts } from './inventory-alerts'
 export { AIInventoryPredictor } from './AIInventoryPredictor'

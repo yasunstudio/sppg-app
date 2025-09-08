@@ -32,19 +32,50 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   const { theme, setTheme } = useHeaderTheme()
 
   if (variant === "inline") {
-    // Simple inline toggle for compact layouts
+    // Enhanced inline toggle with better UX and visual feedback
+    // Using NoSSR to prevent hydration mismatch
     return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn('h-9 w-9', className)}
-        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        aria-label={ARIA_LABELS.THEME_TOGGLE}
+      <NoSSR 
+        fallback={
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              'h-9 w-9 hover:bg-muted/80 dark:hover:bg-slate-700/80', 
+              'transition-all duration-200 hover:scale-105 active:scale-95',
+              'relative overflow-hidden border border-transparent',
+              'hover:border-border/20 dark:hover:border-slate-600/30',
+              'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              className
+            )}
+            aria-label="Toggle theme"
+            title="Toggle theme"
+          >
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300 text-amber-500" />
+            <span className="sr-only">{ARIA_LABELS.THEME_TOGGLE}</span>
+          </Button>
+        }
       >
-        <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-        <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-        <span className="sr-only">{ARIA_LABELS.THEME_TOGGLE}</span>
-      </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            'h-9 w-9 hover:bg-muted/80 dark:hover:bg-slate-700/80', 
+            'transition-all duration-200 hover:scale-105 active:scale-95',
+            'relative overflow-hidden border border-transparent',
+            'hover:border-border/20 dark:hover:border-slate-600/30',
+            'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            className
+          )}
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300 text-amber-500 dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-300 text-slate-600 dark:text-slate-300 dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">{ARIA_LABELS.THEME_TOGGLE}</span>
+        </Button>
+      </NoSSR>
     )
   }
 

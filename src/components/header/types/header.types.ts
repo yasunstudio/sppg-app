@@ -13,6 +13,9 @@ export interface HeaderProps {
   onMobileSidebarToggle?: () => void
   sidebarOpen?: boolean
   className?: string
+  // Add sidebar toggle props
+  sidebarCollapsed?: boolean
+  onSidebarToggle?: () => void
 }
 
 export interface HeaderConfig {
@@ -37,6 +40,9 @@ export interface HeaderLeftProps extends HeaderSectionProps {
   onMobileSidebarToggle?: () => void
   sidebarOpen?: boolean
   pageTitle?: string
+  // Sidebar toggle props
+  sidebarCollapsed?: boolean
+  onSidebarToggle?: () => void
 }
 
 export interface HeaderCenterProps extends HeaderSectionProps {

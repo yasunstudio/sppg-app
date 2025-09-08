@@ -44,6 +44,7 @@ const URL_REWRITES = {
   '/distributions/tracking': '/dashboard/distributions/tracking',
   '/distributions/routes': '/dashboard/distributions/routes',
   '/vehicles': '/dashboard/vehicles',
+  '/vehicles/create': '/dashboard/vehicles/create',
   '/drivers': '/dashboard/drivers',
   
   // Monitoring & Reports
@@ -107,7 +108,8 @@ const PROTECTED_ROUTES = {
   '/dashboard/distributions/schools': ['distributions.view'],
   '/dashboard/distributions/tracking': ['distributions.track'],
   '/dashboard/distributions/routes': ['distributions.view'],
-  '/dashboard/vehicles': ['production.view'],
+  '/dashboard/vehicles': ['vehicles.view'],
+  '/dashboard/vehicles/create': ['vehicles.create'],
   '/dashboard/monitoring': ['reports.view'],
   '/dashboard/monitoring/real-time': ['reports.view'],
   '/dashboard/monitoring/analytics': ['analytics.view'],
@@ -278,6 +280,23 @@ function handleDynamicRoutes(pathname: string): { baseRoute: string; internalRou
     return {
       baseRoute: '/dashboard/users',
       internalRoute: `/dashboard/users/${userEditMatch[1]}/edit`
+    }
+  }
+
+  // Handle vehicle dynamic routes
+  const vehicleEditMatch = pathname.match(/^\/vehicles\/([^\/]+)\/edit$/)
+  if (vehicleEditMatch) {
+    return {
+      baseRoute: '/dashboard/vehicles',
+      internalRoute: `/dashboard/vehicles/${vehicleEditMatch[1]}/edit`
+    }
+  }
+
+  const vehicleViewMatch = pathname.match(/^\/vehicles\/([^\/]+)$/)
+  if (vehicleViewMatch && vehicleViewMatch[1] !== 'create') {
+    return {
+      baseRoute: '/dashboard/vehicles',
+      internalRoute: `/dashboard/vehicles/${vehicleViewMatch[1]}`
     }
   }
 

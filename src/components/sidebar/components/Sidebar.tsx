@@ -67,9 +67,10 @@ export default function Sidebar({
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-30 h-screen bg-background/95 backdrop-blur-lg border-r border-border/50 shadow-lg transition-all duration-300 ease-in-out",
+          "fixed left-0 top-0 z-30 h-screen bg-background/95 backdrop-blur-lg transition-all duration-300 ease-in-out",
           "hidden lg:flex lg:flex-col",
-          isCollapsed ? "w-16" : "w-64",
+          // Increase width for better menu visibility
+          isCollapsed ? "w-16" : "w-72",
           className
         )}
         aria-label="Main navigation"
@@ -84,7 +85,7 @@ export default function Sidebar({
 
         {/* Navigation Content */}
         <div className="flex-1 overflow-y-auto overscroll-contain">
-          <nav className="p-2 space-y-2" role="navigation">
+          <nav className="p-4 pt-6 space-y-3" role="navigation">
             {SIDEBAR_MENU_STRUCTURE.map((section: MenuSection) => {
               // Handle expandable sections
               if (section.isExpandable && section.menuType) {

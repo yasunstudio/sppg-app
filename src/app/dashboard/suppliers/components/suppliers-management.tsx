@@ -5,13 +5,14 @@ import { Plus, RefreshCw, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { PageContainer } from '@/components/layout'
 import { SupplierStatsCards } from './supplier-stats/supplier-stats-cards'
 import { SupplierSearchFilters } from './supplier-filters/supplier-search-filters'
 import { SupplierTableView } from './supplier-table/supplier-table-view'
 import { SupplierGridView } from './supplier-table/supplier-grid-view'
 import { SupplierPagination } from './supplier-pagination/supplier-pagination'
 import { useSuppliers } from './hooks/use-suppliers'
-import { useResponsive } from './hooks/use-responsive'
+import { useResponsive } from '@/hooks/use-responsive'
 import { useRouter } from 'next/navigation'
 import type { FilterState, PaginationState } from './utils/supplier-types'
 
@@ -62,23 +63,17 @@ export function SuppliersManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground dark:text-foreground">
-            Manajemen Supplier
-          </h1>
-          <p className="text-muted-foreground">
-            Kelola data supplier untuk pengadaan bahan baku dan kebutuhan operasional
-          </p>
-        </div>
+    <PageContainer
+      title="Manajemen Supplier"
+      description="Kelola data supplier untuk pengadaan bahan baku dan kebutuhan operasional"
+      showBreadcrumb={true}
+      actions={
         <Button onClick={handleCreateSupplier} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Tambah Supplier
         </Button>
-      </div>
-
+      }
+    >
       {/* Stats */}
       <SupplierStatsCards stats={stats} loading={loading} />
 
@@ -144,6 +139,6 @@ export function SuppliersManagement() {
           onPageChange={handlePageChange}
         />
       )}
-    </div>
+    </PageContainer>
   )
 }

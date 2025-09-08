@@ -1,85 +1,86 @@
-// Vehicle Management Formatters and Constants
+import type { Vehicle } from './vehicle-types'
 
-import type { VehicleType } from './vehicle-types'
-
-export const VEHICLE_TYPES: VehicleType[] = [
-  'Truck',
-  'Van', 
-  'Pickup',
-  'Motorcycle',
-  'Car'
-]
-
-export const VEHICLE_TYPE_COLORS = {
-  'Truck': 'bg-blue-100 text-blue-800 border-blue-200',
-  'Van': 'bg-green-100 text-green-800 border-green-200',
-  'Pickup': 'bg-orange-100 text-orange-800 border-orange-200',
-  'Motorcycle': 'bg-purple-100 text-purple-800 border-purple-200',
-  'Car': 'bg-pink-100 text-pink-800 border-pink-200',
-} as const
-
-// Pilihan type kendaraan untuk form dan filter dalam bahasa Indonesia
-export const VEHICLE_TYPE_OPTIONS = [
-  { value: 'Truck', label: 'Truk' },
-  { value: 'Van', label: 'Van' },
-  { value: 'Pickup', label: 'Pickup' },
-  { value: 'Motorcycle', label: 'Motor' },
-  { value: 'Car', label: 'Mobil' }
-] as const
-
-export const VEHICLE_STATUS_COLORS = {
-  active: 'bg-green-100 text-green-800 border-green-200',
-  inactive: 'bg-red-100 text-red-800 border-red-200',
-} as const
-
-export const formatCapacity = (capacity: number): string => {
-  if (capacity >= 1000) {
-    return `${(capacity / 1000).toFixed(1)}k`
-  }
-  return capacity.toString()
-}
-
-export const formatPlateNumber = (plateNumber: string): string => {
-  return plateNumber.toUpperCase()
-}
-
-export const formatVehicleType = (type: VehicleType): string => {
-  const typeTranslations = {
-    'Truck': 'Truk',
-    'Van': 'Van',
-    'Pickup': 'Pickup',
-    'Motorcycle': 'Motor',
-    'Car': 'Mobil'
-  } as const
-  
-  return typeTranslations[type] || type
-}
-
-export const formatServiceDate = (dateString: string | null): string => {
-  if (!dateString) return 'Belum pernah'
-  
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffTime = Math.abs(now.getTime() - date.getTime())
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
-  if (diffDays === 0) return 'Hari ini'
-  if (diffDays === 1) return 'Kemarin'
-  if (diffDays < 7) return `${diffDays} hari lalu`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} minggu lalu`
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} bulan lalu`
-  
-  return `${Math.floor(diffDays / 365)} tahun lalu`
-}
-
-export const getVehicleStatusText = (isActive: boolean): string => {
+// Vehicle status formatters - Updated for boolean isActive
+export const formatVehicleStatus = (isActive: boolean): string => {
   return isActive ? 'Aktif' : 'Tidak Aktif'
 }
 
-export const getVehicleStatusVariant = (isActive: boolean): 'active' | 'inactive' => {
-  return isActive ? 'active' : 'inactive'
+// Vehicle type formatters - Keep the same but also handle common types
+export const formatVehicleType = (type: string): string => {
+  const typeMap = {
+    'TRUCK': 'Truk',
+    'VAN': 'Van', 
+    'MOTORCYCLE': 'Motor',
+    'CAR': 'Mobil',
+    'Pickup Truck': 'Pickup Truck',
+    'Mini Truck': 'Mini Truck',
+    'Sedan': 'Sedan',
+    'SUV': 'SUV'
+  }
+  return typeMap[type as keyof typeof typeMap] || type
 }
 
-export const DEFAULT_ITEMS_PER_PAGE = 10
+// Capacity formatter
+export const formatCapacity = (capacity: number): string => {
+  if (capacity >= 1000) {
+    return `${(capacity / 1000).toFixed(1)} ton`
+  }
+  return `${capacity} kg`
+}
 
-export const ITEMS_PER_PAGE_OPTIONS = [5, 10, 25, 50] as const
+// Date formatters - Handle both Date objects and ISO strings
+export const formatDate = (date: Date | string | null | undefined): string => {
+  if (!date) return '-'
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleDateString('id-ID', {
+    year: 'numeric',
+    month: 'long', 
+    day: 'numeric'
+  })
+}
+
+export const formatDateTime = (date: Date | string | null | undefined): string => {
+  if (!date) return '-'
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleString('id-ID', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// Vehicle badge variant helper - Updated for boolean status
+export const getVehicleStatusVariant = (isActive: boolean) => {
+  return isActive ? 'default' : 'secondary'
+}
+
+// Vehicle validation helpers
+export const validatePlateNumber = (plate: string): boolean => {
+  // Indonesian plate number format validation
+  const plateRegex = /^[A-Z]{1,2}\s?\d{1,4}\s?[A-Z]{1,3}$/
+  return plateRegex.test(plate.toUpperCase())
+}
+
+// Search helper - Updated for new field names
+export const filterVehicles = (
+  vehicles: Vehicle[],
+  searchTerm: string,
+  typeFilter: string,
+  statusFilter: string
+): Vehicle[] => {
+  return vehicles.filter(vehicle => {
+    const matchesSearch = !searchTerm || 
+      vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vehicle.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (vehicle.notes && vehicle.notes.toLowerCase().includes(searchTerm.toLowerCase()))
+    
+    const matchesType = typeFilter === 'all' || vehicle.type === typeFilter
+    const matchesStatus = statusFilter === 'all' || 
+      (statusFilter === 'active' && vehicle.isActive) ||
+      (statusFilter === 'inactive' && !vehicle.isActive)
+    
+    return matchesSearch && matchesType && matchesStatus
+  })
+}

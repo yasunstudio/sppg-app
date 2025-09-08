@@ -23,7 +23,9 @@ import { MobileSearch } from './components/MobileSearch'
 export const Header: React.FC<HeaderProps> = ({
   onMobileSidebarToggle,
   sidebarOpen,
-  className
+  className,
+  sidebarCollapsed,
+  onSidebarToggle
 }) => {
   const header = useHeader({
     showSearch: true,
@@ -39,11 +41,13 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <HeaderContainer className={className}>
-        {/* Left Section - Mobile Menu & Page Title */}
+        {/* Left Section - Mobile Menu & Sidebar Toggle & Page Title */}
         <HeaderLeft
           onMobileSidebarToggle={handleMobileSidebarToggle}
           sidebarOpen={sidebarOpen}
           pageTitle={header.pageTitle}
+          sidebarCollapsed={sidebarCollapsed}
+          onSidebarToggle={onSidebarToggle}
         />
 
         {/* Center Section - Search (Desktop) */}
