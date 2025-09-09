@@ -39,17 +39,21 @@ export const getStatusText = (isActive: boolean) => {
   return isActive ? 'Aktif' : 'Tidak Aktif'
 }
 
-export const getRatingColor = (rating: number) => {
-  if (rating >= 4.5) return 'text-green-600'
-  if (rating >= 4.0) return 'text-blue-600'
-  if (rating >= 3.5) return 'text-yellow-600'
-  if (rating >= 3.0) return 'text-orange-600'
-  return 'text-red-600'
-}
-
-export const formatRating = (rating: number | null) => {
-  if (!rating) return 'N/A'
-  return rating.toFixed(1)
+export const formatLicenseType = (licenseType: string) => {
+  switch (licenseType) {
+    case 'SIM_A':
+      return 'SIM A'
+    case 'SIM_B1':
+      return 'SIM B1'
+    case 'SIM_B2':
+      return 'SIM B2'
+    case 'SIM_C':
+      return 'SIM C'
+    case 'SIM_D':
+      return 'SIM D'
+    default:
+      return licenseType
+  }
 }
 
 export const isLicenseExpiringSoon = (expiryDate: string, daysThreshold = 30) => {
@@ -72,10 +76,6 @@ export const calculateStats = (drivers: Driver[]) => {
   const inactiveDrivers = totalDrivers - activeDrivers
   const totalDeliveries = drivers.reduce((sum, d) => sum + d.totalDeliveries, 0)
   
-  const ratingsSum = drivers.reduce((sum, d) => sum + (d.rating || 0), 0)
-  const driversWithRating = drivers.filter(d => d.rating !== null).length
-  const averageRating = driversWithRating > 0 ? ratingsSum / driversWithRating : 0
-  
   const expiringSoonCount = drivers.filter(d => isLicenseExpiringSoon(d.licenseExpiry)).length
 
   return {
@@ -83,7 +83,6 @@ export const calculateStats = (drivers: Driver[]) => {
     activeDrivers,
     inactiveDrivers,
     totalDeliveries,
-    averageRating,
     expiringSoonCount
   }
 }
@@ -114,10 +113,6 @@ export const sortDrivers = (drivers: Driver[], sortBy: string, sortOrder: 'asc' 
       case 'employeeId':
         aValue = a.employeeId
         bValue = b.employeeId
-        break
-      case 'rating':
-        aValue = a.rating || 0
-        bValue = b.rating || 0
         break
       case 'totalDeliveries':
         aValue = a.totalDeliveries

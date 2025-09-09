@@ -4,8 +4,7 @@ import {
   Users, 
   UserCheck, 
   UserX, 
-  Activity, 
-  Star, 
+  Truck, 
   AlertTriangle,
   ChevronUp,
   ChevronDown
@@ -47,18 +46,10 @@ export function DriverStatsCards({ stats, showStats, onToggleStats }: DriverStat
     {
       title: 'Total Pengiriman',
       value: stats.totalDeliveries.toString(),
-      icon: Activity,
+      icon: Truck,
       description: 'Total pengiriman dilakukan',
       color: 'text-purple-600',
       bgColor: 'bg-purple-100'
-    },
-    {
-      title: 'Rating Rata-rata',
-      value: stats.averageRating > 0 ? stats.averageRating.toFixed(1) : 'N/A',
-      icon: Star,
-      description: 'Rating rata-rata driver',
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-100'
     },
     {
       title: 'SIM Akan Habis',
@@ -97,7 +88,7 @@ export function DriverStatsCards({ stats, showStats, onToggleStats }: DriverStat
 
       {/* Stats Cards */}
       {showStats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {statsData.map((stat) => (
             <Card key={stat.title} className="transition-all duration-200 hover:shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

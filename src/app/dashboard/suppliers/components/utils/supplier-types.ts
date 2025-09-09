@@ -11,7 +11,13 @@ export interface Supplier {
   _count: {
     purchaseOrders: number
     inventory: number
+    items?: number
   }
+}
+
+export interface SupplierFilters {
+  searchTerm: string
+  selectedStatus: 'all' | 'active' | 'inactive'
 }
 
 export interface SupplierStats {
@@ -40,10 +46,23 @@ export interface SuppliersResponse {
 
 export interface FilterState {
   searchTerm: string
-  selectedStatus: string
+  selectedStatus: 'all' | 'active' | 'inactive'
 }
 
 export interface PaginationState {
   currentPage: number
   itemsPerPage: number
+}
+
+export interface CreateSupplierData {
+  name: string
+  contactName: string
+  phone: string
+  email?: string | null
+  address: string
+  isActive?: boolean
+}
+
+export interface UpdateSupplierData extends Partial<CreateSupplierData> {
+  id: string
 }

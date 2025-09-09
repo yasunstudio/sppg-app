@@ -18,7 +18,6 @@ import {
   Trash2,
   Plus,
   Phone,
-  Star,
   AlertTriangle,
   CircleCheck,
   CircleX,
@@ -32,10 +31,9 @@ import {
   formatPhoneNumber, 
   getStatusColor, 
   getStatusText,
-  getRatingColor,
-  formatRating,
   isLicenseExpiringSoon,
-  isLicenseExpired
+  isLicenseExpired,
+  formatLicenseType
 } from '../utils/driver-formatters'
 
 interface DriverGridViewProps {
@@ -142,36 +140,29 @@ export function DriverGridView({ drivers, isFiltering, onDelete }: DriverGridVie
                   <CreditCard className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">{driver.licenseNumber}</div>
-                    <div className={`text-xs ${
-                      isLicenseExpired(driver.licenseExpiry) 
-                        ? 'text-red-600' 
-                        : isLicenseExpiringSoon(driver.licenseExpiry)
-                        ? 'text-orange-600'
-                        : 'text-muted-foreground'
-                    }`}>
-                      Habis: {formatDate(driver.licenseExpiry)}
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="text-xs">
+                        {formatLicenseType(driver.licenseType)}
+                      </Badge>
+                      <div className={`text-xs ${
+                        isLicenseExpired(driver.licenseExpiry) 
+                          ? 'text-red-600' 
+                          : isLicenseExpiringSoon(driver.licenseExpiry)
+                          ? 'text-orange-600'
+                          : 'text-muted-foreground'
+                      }`}>
+                        Habis: {formatDate(driver.licenseExpiry)}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-                  <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className={`text-sm font-medium ${
-                        driver.rating ? getRatingColor(driver.rating) : 'text-muted-foreground'
-                      }`}>
-                        {driver.rating ? formatRating(driver.rating) : 'N/A'}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Rating</div>
-                    </div>
-                  </div>
-                  
+                <div className="flex justify-center pt-2 border-t">
                   <div className="flex items-center gap-2">
                     <Activity className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <div className="text-sm font-medium">{driver.totalDeliveries}</div>
-                      <div className="text-xs text-muted-foreground">Pengiriman</div>
+                      <div className="text-xs text-muted-foreground">Total Pengiriman</div>
                     </div>
                   </div>
                 </div>

@@ -38,8 +38,7 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               name: true,
-              phone: true,
-              rating: true
+              phone: true
             }
           },
           vehicle: {
@@ -123,8 +122,7 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             name: true,
-            phone: true,
-            rating: true
+            phone: true
           }
         },
         vehicle: {

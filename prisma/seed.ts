@@ -7,7 +7,7 @@ import seedRawMaterials from './seeds/05-raw-materials'
 import seedMenuItems from './seeds/06-menu-items'
 import seedSuppliers from './seeds/07-suppliers'
 import seedInventoryItems from './seeds/08-inventory-items'
-import seedStudents from './seeds/09-participants'
+import seedStudents from './seeds/09-students'
 import seedMenuRecipes from './seeds/10-menu-recipes'
 import seedProductionBatches from './seeds/11-production-batches'
 import seedDistributions from './seeds/12-distributions'
@@ -19,6 +19,7 @@ import seedProductionResources from './seeds/17-production-resources'
 import seedResourceUsage from './seeds/18-resource-usage'
 import seedQualityCheckpoints from './seeds/19-quality-checkpoints'
 import seedPurchaseOrders from './seeds/20-purchase-orders'
+import seedDrivers from './seeds/27-drivers'
 import seedSystemConfig from './seeds/28-system-config'
 import seedAuditLogs from './seeds/29-audit-logs'
 import seedNotifications from './seeds/30-notifications'
@@ -34,6 +35,7 @@ import { seedQualityChecks } from './seeds/40-quality-checks'
 import seedNutritionConsultations from './seeds/41-nutrition-consultations'
 import seedFoodSamples from './seeds/42-food-samples'
 import seedQualityStandards from './seeds/43-quality-standards'
+import updateDriverStats from './seeds/44-update-driver-stats'
 
 const prisma = new PrismaClient()
 
@@ -83,6 +85,7 @@ async function main() {
     await seedSuppliers()
     await seedInventoryItems()
     await seedVehicles()
+    await seedDrivers()
     
     // Enhanced item management
     await seedItems()
@@ -104,6 +107,9 @@ async function main() {
     await seedFoodSamples()
     await seedDistributions()
     await seedDeliveries()
+    
+    // Update driver statistics after deliveries are seeded
+    await updateDriverStats()
 
     // Priority 3: Supporting Systems
     console.log('🛠️ Priority 3: Seeding Supporting Systems...')

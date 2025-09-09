@@ -20,7 +20,6 @@ export function useDrivers({ filters, pagination }: UseDriversProps) {
     activeDrivers: 0,
     inactiveDrivers: 0,
     totalDeliveries: 0,
-    averageRating: 0,
     expiringSoonCount: 0
   })
 
@@ -63,6 +62,11 @@ export function useDrivers({ filters, pagination }: UseDriversProps) {
     if (filters.statusFilter !== 'all') {
       const isActive = filters.statusFilter === 'true'
       processed = processed.filter(driver => driver.isActive === isActive)
+    }
+
+    // Apply license type filter
+    if (filters.licenseTypeFilter !== 'all') {
+      processed = processed.filter(driver => driver.licenseType === filters.licenseTypeFilter)
     }
 
     // Apply search filter

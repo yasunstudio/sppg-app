@@ -10,94 +10,111 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, X } from 'lucide-react'
-import type { FilterState } from '../utils/supplier-types'
-import { SUPPLIER_STATUS_OPTIONS } from '../utils/supplier-formatters'
+import { Search, X, Plus, RefreshCw } from 'lucide-react'
+import type { SupplierFilters } from '../utils/supplier-types'
 
 interface SupplierSearchFiltersProps {
-  filters: FilterState
-  onSearchChange: (value: string) => void
-  onStatusChange: (value: string) => void
-  onItemsPerPageChange: (value: string) => void
-  itemsPerPage: number
+  filters: SupplierFilters
+  onFiltersChange: (filters: SupplierFilters) => void
+  onCreateSupplier: () => void
+  onRefresh: () => void
+  loading: boolean
 }
 
 export function SupplierSearchFilters({
   filters,
-  onSearchChange,
-  onStatusChange,
-  onItemsPerPageChange,
-  itemsPerPage
+  onFiltersChange,
+  onCreateSupplier,
+  onRefresh,
+  loading
 }: SupplierSearchFiltersProps) {
   const hasActiveFilters = filters.searchTerm || filters.selectedStatus !== 'all'
 
   const clearAllFilters = () => {
-    onSearchChange('')
-    onStatusChange('all')
+    onFiltersChange({
+      searchTerm: '',
+      selectedStatus: 'all'
+    })
+  }
+
+  const handleSearchChange = (value: string) => {
+    onFiltersChange({ ...filters, searchTerm: value })
+  }
+
+  const handleStatusChange = (value: string) => {
+    onFiltersChange({ ...filters, selectedStatus: value as 'all' | 'active' | 'inactive' })
   }
 
   return (
     <Card className="bg-card dark:bg-card border-border dark:border-border">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-foreground dark:text-foreground">
-          <Search className="h-5 w-5" />
-          Pencarian & Filter
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-foreground dark:text-foreground">
+            <Search className="h-5 w-5" />
+            Pencarian & Filter
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={onRefresh}
+              variant="outline"
+              size="sm"
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button onClick={onCreateSupplier} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Supplier
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* All components in one row for desktop, stacked for mobile */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-3">
           <div className="flex-1 min-w-[200px]">
-            <Input
-              placeholder="Cari berdasarkan nama, kontak, telepon, atau alamat..."
-              value={filters.searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input placeholder:text-muted-foreground"
-            />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Cari supplier, kontak, telepon..."
+                value={filters.searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-10 bg-background dark:bg-background text-foreground dark:text-foreground placeholder:text-muted-foreground"
+              />
+            </div>
           </div>
-          
-          <div className="flex flex-col gap-3 sm:flex-row sm:gap-3 lg:gap-3">
-            <Select value={filters.selectedStatus} onValueChange={onStatusChange}>
-              <SelectTrigger className="w-full sm:w-[150px] bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input">
-                <SelectValue placeholder="Semua status" />
+
+          <div className="min-w-[140px]">
+            <Select value={filters.selectedStatus} onValueChange={handleStatusChange}>
+              <SelectTrigger className="bg-background dark:bg-background text-foreground dark:text-foreground border-border dark:border-border">
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent className="bg-popover dark:bg-popover border-border dark:border-border">
-                {SUPPLIER_STATUS_OPTIONS.map((option) => (
-                  <SelectItem 
-                    key={option.value} 
-                    value={option.value}
-                    className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent"
-                  >
-                    {option.label}
-                  </SelectItem>
-                ))}
+              <SelectContent className="bg-background dark:bg-background border-border dark:border-border">
+                <SelectItem value="all" className="text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted">
+                  Semua Status
+                </SelectItem>
+                <SelectItem value="active" className="text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted">
+                  Aktif
+                </SelectItem>
+                <SelectItem value="inactive" className="text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted">
+                  Tidak Aktif
+                </SelectItem>
               </SelectContent>
             </Select>
-
-            <Select value={itemsPerPage.toString()} onValueChange={onItemsPerPageChange}>
-              <SelectTrigger className="w-full sm:w-[140px] bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-popover dark:bg-popover border-border dark:border-border">
-                <SelectItem value="5" className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent">5</SelectItem>
-                <SelectItem value="10" className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent">10</SelectItem>
-                <SelectItem value="25" className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent">25</SelectItem>
-                <SelectItem value="50" className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent">50</SelectItem>
-                <SelectItem value="100" className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent">100</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                onClick={clearAllFilters}
-                className="flex items-center gap-2 w-full sm:w-auto justify-center"
-              >
-                <X className="h-4 w-4" />
-                Hapus Filter
-              </Button>
-            )}
           </div>
+
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAllFilters}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+              Clear
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

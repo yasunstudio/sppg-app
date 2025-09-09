@@ -2,18 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
-import type { Supplier, SupplierStats, PaginationData, SuppliersResponse, FilterState, PaginationState } from '../utils/supplier-types'
+import type { Supplier, SupplierStats, PaginationData, SuppliersResponse, SupplierFilters } from '../utils/supplier-types'
 
 interface UseSuppliersProps {
-  filters: FilterState
-  pagination: PaginationState
+  filters: SupplierFilters
+  page: number
+  limit: number
 }
 
-export const useSuppliers = ({ filters, pagination }: UseSuppliersProps) => {
+export const useSuppliers = ({ filters, page, limit }: UseSuppliersProps) => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [stats, setStats] = useState<SupplierStats | null>(null)
-  const [paginationData, setPaginationData] = useState<PaginationData | null>(null)
+  const [pagination, setPagination] = useState<PaginationData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isFiltering, setIsFiltering] = useState(false)
 
   const fetchSuppliers = useCallback(async (isFilteringRequest = false) => {
@@ -24,9 +26,11 @@ export const useSuppliers = ({ filters, pagination }: UseSuppliersProps) => {
         setLoading(true)
       }
       
+      setError(null)
+      
       const params = new URLSearchParams({
-        page: pagination.currentPage.toString(),
-        limit: pagination.itemsPerPage.toString(),
+        page: page.toString(),
+        limit: limit.toString(),
         ...(filters.searchTerm && { search: filters.searchTerm }),
         ...(filters.selectedStatus !== 'all' && { status: filters.selectedStatus }),
       })
@@ -45,9 +49,10 @@ export const useSuppliers = ({ filters, pagination }: UseSuppliersProps) => {
       
       setSuppliers(result.data)
       setStats(result.stats)
-      setPaginationData(result.pagination)
+      setPagination(result.pagination)
     } catch (error) {
       console.error('Error fetching suppliers:', error)
+      setError('Gagal mengambil data supplier')
       toast.error('Gagal mengambil data supplier')
     } finally {
       if (isFilteringRequest) {
@@ -56,7 +61,7 @@ export const useSuppliers = ({ filters, pagination }: UseSuppliersProps) => {
         setLoading(false)
       }
     }
-  }, [filters, pagination])
+  }, [filters, page, limit])
 
   // Initial load
   useEffect(() => {
@@ -68,7 +73,7 @@ export const useSuppliers = ({ filters, pagination }: UseSuppliersProps) => {
     if (!loading) {
       fetchSuppliers(true)
     }
-  }, [filters, pagination, fetchSuppliers, loading])
+  }, [filters, page, limit, fetchSuppliers, loading])
 
   const deleteSupplier = useCallback(async (supplierId: string): Promise<boolean> => {
     try {
@@ -91,13 +96,19 @@ export const useSuppliers = ({ filters, pagination }: UseSuppliersProps) => {
     }
   }, [fetchSuppliers])
 
+  const refreshSuppliers = useCallback(async () => {
+    await fetchSuppliers()
+  }, [fetchSuppliers])
+
   return {
     suppliers,
     stats,
-    paginationData,
+    pagination,
     loading,
+    error,
     isFiltering,
     deleteSupplier,
+    refreshSuppliers,
     refetch: fetchSuppliers
   }
 }

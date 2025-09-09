@@ -16,7 +16,6 @@ export async function GET(
             id: true,
             name: true,
             phone: true,
-            rating: true,
             employeeId: true
           }
         },
@@ -107,8 +106,7 @@ export async function PUT(
           select: {
             id: true,
             name: true,
-            phone: true,
-            rating: true
+            phone: true
           }
         },
         vehicle: {

@@ -1,218 +1,185 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Users, RefreshCw, Plus, Download } from 'lucide-react'
-
-// Permission Guard
-import { usePermission } from '@/components/guards/permission-guard'
-
-// Modular Components
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { DriverStatsCards } from './driver-stats/driver-stats-cards'
-import { DriverSearchFilters } from './driver-filters/driver-search-filters'
-import { DriverGridView } from './driver-table/driver-grid-view'
 import { DriverTableView } from './driver-table/driver-table-view'
+import { DriverGridView } from './driver-table/driver-grid-view'
+import { DriverSearchFilters } from './driver-filters/driver-search-filters'
 import { DriverPagination } from './driver-pagination/driver-pagination'
-
-// Custom Hooks
-import { useResponsive } from './hooks/use-responsive'
 import { useDrivers } from './hooks/use-drivers'
-
-// Types
+import { useResponsive } from './hooks/use-responsive'
 import type { FilterState, PaginationState } from './utils/driver-types'
 
 export function DriversManagement() {
   const router = useRouter()
-  const { isMobile } = useResponsive()
-  
-  // Permission checks
-  const canCreateDriver = usePermission('drivers.create')
-  const canEditDriver = usePermission('drivers.edit')
-  const canDeleteDriver = usePermission('drivers.delete')
+  const { isMobile, isTablet, isDesktop } = useResponsive()
   
   // UI State
   const [showStats, setShowStats] = useState(true)
   
-  // Filter State
+  // State for filters and pagination
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: '',
     statusFilter: 'all',
+    licenseTypeFilter: 'all',
     sortBy: 'name',
     sortOrder: 'asc'
   })
   
-  // Pagination State
   const [pagination, setPagination] = useState<PaginationState>({
     currentPage: 1,
     itemsPerPage: 10
   })
 
-  // Data Fetching
-  const { drivers, stats, paginationData, loading, isFiltering, refetch, deleteDriver } = useDrivers({
-    filters,
-    pagination
-  })
+  // Use the drivers hook with filters and pagination
+  const {
+    drivers,
+    stats,
+    paginationData,
+    loading,
+    refetch,
+    deleteDriver
+  } = useDrivers({ filters, pagination })
 
-  // Event Handlers
-  const handleSearchChange = (value: string) => {
-    setFilters(prev => ({ ...prev, searchTerm: value }))
-    setPagination(prev => ({ ...prev, currentPage: 1 }))
+  // Get pagination data from API response
+  const totalItems = paginationData?.total || 0
+  const totalPages = paginationData?.totalPages || 0
+
+  // Handlers
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters)
+    setPagination(prev => ({ ...prev, currentPage: 1 })) // Reset to first page when filters change
   }
 
-  const handleStatusChange = (value: string) => {
-    setFilters(prev => ({ ...prev, statusFilter: value }))
+  const handleFiltersReset = () => {
+    setFilters({
+      searchTerm: '',
+      statusFilter: 'all',
+      licenseTypeFilter: 'all',
+      sortBy: 'name',
+      sortOrder: 'asc'
+    })
     setPagination(prev => ({ ...prev, currentPage: 1 }))
-  }
-
-  const handleSortByChange = (value: string) => {
-    setFilters(prev => ({ ...prev, sortBy: value }))
-    setPagination(prev => ({ ...prev, currentPage: 1 }))
-  }
-
-  const handleSortOrderChange = (value: 'asc' | 'desc') => {
-    setFilters(prev => ({ ...prev, sortOrder: value }))
-    setPagination(prev => ({ ...prev, currentPage: 1 }))
-  }
-
-  const handleItemsPerPageChange = (value: string) => {
-    setPagination(prev => ({ 
-      ...prev, 
-      itemsPerPage: parseInt(value),
-      currentPage: 1 
-    }))
   }
 
   const handlePageChange = (page: number) => {
     setPagination(prev => ({ ...prev, currentPage: page }))
   }
 
-  const handleDelete = async (id: string, name: string) => {
-    return await deleteDriver(id, name)
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setPagination(prev => ({ ...prev, itemsPerPage: newItemsPerPage, currentPage: 1 }))
   }
 
-  if (loading) {
+  const handleViewDriver = (driverId: string) => {
+    router.push(`/dashboard/drivers/${driverId}`)
+  }
+
+  const handleEditDriver = (driverId: string) => {
+    router.push(`/dashboard/drivers/${driverId}/edit`)
+  }
+
+  const handleDeleteDriver = async (driverId: string, driverName: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus driver ${driverName}?`)) {
+      return false
+    }
+
+    try {
+      const success = await deleteDriver(driverId, driverName)
+      if (success) {
+        toast.success('Driver berhasil dihapus')
+        return true
+      } else {
+        toast.error('Gagal menghapus driver')
+        return false
+      }
+    } catch (error) {
+      toast.error('Gagal menghapus driver')
+      console.error('Error deleting driver:', error)
+      return false
+    }
+  }
+
+  const handleSort = (column: string, direction: 'asc' | 'desc') => {
+    setFilters(prev => ({ ...prev, sortBy: column, sortOrder: direction }))
+    setPagination(prev => ({ ...prev, currentPage: 1 }))
+  }
+
+  const handleToggleStats = () => {
+    setShowStats(prev => !prev)
+  }
+
+  // Show error state with retry
+  if (!loading && drivers.length === 0 && filters.searchTerm) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Manajemen Driver</h1>
-            <p className="text-muted-foreground">Memuat data driver...</p>
-          </div>
+      <div className="container mx-auto p-6">
+        <div className="text-center py-12">
+          <div className="text-muted-foreground mb-4">Tidak ada driver yang sesuai dengan filter</div>
+          <Button onClick={() => handleFiltersReset()}>
+            Reset Filter
+          </Button>
         </div>
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center text-muted-foreground">Memuat...</div>
-          </CardContent>
-        </Card>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Manajemen Driver</h1>
-          <p className="text-muted-foreground">
-            Kelola dan pantau data driver pengiriman
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-2">
-          <Button 
-            variant="outline" 
-            onClick={() => {/* TODO: Export functionality */}}
-            className="w-full sm:w-auto"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Ekspor
-          </Button>
-          {canCreateDriver && (
-            <Button 
-              onClick={() => router.push('/dashboard/drivers/create')}
-              className="w-full sm:w-auto"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Tambah Driver
-            </Button>
-          )}
-        </div>
-      </div>
-
+    <div className="space-y-8">
       {/* Stats Cards */}
       <DriverStatsCards 
-        stats={stats}
+        stats={stats} 
         showStats={showStats}
-        onToggleStats={() => setShowStats(!showStats)}
+        onToggleStats={handleToggleStats}
       />
 
-      {/* Search & Filters */}
+      {/* Search and Filters */}
       <DriverSearchFilters
         filters={filters}
-        onSearchChange={handleSearchChange}
-        onStatusChange={handleStatusChange}
-        onSortByChange={handleSortByChange}
-        onSortOrderChange={handleSortOrderChange}
-        onItemsPerPageChange={handleItemsPerPageChange}
+        onSearchChange={(value: string) => handleFiltersChange({ ...filters, searchTerm: value })}
+        onStatusChange={(value: string) => handleFiltersChange({ ...filters, statusFilter: value })}
+        onLicenseTypeChange={(value: string) => handleFiltersChange({ ...filters, licenseTypeFilter: value })}
+        onSortByChange={(value: string) => handleFiltersChange({ ...filters, sortBy: value })}
+        onSortOrderChange={(value: 'asc' | 'desc') => handleFiltersChange({ ...filters, sortOrder: value })}
+        onItemsPerPageChange={(value: string) => handleItemsPerPageChange(parseInt(value))}
         itemsPerPage={pagination.itemsPerPage}
       />
 
-      {/* Data Table/Grid */}
-      <Card className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-2 min-w-0">
-              <Users className="h-5 w-5 flex-shrink-0" />
-              <span className="truncate">Data Driver</span>
-              {isFiltering && (
-                <div className="animate-spin flex-shrink-0">
-                  <RefreshCw className="h-4 w-4" />
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2 flex-wrap ml-auto">
-              <Badge variant="outline" className="text-xs whitespace-nowrap">
-                {isMobile ? 'Grid' : 'Tabel'}
-              </Badge>
-              {paginationData && (
-                <Badge variant="secondary" className="whitespace-nowrap">
-                  {paginationData.total} total
-                </Badge>
-              )}
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6">
-          {isMobile ? (
-            <DriverGridView 
-              drivers={drivers}
-              isFiltering={isFiltering}
-              onDelete={handleDelete}
-            />
-          ) : (
-            <div className="overflow-x-auto">
-              <DriverTableView 
-                drivers={drivers}
-                isFiltering={isFiltering}
-                onDelete={handleDelete}
-              />
-            </div>
-          )}
-        </CardContent>
-        
-        {/* Pagination */}
-        {paginationData && (
-          <DriverPagination
-            pagination={paginationData}
-            currentPage={pagination.currentPage}
-            itemsPerPage={pagination.itemsPerPage}
-            onPageChange={handlePageChange}
-          />
-        )}
-      </Card>
+      {/* Summary Info */}
+      <div className="flex justify-start items-center py-2">
+        <div className="text-sm text-muted-foreground">
+          {totalItems > 0 && `Menampilkan ${totalItems} driver`}
+        </div>
+      </div>
+
+      {/* Data View - Auto Responsive */}
+      {isMobile ? (
+        // Mobile: Always grid view
+        <DriverGridView
+          drivers={drivers}
+          isFiltering={loading}
+          onDelete={handleDeleteDriver}
+        />
+      ) : (
+        // Tablet & Desktop: Always table view
+        <DriverTableView
+          drivers={drivers}
+          isFiltering={loading}
+          onDelete={handleDeleteDriver}
+        />
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <DriverPagination
+          pagination={paginationData}
+          currentPage={pagination.currentPage}
+          itemsPerPage={pagination.itemsPerPage}
+          onPageChange={handlePageChange}
+        />
+      )}
     </div>
   )
 }

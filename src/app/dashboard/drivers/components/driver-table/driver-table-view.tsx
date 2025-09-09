@@ -19,13 +19,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { 
-  MoreHorizontal, 
+  MoreVertical, 
   Eye, 
   Edit, 
   Trash2,
   Plus,
   Phone,
-  Star,
   User
 } from 'lucide-react'
 import { usePermission } from '@/components/guards/permission-guard'
@@ -35,8 +34,7 @@ import {
   getStatusText,
   formatPhoneNumber,
   formatDate,
-  formatRating,
-  getRatingColor
+  formatLicenseType
 } from '../utils/driver-formatters'
 
 interface DriverTableViewProps {
@@ -61,8 +59,8 @@ export function DriverTableView({ drivers, isFiltering, onDelete }: DriverTableV
           <TableRow>
             <TableHead>Driver</TableHead>
             <TableHead>Kontak</TableHead>
+            <TableHead className="hidden lg:table-cell">Tipe SIM</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="hidden lg:table-cell">Rating</TableHead>
             <TableHead className="hidden xl:table-cell">Pengiriman</TableHead>
             <TableHead className="hidden xl:table-cell">Bergabung</TableHead>
             <TableHead className="w-[50px]"></TableHead>
@@ -89,23 +87,19 @@ export function DriverTableView({ drivers, isFiltering, onDelete }: DriverTableV
                     <span className="text-sm">{formatPhoneNumber(driver.phone)}</span>
                   </div>
                 </TableCell>
+                <TableCell className="hidden lg:table-cell">
+                  <Badge variant="secondary" className="text-xs">
+                    {formatLicenseType(driver.licenseType)}
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   <Badge className={getStatusColor(driver.isActive)}>
                     {getStatusText(driver.isActive)}
                   </Badge>
                 </TableCell>
-                <TableCell className="hidden lg:table-cell">
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    <span className={`font-medium ${getRatingColor(driver.rating || 0)}`}>
-                      {formatRating(driver.rating || null)}
-                    </span>
-                    <span className="text-muted-foreground text-sm">({driver.totalDeliveries})</span>
-                  </div>
-                </TableCell>
                 <TableCell className="hidden xl:table-cell">
                   <Badge variant="outline">
-                    {driver._count.deliveries} pengiriman
+                    {driver._count?.deliveries || 0} pengiriman
                   </Badge>
                 </TableCell>
                 <TableCell className="hidden xl:table-cell">
@@ -118,7 +112,7 @@ export function DriverTableView({ drivers, isFiltering, onDelete }: DriverTableV
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">
                         <span className="sr-only">Buka menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
+                        <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

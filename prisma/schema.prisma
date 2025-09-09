@@ -321,22 +321,22 @@ model FoodSample {
 }
 
 model Driver {
-  id               String         @id @default(cuid())
-  employeeId       String         @unique
+  id               String      @id @default(cuid())
+  employeeId       String      @unique
   name             String
   phone            String
   email            String?
-  licenseNumber    String         @unique
+  licenseNumber    String      @unique
+  licenseType      LicenseType @default(SIM_A)
   licenseExpiry    DateTime
   address          String?
   emergencyContact String?
   emergencyPhone   String?
-  isActive         Boolean        @default(true)
-  rating           Float?         @default(5.0)
-  totalDeliveries  Int            @default(0)
+  isActive         Boolean     @default(true)
+  totalDeliveries  Int         @default(0)
   notes            String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
   deletedAt        DateTime?
   distributions    Distribution[]
   deliveries       Delivery[]
@@ -1062,4 +1062,12 @@ enum PurchaseOrderStatus {
   DELIVERED
   CANCELLED
   PARTIALLY_RECEIVED
+}
+
+enum LicenseType {
+  SIM_A    // Mobil, kendaraan bermotor beroda empat atau lebih dengan berat tidak lebih dari 3.500 kg
+  SIM_B1   // Kendaraan bermotor beroda empat atau lebih dengan berat lebih dari 3.500 kg
+  SIM_B2   // Kendaraan alat berat, traktor, dan kendaraan beroda lebih dari 4
+  SIM_C    // Sepeda motor
+  SIM_D    // Kendaraan khusus untuk penyandang disabilitas
 }

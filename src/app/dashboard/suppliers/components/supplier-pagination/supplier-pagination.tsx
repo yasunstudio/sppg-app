@@ -5,14 +5,25 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { PaginationData } from '../utils/supplier-types'
 
 interface SupplierPaginationProps {
-  pagination: PaginationData
   currentPage: number
+  totalPages: number
+  totalItems: number
   itemsPerPage: number
   onPageChange: (page: number) => void
+  onItemsPerPageChange: (newItemsPerPage: number) => void
+  loading?: boolean
 }
 
-export function SupplierPagination({ pagination, currentPage, itemsPerPage, onPageChange }: SupplierPaginationProps) {
-  if (!pagination || pagination.totalCount === 0) return null
+export function SupplierPagination({ 
+  currentPage, 
+  totalPages, 
+  totalItems, 
+  itemsPerPage, 
+  onPageChange, 
+  onItemsPerPageChange,
+  loading 
+}: SupplierPaginationProps) {
+  if (!totalItems || totalItems === 0) return null
 
   return (
     <div className="border-t">
@@ -31,18 +42,18 @@ export function SupplierPagination({ pagination, currentPage, itemsPerPage, onPa
           
           <div className="flex-1 text-center">
             <div className="text-sm font-medium">
-              {currentPage} / {pagination.totalPages}
+              {currentPage} / {totalPages}
             </div>
             <div className="text-xs text-muted-foreground">
-              {pagination.totalCount} total
+              {totalItems} total
             </div>
           </div>
           
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onPageChange(Math.min(pagination.totalPages, currentPage + 1))}
-            disabled={currentPage >= pagination.totalPages}
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage >= totalPages}
             className="flex-shrink-0"
           >
             <ChevronRight className="h-4 w-4" />
@@ -54,8 +65,8 @@ export function SupplierPagination({ pagination, currentPage, itemsPerPage, onPa
       <div className="hidden md:flex items-center justify-between px-6 py-4">
         <div className="text-sm text-muted-foreground">
           Menampilkan {((currentPage - 1) * itemsPerPage) + 1} sampai{' '}
-          {Math.min(currentPage * itemsPerPage, pagination.totalCount)} dari{' '}
-          {pagination.totalCount} entri
+          {Math.min(currentPage * itemsPerPage, totalItems)} dari{' '}
+          {totalItems} entri
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -69,14 +80,14 @@ export function SupplierPagination({ pagination, currentPage, itemsPerPage, onPa
           </Button>
           
           <div className="flex items-center space-x-1">
-            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, index) => {
+            {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
               let pageNumber
-              if (pagination.totalPages <= 5) {
+              if (totalPages <= 5) {
                 pageNumber = index + 1
               } else if (currentPage <= 3) {
                 pageNumber = index + 1
-              } else if (currentPage >= pagination.totalPages - 2) {
-                pageNumber = pagination.totalPages - 4 + index
+              } else if (currentPage >= totalPages - 2) {
+                pageNumber = totalPages - 4 + index
               } else {
                 pageNumber = currentPage - 2 + index
               }
@@ -98,8 +109,8 @@ export function SupplierPagination({ pagination, currentPage, itemsPerPage, onPa
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onPageChange(Math.min(pagination.totalPages, currentPage + 1))}
-            disabled={currentPage >= pagination.totalPages}
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage >= totalPages}
           >
             Selanjutnya
             <ChevronRight className="h-4 w-4" />

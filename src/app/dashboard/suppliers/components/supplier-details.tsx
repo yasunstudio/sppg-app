@@ -172,7 +172,7 @@ export function SupplierDetails({ supplierId }: SupplierDetailsProps) {
               : 'Gagal memuat detail supplier. Silakan coba lagi.'
             }
           </p>
-          <Button onClick={() => router.push('/dashboard/suppliers')}>
+          <Button onClick={() => router.push('/suppliers')}>
             Kembali ke Daftar Supplier
           </Button>
         </div>
@@ -188,7 +188,7 @@ export function SupplierDetails({ supplierId }: SupplierDetailsProps) {
           <Button 
             variant="outline" 
             size="icon"
-            onClick={() => router.push('/dashboard/suppliers')}
+            onClick={() => router.push('/suppliers')}
             className="h-10 w-10 rounded-full bg-background dark:bg-background border-border dark:border-border hover:bg-accent dark:hover:bg-accent"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -211,7 +211,7 @@ export function SupplierDetails({ supplierId }: SupplierDetailsProps) {
           {formatSupplierStatus(supplier.isActive)}
           <Button
             variant="outline"
-            onClick={() => router.push(`/dashboard/suppliers/${supplier.id}/edit`)}
+            onClick={() => router.push(`/suppliers/${supplier.id}/edit`)}
             className="gap-2"
           >
             <Edit className="h-4 w-4" />

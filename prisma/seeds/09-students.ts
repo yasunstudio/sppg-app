@@ -6,7 +6,7 @@ export async function seedStudents() {
   console.log('👶 Seeding students for SPPG Purwakarta...')
   
   const students = [
-    // SDN Purwakarta 001  
+    // SDN Purwakarta Kota 1 (school-sdn-purwakarta-001)
     {
       id: 'student-sdn01-001',
       nisn: '0017031501',
@@ -15,7 +15,7 @@ export async function seedStudents() {
       gender: Gender.MALE,
       grade: '2A',
       parentName: 'Budi Pratama',
-      schoolId: 'school-sdn-001',
+      schoolId: 'school-sdn-purwakarta-001',
       notes: null
     },
     {
@@ -26,7 +26,7 @@ export async function seedStudents() {
       gender: Gender.FEMALE,
       grade: '2A',
       parentName: 'Siti Dewi',
-      schoolId: 'school-sdn-001',
+      schoolId: 'school-sdn-purwakarta-001',
       notes: null
     },
     {
@@ -37,7 +37,7 @@ export async function seedStudents() {
       gender: Gender.MALE,
       grade: '3B',
       parentName: 'Ahmad Santoso',
-      schoolId: 'school-sdn-001',
+      schoolId: 'school-sdn-purwakarta-001',
       notes: 'Perlu perhatian khusus untuk nutrisi'
     },
     {
@@ -48,7 +48,7 @@ export async function seedStudents() {
       gender: Gender.FEMALE,
       grade: '2B',
       parentName: 'Rina Kusuma',
-      schoolId: 'school-sdn-001',
+      schoolId: 'school-sdn-purwakarta-001',
       notes: 'Alergi kacang tanah'
     },
     {
@@ -59,11 +59,11 @@ export async function seedStudents() {
       gender: Gender.MALE,
       grade: '2A',
       parentName: 'Joko Hermawan',
-      schoolId: 'school-sdn-001',
+      schoolId: 'school-sdn-purwakarta-001',
       notes: null
     },
     
-    // SDN Purwakarta 002
+    // SDN Nagri Kaler (school-sdn-purwakarta-002)  
     {
       id: 'student-sdn02-001',
       nisn: '0017041802',
@@ -72,7 +72,7 @@ export async function seedStudents() {
       gender: Gender.FEMALE,
       grade: '2A',
       parentName: 'Dewi Sari',
-      schoolId: 'school-sdn-002',
+      schoolId: 'school-sdn-purwakarta-002',
       notes: null
     },
     {
@@ -83,7 +83,7 @@ export async function seedStudents() {
       gender: Gender.MALE,
       grade: '3A',
       parentName: 'Eko Kusuma',
-      schoolId: 'school-sdn-002',
+      schoolId: 'school-sdn-purwakarta-002',
       notes: 'Program perbaikan nutrisi'
     },
     {
@@ -94,7 +94,7 @@ export async function seedStudents() {
       gender: Gender.FEMALE,
       grade: '2B',
       parentName: 'Siti Rahayu',
-      schoolId: 'school-sdn-002',
+      schoolId: 'school-sdn-purwakarta-002',
       notes: 'Alergi udang'
     },
     {
@@ -105,7 +105,7 @@ export async function seedStudents() {
       gender: Gender.MALE,
       grade: '2A',
       parentName: 'Bambang Priyanto',
-      schoolId: 'school-sdn-002',
+      schoolId: 'school-sdn-purwakarta-002',
       notes: null
     },
     {
@@ -116,11 +116,11 @@ export async function seedStudents() {
       gender: Gender.FEMALE,
       grade: '2B',
       parentName: 'Lina Permata',
-      schoolId: 'school-sdn-002',
+      schoolId: 'school-sdn-purwakarta-002',
       notes: 'Pantau berat badan'
     },
     
-    // SDN Campaka 001 (rebranded from Purwakarta 03)
+    // SDN Munjul (school-sdn-purwakarta-003)
     {
       id: 'student-sdn03-001',
       nisn: '0017090303',
@@ -129,7 +129,7 @@ export async function seedStudents() {
       gender: Gender.MALE,
       grade: '2A',
       parentName: 'Dedi Wijaya',
-      schoolId: 'school-sdn-003',
+      schoolId: 'school-sdn-purwakarta-003',
       notes: null
     },
     {
@@ -140,7 +140,7 @@ export async function seedStudents() {
       gender: Gender.FEMALE,
       grade: '3A',
       parentName: 'Maya Ayu',
-      schoolId: 'school-sdn-003',
+      schoolId: 'school-sdn-purwakarta-003',
       notes: 'Program peningkatan gizi'
     },
     {
@@ -150,88 +150,145 @@ export async function seedStudents() {
       age: 8,
       gender: Gender.MALE,
       grade: '2B',
-      parentName: 'Rudi Pratama',
-      schoolId: 'school-sdn-003',
+      parentName: 'Joko Pratama',
+      schoolId: 'school-sdn-purwakarta-003',
       notes: 'Alergi telur'
     },
     {
       id: 'student-sdn03-004',
-      nisn: '0017070903',
-      name: 'Intan Sari',
+      nisn: '0017072903',
+      name: 'Sinta Maharani',
       age: 8,
       gender: Gender.FEMALE,
       grade: '2A',
-      parentName: 'Nina Sari',
-      schoolId: 'school-sdn-003',
+      parentName: 'Dewi Maharani',
+      schoolId: 'school-sdn-purwakarta-003',
       notes: null
     },
     {
       id: 'student-sdn03-005',
-      nisn: '0017011503',
-      name: 'Bayu Kusuma',
+      nisn: '0017031203',
+      name: 'Arief Nugraha',
       age: 8,
       gender: Gender.MALE,
       grade: '2B',
-      parentName: 'Adi Kusuma',
-      schoolId: 'school-sdn-003',
-      notes: 'Konsultasi gizi rutin'
+      parentName: 'Bambang Nugraha',
+      schoolId: 'school-sdn-purwakarta-003',
+      notes: null
     },
     
-    // SDN Jatiluhur 001 (rebranded from SMP)
+    // SDN Campaka 1 (school-sdn-campaka-001)
     {
-      id: 'student-smp01-001',
-      nisn: '0011052001',
-      name: 'Andra Saputra',
-      age: 14,
+      id: 'student-sdn04-001',
+      nisn: '0017053004',
+      name: 'Wahyu Firmansyah',
+      age: 8,
       gender: Gender.MALE,
-      grade: '8A',
-      parentName: 'Hendra Saputra',
-      schoolId: 'school-sdn-004',
+      grade: '2A',
+      parentName: 'Andi Firmansyah',
+      schoolId: 'school-sdn-campaka-001',
       notes: null
     },
     {
-      id: 'student-smp01-002',
-      nisn: '0011081201',
-      name: 'Putri Maharani',
-      age: 14,
+      id: 'student-sdn04-002',
+      nisn: '0016081704',
+      name: 'Tika Andriani',
+      age: 9,
       gender: Gender.FEMALE,
-      grade: '8A',
-      parentName: 'Sari Maharani',
-      schoolId: 'school-sdn-004',
-      notes: null
+      grade: '3A',
+      parentName: 'Lilis Andriani',
+      schoolId: 'school-sdn-campaka-001',
+      notes: 'Program literasi tambahan'
     },
     {
-      id: 'student-smp01-003',
-      nisn: '0011030701',
-      name: 'Farhan Alamsyah',
-      age: 14,
+      id: 'student-sdn04-003',
+      nisn: '0017110404',
+      name: 'Bayu Setiawan',
+      age: 8,
       gender: Gender.MALE,
-      grade: '8B',
-      parentName: 'Irfan Alamsyah',
-      schoolId: 'school-sdn-004',
-      notes: 'Alergi ikan laut, program peningkatan BB'
+      grade: '2B',
+      parentName: 'Agus Setiawan',
+      schoolId: 'school-sdn-campaka-001',
+      notes: 'Alergi ikan laut'
     },
     {
-      id: 'student-smp01-004',
-      nisn: '0011112501',
-      name: 'Azzahra Nadine',
-      age: 14,
+      id: 'student-sdn04-004',
+      nisn: '0017020904',
+      name: 'Indira Sari',
+      age: 8,
       gender: Gender.FEMALE,
-      grade: '8A',
-      parentName: 'Fitri Nadine',
-      schoolId: 'school-sdn-004',
+      grade: '2A',
+      parentName: 'Rina Sari',
+      schoolId: 'school-sdn-campaka-001',
       notes: null
     },
     {
-      id: 'student-smp01-005',
-      nisn: '0011061801',
-      name: 'Raka Pradana',
-      age: 14,
+      id: 'student-sdn04-005',
+      nisn: '0017061504',
+      name: 'Fajar Ramadhan',
+      age: 8,
       gender: Gender.MALE,
-      grade: '8B',
-      parentName: 'Eko Pradana',
-      schoolId: 'school-sdn-004',
-      notes: 'Kontrol berat badan'
+      grade: '2B',
+      parentName: 'Dedi Ramadhan',
+      schoolId: 'school-sdn-campaka-001',
+      notes: 'Program olahraga khusus'
+    },
+    
+    // Tambahan siswa untuk berbagai sekolah baru di Purwakarta
+    {
+      id: 'student-jatiluhur-001',
+      nisn: '0017050501',
+      name: 'Ahmad Fauzi',
+      age: 8,
+      gender: Gender.MALE,
+      grade: '2A',
+      parentName: 'Budi Fauzi',
+      schoolId: 'school-sdn-jatiluhur-001',
+      notes: null
+    },
+    {
+      id: 'student-jatiluhur-002',
+      nisn: '0017081201',
+      name: 'Siti Nurhaliza',
+      age: 8,
+      gender: Gender.FEMALE,
+      grade: '2B',
+      parentName: 'Dewi Nurhaliza',
+      schoolId: 'school-sdn-jatiluhur-001',
+      notes: 'Program pemberdayaan literasi'
+    },
+    {
+      id: 'student-plered-001',
+      nisn: '0017062301',
+      name: 'Rizki Pratama',
+      age: 9,
+      gender: Gender.MALE,
+      grade: '3A',
+      parentName: 'Dedi Pratama',
+      schoolId: 'school-sdn-plered-001',
+      notes: null
+    },
+    {
+      id: 'student-plered-002',
+      nisn: '0017041801',
+      name: 'Anisa Putri',
+      age: 8,
+      gender: Gender.FEMALE,
+      grade: '2A',
+      parentName: 'Rina Putri',
+      schoolId: 'school-sdn-plered-001',
+      notes: 'Alergi susu sapi'
+    },
+    {
+      id: 'student-sukatani-001',
+      nisn: '0017093001',
+      name: 'Bagas Setiawan',
+      age: 8,
+      gender: Gender.MALE,
+      grade: '2B',
+      parentName: 'Agus Setiawan',
+      schoolId: 'school-sdn-sukatani-001',
+      notes: null
     }
   ]
 

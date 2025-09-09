@@ -10,55 +10,38 @@ export async function seedDistributions() {
     select: { id: true, name: true }
   })
   
-  // First create some drivers if they don't exist
-  const drivers = [
-    {
-      id: 'driver-001',
-      employeeId: 'DRV-001-2025',
-      name: 'Asep Sukandar',
-      phone: '0812-3456-7890',
-      email: 'asep.driver@sppg.com',
-      licenseNumber: 'SIM-A-123456789',
-      licenseExpiry: new Date('2027-12-31'),
-      address: 'Jl. Veteran No. 15, Purwakarta',
-      emergencyContact: 'Siti Sukandar',
-      emergencyPhone: '0813-4567-8901',
-      isActive: true,
-      rating: 4.8,
-      totalDeliveries: 45
-    },
-    {
-      id: 'driver-002',
-      employeeId: 'DRV-002-2025',
-      name: 'Ujang Sutrisno',
-      phone: '0813-4567-8901',
-      email: 'ujang.driver@sppg.com',
-      licenseNumber: 'SIM-A-987654321',
-      licenseExpiry: new Date('2026-10-15'),
-      address: 'Jl. Sudirman No. 8, Purwakarta',
-      emergencyContact: 'Dewi Sutrisno',
-      emergencyPhone: '0814-5678-9012',
-      isActive: true,
-      rating: 4.9,
-      totalDeliveries: 52
-    }
-  ]
+  // Get existing drivers and vehicles from their respective seeds
+  const drivers = await prisma.driver.findMany({
+    where: { isActive: true },
+    select: { id: true, employeeId: true, name: true }
+  })
   
-  // Create drivers
-  for (const driver of drivers) {
-    await prisma.driver.upsert({
-      where: { id: driver.id },
-      update: driver,
-      create: driver
-    })
+  const vehicles = await prisma.vehicle.findMany({
+    where: { isActive: true },
+    select: { id: true, plateNumber: true, type: true }
+  })
+  
+  if (drivers.length === 0) {
+    console.log('⚠️  No drivers found. Please run driver seeds first.')
+    return
   }
   
-  const distributions = [
+  if (vehicles.length === 0) {
+    console.log('⚠️  No vehicles found. Please run vehicle seeds first.')
+    return
+  }
+  
+  if (schools.length === 0) {
+    console.log('⚠️  No schools found. Please run school seeds first.')
+    return
+  }
+
+  // Create distribution data with dynamic driver assignment
+  const distributionTemplates = [
     // Week 1 August 2025
     {
       id: 'dist-001-20250805',
       distributionDate: new Date('2025-08-05T08:00:00Z'),
-      driverId: 'driver-001',
       status: DistributionStatus.COMPLETED,
       totalPortions: 500,
       notes: 'Distribusi pertama minggu ke-1, semua sekolah terlayani dengan baik',
@@ -68,7 +51,6 @@ export async function seedDistributions() {
     {
       id: 'dist-002-20250806',
       distributionDate: new Date('2025-08-06T08:00:00Z'),
-      driverId: 'driver-002',
       status: DistributionStatus.COMPLETED,
       totalPortions: 480,
       notes: 'Hari kedua, kondisi cuaca mendukung, distribusi lancar',
@@ -78,7 +60,6 @@ export async function seedDistributions() {
     {
       id: 'dist-003-20250807',
       distributionDate: new Date('2025-08-07T08:00:00Z'),
-      driverId: 'driver-001',
       status: DistributionStatus.COMPLETED,
       totalPortions: 520,
       notes: 'Target distribusi tercapai 100%, tidak ada kendala',
@@ -88,7 +69,6 @@ export async function seedDistributions() {
     {
       id: 'dist-004-20250808',
       distributionDate: new Date('2025-08-08T08:00:00Z'),
-      driverId: 'driver-002',
       status: DistributionStatus.COMPLETED,
       totalPortions: 450,
       notes: 'Distribusi tempe berjalan sesuai jadwal, respon positif dari sekolah',
@@ -98,7 +78,6 @@ export async function seedDistributions() {
     {
       id: 'dist-005-20250809',
       distributionDate: new Date('2025-08-09T08:00:00Z'),
-      driverId: 'driver-001',
       status: DistributionStatus.COMPLETED,
       totalPortions: 460,
       notes: 'Akhir minggu pertama, evaluasi distribusi sangat positif',
@@ -110,7 +89,6 @@ export async function seedDistributions() {
     {
       id: 'dist-006-20250812',
       distributionDate: new Date('2025-08-12T08:00:00Z'),
-      driverId: 'driver-002',
       status: DistributionStatus.COMPLETED,
       totalPortions: 520,
       notes: 'Minggu kedua dimulai dengan baik, koordinasi antar sekolah lancar',
@@ -120,7 +98,6 @@ export async function seedDistributions() {
     {
       id: 'dist-007-20250813',
       distributionDate: new Date('2025-08-13T08:00:00Z'),
-      driverId: 'driver-001',
       status: DistributionStatus.COMPLETED,
       totalPortions: 500,
       notes: 'Distribusi ikan bandeng, feedback sangat baik dari siswa',
@@ -132,7 +109,6 @@ export async function seedDistributions() {
     {
       id: 'dist-008-20250819',
       distributionDate: new Date('2025-08-19T08:00:00Z'),
-      driverId: 'driver-002',
       status: DistributionStatus.IN_TRANSIT,
       totalPortions: 540,
       notes: 'Sedang dalam perjalanan ke sekolah-sekolah target',
@@ -142,7 +118,6 @@ export async function seedDistributions() {
     {
       id: 'dist-009-20250820',
       distributionDate: new Date('2025-08-20T08:00:00Z'),
-      driverId: 'driver-001',
       status: DistributionStatus.PREPARING,
       totalPortions: 470,
       notes: 'Dijadwalkan untuk besok, kendaraan dan driver sudah siap',
@@ -152,7 +127,6 @@ export async function seedDistributions() {
     {
       id: 'dist-010-20250821',
       distributionDate: new Date('2025-08-21T08:00:00Z'),
-      driverId: 'driver-002',
       status: DistributionStatus.PREPARING,
       totalPortions: 480,
       notes: 'Planning untuk Rabu, koordinasi dengan sekolah sudah dilakukan',
@@ -161,6 +135,13 @@ export async function seedDistributions() {
     }
   ]
   
+  // Create distribution data with dynamic driver assignment
+  const distributions = distributionTemplates.map((template, index) => ({
+    ...template,
+    driverId: drivers[index % drivers.length].id,
+    vehicleId: vehicles[index % vehicles.length].id
+  }))
+
   try {
     // Create distributions
     for (const distribution of distributions) {
@@ -201,7 +182,7 @@ export async function seedDistributions() {
           
           if (!existingEntry) {
             schoolDistributions.push({
-              id: `school-dist-${i+1}-${j+1}-2025`,
+              id: `school-dist-${dist.id}-${school.id}-${Date.now()}-${j}`, // More unique ID
               distributionId: dist.id,
               schoolId: school.id,
               plannedPortions: portionsForSchool,
@@ -213,6 +194,7 @@ export async function seedDistributions() {
       }
       
       for (const schoolDist of schoolDistributions) {
+        const { id, ...schoolDistData } = schoolDist; // Remove id from create data
         await prisma.distributionSchool.upsert({
           where: { 
             distributionId_schoolId: {
@@ -225,7 +207,7 @@ export async function seedDistributions() {
             actualPortions: schoolDist.actualPortions,
             routeOrder: schoolDist.routeOrder
           },
-          create: schoolDist
+          create: schoolDistData // Use data without manual ID
         })
       }
       

@@ -15,6 +15,7 @@ interface DriverSearchFiltersProps {
   filters: FilterState
   onSearchChange: (value: string) => void
   onStatusChange: (value: string) => void
+  onLicenseTypeChange: (value: string) => void
   onSortByChange: (value: string) => void
   onSortOrderChange: (value: 'asc' | 'desc') => void
   onItemsPerPageChange: (value: string) => void
@@ -25,16 +26,18 @@ export function DriverSearchFilters({
   filters,
   onSearchChange,
   onStatusChange,
+  onLicenseTypeChange,
   onSortByChange,
   onSortOrderChange,
   onItemsPerPageChange,
   itemsPerPage
 }: DriverSearchFiltersProps) {
-  const hasActiveFilters = filters.searchTerm || filters.statusFilter !== 'all'
+  const hasActiveFilters = filters.searchTerm || filters.statusFilter !== 'all' || filters.licenseTypeFilter !== 'all'
 
   const clearAllFilters = () => {
     onSearchChange('')
     onStatusChange('all')
+    onLicenseTypeChange('all')
     onSortByChange('name')
     onSortOrderChange('asc')
   }
@@ -48,7 +51,7 @@ export function DriverSearchFilters({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Search Input - Full Width */}
+        {/* Search Input */}
         <div className="w-full">
           <Input
             placeholder="Cari berdasarkan nama, ID karyawan, telepon, email, atau nomor SIM..."
@@ -58,8 +61,8 @@ export function DriverSearchFilters({
           />
         </div>
         
-        {/* Filters - Responsive Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <Select value={filters.statusFilter} onValueChange={onStatusChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Status driver" />
@@ -71,6 +74,20 @@ export function DriverSearchFilters({
             </SelectContent>
           </Select>
 
+          <Select value={filters.licenseTypeFilter} onValueChange={onLicenseTypeChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Tipe SIM" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Tipe SIM</SelectItem>
+              <SelectItem value="SIM_A">SIM A</SelectItem>
+              <SelectItem value="SIM_B1">SIM B1</SelectItem>
+              <SelectItem value="SIM_B2">SIM B2</SelectItem>
+              <SelectItem value="SIM_C">SIM C</SelectItem>
+              <SelectItem value="SIM_D">SIM D</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Select value={filters.sortBy} onValueChange={onSortByChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Urutkan berdasarkan" />
@@ -78,7 +95,6 @@ export function DriverSearchFilters({
             <SelectContent>
               <SelectItem value="name">Nama</SelectItem>
               <SelectItem value="employeeId">ID Karyawan</SelectItem>
-              <SelectItem value="rating">Rating</SelectItem>
               <SelectItem value="totalDeliveries">Total Pengiriman</SelectItem>
               <SelectItem value="licenseExpiry">Tanggal Habis SIM</SelectItem>
               <SelectItem value="createdAt">Tanggal Dibuat</SelectItem>

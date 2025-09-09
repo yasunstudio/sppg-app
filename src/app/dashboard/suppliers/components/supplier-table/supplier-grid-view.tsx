@@ -31,11 +31,12 @@ import { formatSupplierStatus, formatDate, formatPhone } from '../utils/supplier
 
 interface SupplierGridViewProps {
   suppliers: Supplier[]
+  loading?: boolean
   isFiltering: boolean
   onDelete?: (supplierId: string) => Promise<boolean>
 }
 
-export function SupplierGridView({ suppliers, isFiltering, onDelete }: SupplierGridViewProps) {
+export function SupplierGridView({ suppliers, loading, isFiltering, onDelete }: SupplierGridViewProps) {
   const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
@@ -78,7 +79,7 @@ export function SupplierGridView({ suppliers, isFiltering, onDelete }: SupplierG
         <p className="text-muted-foreground mb-4">
           Belum ada data supplier atau tidak ada yang sesuai dengan filter pencarian.
         </p>
-        <Button onClick={() => router.push('/dashboard/suppliers/create')}>
+        <Button onClick={() => router.push('/suppliers/create')}>
           Tambah Supplier Pertama
         </Button>
       </div>
@@ -120,14 +121,14 @@ export function SupplierGridView({ suppliers, isFiltering, onDelete }: SupplierG
                   className="bg-popover dark:bg-popover border-border dark:border-border"
                 >
                   <DropdownMenuItem 
-                    onClick={() => router.push(`/dashboard/suppliers/${supplier.id}`)}
+                    onClick={() => router.push(`/suppliers/${supplier.id}`)}
                     className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent"
                   >
                     <Eye className="mr-2 h-4 w-4" />
                     Lihat Detail
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    onClick={() => router.push(`/dashboard/suppliers/${supplier.id}/edit`)}
+                    onClick={() => router.push(`/suppliers/${supplier.id}/edit`)}
                     className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent"
                   >
                     <Edit className="mr-2 h-4 w-4" />

@@ -31,6 +31,17 @@ export const formatPhone = (phone: string) => {
   return phone
 }
 
+export const formatPhoneNumber = (phone: string) => {
+  // Format phone number to Indonesian format
+  if (phone.startsWith('0')) {
+    return phone.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3')
+  }
+  if (phone.startsWith('+62')) {
+    return phone.replace(/(\+62)(\d{3})(\d{4})(\d{4})/, '$1 $2-$3-$4')
+  }
+  return phone
+}
+
 export const truncateText = (text: string, maxLength: number = 30) => {
   if (text.length <= maxLength) return text
   return text.substring(0, maxLength) + '...'

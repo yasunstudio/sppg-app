@@ -5,17 +5,17 @@ export interface Driver {
   phone: string
   email?: string | null
   licenseNumber: string
+  licenseType: string
   licenseExpiry: string
   address?: string | null
   emergencyContact?: string | null
   emergencyPhone?: string | null
   isActive: boolean
-  rating?: number | null
   totalDeliveries: number
   notes?: string | null
   createdAt: string
   updatedAt: string
-  _count: {
+  _count?: {
     distributions: number
     deliveries: number
   }
@@ -26,13 +26,27 @@ export interface DriverStats {
   activeDrivers: number
   inactiveDrivers: number
   totalDeliveries: number
-  averageRating: number
   expiringSoonCount: number
+}
+
+export interface DriverFilters {
+  searchTerm: string
+  selectedStatus: string
+  selectedLicenseType: string
+}
+
+export interface DriverPagination {
+  totalCount: number
+  totalPages: number
+  currentPage: number
+  hasMore: boolean
+  hasPrev: boolean
 }
 
 export interface FilterState {
   searchTerm: string
   statusFilter: string
+  licenseTypeFilter: string
   sortBy: string
   sortOrder: 'asc' | 'desc'
 }

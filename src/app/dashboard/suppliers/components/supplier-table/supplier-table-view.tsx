@@ -1,202 +1,271 @@
 'use client'
 
-import { useState } from 'react'
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table'
+import { MoreVertical, Eye, Edit, Trash2, Building2, Phone, Mail, MapPin } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu'
-import { Badge } from '@/components/ui/badge'
-import { MoreVertical, Eye, Edit, Trash2, Phone, Mail, MapPin, RefreshCw, Building2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { formatDate, formatPhoneNumber } from '../utils/supplier-formatters'
 import type { Supplier } from '../utils/supplier-types'
-import { formatSupplierStatus, formatDate, formatPhone, truncateText } from '../utils/supplier-formatters'
+import { useRouter } from 'next/navigation'
+import { usePermission } from '@/hooks/use-permission'
 
 interface SupplierTableViewProps {
   suppliers: Supplier[]
-  isFiltering: boolean
-  onDelete?: (supplierId: string) => Promise<boolean>
+  loading?: boolean
+  isFiltering?: boolean
+  onDeleteSupplier?: (supplierId: string) => Promise<boolean>
 }
 
-export function SupplierTableView({ suppliers, isFiltering, onDelete }: SupplierTableViewProps) {
+export function SupplierTableView({
+  suppliers,
+  loading,
+  isFiltering,
+  onDeleteSupplier
+}: SupplierTableViewProps) {
   const router = useRouter()
-  const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  const handleDelete = async (supplierId: string) => {
-    if (!onDelete) return
-    
-    setDeletingId(supplierId)
-    try {
-      const success = await onDelete(supplierId)
-      if (success) {
-        toast.success('Supplier berhasil dihapus')
-      }
-    } catch (error) {
-      toast.error('Gagal menghapus supplier')
-    } finally {
-      setDeletingId(null)
+  // Permissions
+  const canViewSupplier = usePermission('suppliers.view')
+  const canEditSupplier = usePermission('suppliers.edit')
+  const canDeleteSupplier = usePermission('suppliers.delete')
+
+  const handleView = (supplierId: string) => {
+    if (canViewSupplier) {
+      router.push(`/suppliers/${supplierId}`)
     }
   }
 
-  if (isFiltering) {
+  const handleEdit = (supplierId: string) => {
+    if (canEditSupplier) {
+      router.push(`/suppliers/${supplierId}/edit`)
+    }
+  }
+
+  const handleDelete = async (supplierId: string) => {
+    if (canDeleteSupplier && onDeleteSupplier) {
+      if (confirm('Apakah Anda yakin ingin menghapus supplier ini?')) {
+        await onDeleteSupplier(supplierId)
+      }
+    }
+  }
+
+  const getStatusColor = (isActive: boolean) => {
+    return isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+  }
+
+  const getStatusText = (isActive: boolean) => {
+    return isActive ? 'Aktif' : 'Tidak Aktif'
+  }
+
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <div className="text-center">
-          <div className="animate-spin flex-shrink-0 mx-auto mb-4">
-            <RefreshCw className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <p className="text-muted-foreground">Memfilter data supplier...</p>
-        </div>
+      <div className={`rounded-md border transition-opacity duration-200 ${isFiltering ? 'opacity-50' : 'opacity-100'}`}>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Supplier</TableHead>
+              <TableHead>Kontak</TableHead>
+              <TableHead className="hidden md:table-cell">Email</TableHead>
+              <TableHead className="hidden lg:table-cell">Alamat</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="hidden xl:table-cell">Total Order</TableHead>
+              <TableHead className="hidden xl:table-cell">Bergabung</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
+                    <div>
+                      <div className="h-4 w-32 bg-muted animate-pulse rounded mb-1" />
+                      <div className="h-3 w-24 bg-muted animate-pulse rounded" />
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="h-4 w-28 bg-muted animate-pulse rounded" />
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <div className="h-4 w-36 bg-muted animate-pulse rounded" />
+                </TableCell>
+                <TableCell className="hidden lg:table-cell">
+                  <div className="h-4 w-48 bg-muted animate-pulse rounded" />
+                </TableCell>
+                <TableCell>
+                  <div className="h-6 w-16 bg-muted animate-pulse rounded" />
+                </TableCell>
+                <TableCell className="hidden xl:table-cell">
+                  <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                </TableCell>
+                <TableCell className="hidden xl:table-cell">
+                  <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+                </TableCell>
+                <TableCell>
+                  <div className="h-8 w-8 bg-muted animate-pulse rounded" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     )
   }
 
   if (suppliers.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-muted-foreground mb-2">
-          <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+      <div className="rounded-md border">
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Tidak ada supplier</h3>
+          <p className="text-muted-foreground">
+            Belum ada supplier yang terdaftar dalam sistem.
+          </p>
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">Tidak ada supplier ditemukan</h3>
-        <p className="text-muted-foreground mb-4">
-          Belum ada data supplier atau tidak ada yang sesuai dengan filter pencarian.
-        </p>
-        <Button onClick={() => router.push('/dashboard/suppliers/create')}>
-          Tambah Supplier Pertama
-        </Button>
       </div>
     )
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className={`rounded-md border transition-opacity duration-200 ${isFiltering ? 'opacity-50' : 'opacity-100'}`}>
       <Table>
         <TableHeader>
-          <TableRow className="border-border dark:border-border">
-            <TableHead className="text-foreground dark:text-foreground">Nama Supplier</TableHead>
-            <TableHead className="text-foreground dark:text-foreground">Kontak</TableHead>
-            <TableHead className="text-foreground dark:text-foreground">Telepon</TableHead>
-            <TableHead className="text-foreground dark:text-foreground">Email</TableHead>
-            <TableHead className="text-foreground dark:text-foreground">Alamat</TableHead>
-            <TableHead className="text-foreground dark:text-foreground">Status</TableHead>
-            <TableHead className="text-foreground dark:text-foreground">Statistik</TableHead>
-            <TableHead className="text-foreground dark:text-foreground">Dibuat</TableHead>
-            <TableHead className="text-foreground dark:text-foreground w-[50px]">Aksi</TableHead>
+          <TableRow>
+            <TableHead>Supplier</TableHead>
+            <TableHead>Kontak</TableHead>
+            <TableHead className="hidden md:table-cell">Email</TableHead>
+            <TableHead className="hidden lg:table-cell">Alamat</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="hidden xl:table-cell">Total Order</TableHead>
+            <TableHead className="hidden xl:table-cell">Bergabung</TableHead>
+            <TableHead className="w-[50px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {suppliers.map((supplier) => (
-            <TableRow 
-              key={supplier.id} 
-              className="border-border dark:border-border hover:bg-muted/50 dark:hover:bg-muted/50 transition-colors"
-            >
-              <TableCell className="font-medium text-foreground dark:text-foreground">
-                <div className="flex flex-col">
-                  <span className="font-semibold">{supplier.name}</span>
-                  <span className="text-xs text-muted-foreground">ID: {supplier.id.slice(-8)}</span>
-                </div>
-              </TableCell>
-              <TableCell className="text-foreground dark:text-foreground">
-                <div className="flex items-center gap-2">
-                  <Phone className="h-3 w-3 text-muted-foreground" />
-                  {supplier.contactName}
-                </div>
-              </TableCell>
-              <TableCell className="text-foreground dark:text-foreground">
-                <div className="flex items-center gap-2">
-                  <Phone className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                  {formatPhone(supplier.phone)}
-                </div>
-              </TableCell>
-              <TableCell className="text-foreground dark:text-foreground">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-3 w-3 text-muted-foreground" />
+          {suppliers.length > 0 ? (
+            suppliers.map((supplier) => (
+              <TableRow key={supplier.id}>
+                <TableCell>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Building2 className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <div className="font-medium">{supplier.name}</div>
+                      <div className="text-sm text-muted-foreground">{supplier.contactName}</div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center space-x-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{formatPhoneNumber(supplier.phone)}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
                   {supplier.email ? (
-                    <span className="text-sm">{truncateText(supplier.email, 25)}</span>
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{supplier.email}</span>
+                    </div>
                   ) : (
-                    <span className="text-muted-foreground text-sm italic">Tidak ada</span>
+                    <span className="text-muted-foreground text-sm">-</span>
                   )}
-                </div>
-              </TableCell>
-              <TableCell className="text-foreground dark:text-foreground">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-sm">{truncateText(supplier.address, 30)}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                {formatSupplierStatus(supplier.isActive)}
-              </TableCell>
-              <TableCell className="text-foreground dark:text-foreground">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {supplier._count.purchaseOrders} pesanan
-                    </Badge>
+                </TableCell>
+                <TableCell className="hidden lg:table-cell">
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm max-w-[200px] truncate" title={supplier.address}>
+                      {supplier.address}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {supplier._count.inventory} item
-                    </Badge>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="text-muted-foreground text-sm">
-                {formatDate(supplier.createdAt)}
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-8 w-8 p-0 hover:bg-muted dark:hover:bg-muted"
-                      disabled={deletingId === supplier.id}
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    className="bg-popover dark:bg-popover border-border dark:border-border"
-                  >
-                    <DropdownMenuItem 
-                      onClick={() => router.push(`/dashboard/suppliers/${supplier.id}`)}
-                      className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent"
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      Lihat Detail
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => router.push(`/dashboard/suppliers/${supplier.id}/edit`)}
-                      className="text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent"
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleDelete(supplier.id)}
-                      disabled={deletingId === supplier.id}
-                      className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      {deletingId === supplier.id ? 'Menghapus...' : 'Hapus'}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                </TableCell>
+                <TableCell>
+                  <Badge className={getStatusColor(supplier.isActive)}>
+                    {getStatusText(supplier.isActive)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="hidden xl:table-cell">
+                  <Badge variant="outline">
+                    {supplier._count?.purchaseOrders || 0} order
+                  </Badge>
+                </TableCell>
+                <TableCell className="hidden xl:table-cell">
+                  <span className="text-sm text-muted-foreground">
+                    {formatDate(supplier.createdAt)}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Buka menu</span>
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {canViewSupplier && (
+                        <DropdownMenuItem
+                          onClick={() => handleView(supplier.id)}
+                          className="cursor-pointer"
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          Lihat Detail
+                        </DropdownMenuItem>
+                      )}
+                      {canEditSupplier && (
+                        <DropdownMenuItem
+                          onClick={() => handleEdit(supplier.id)}
+                          className="cursor-pointer"
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                      )}
+                      {canDeleteSupplier && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(supplier.id)}
+                            className="cursor-pointer text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Hapus
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={8} className="text-center py-16">
+                <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Tidak ada supplier</h3>
+                <p className="text-muted-foreground">
+                  Belum ada supplier yang terdaftar dalam sistem.
+                </p>
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </div>

@@ -18,6 +18,7 @@ const URL_REWRITES = {
   '/materials': '/dashboard/raw-materials',
   '/items': '/dashboard/items',
   '/suppliers': '/dashboard/suppliers',
+  '/suppliers/create': '/dashboard/suppliers/create',
   '/orders': '/dashboard/purchase-orders',
   '/orders/analytics': '/dashboard/purchase-orders/analytics',
   
@@ -46,6 +47,7 @@ const URL_REWRITES = {
   '/vehicles': '/dashboard/vehicles',
   '/vehicles/create': '/dashboard/vehicles/create',
   '/drivers': '/dashboard/drivers',
+  '/drivers/create': '/dashboard/drivers/create',
   
   // Monitoring & Reports
   '/monitoring': '/dashboard/monitoring',
@@ -84,6 +86,7 @@ const PROTECTED_ROUTES = {
   '/dashboard/inventory': ['inventory.view'],
   '/dashboard/items': ['inventory.view'],
   '/dashboard/suppliers': ['suppliers.view'],
+  '/dashboard/suppliers/create': ['suppliers.manage'],
   '/dashboard/purchase-orders': ['purchase_orders.view'],
   '/dashboard/purchase-orders/analytics': ['purchase_orders.view'],
   '/dashboard/production': ['production.view'],
@@ -297,6 +300,40 @@ function handleDynamicRoutes(pathname: string): { baseRoute: string; internalRou
     return {
       baseRoute: '/dashboard/vehicles',
       internalRoute: `/dashboard/vehicles/${vehicleViewMatch[1]}`
+    }
+  }
+
+  // Handle supplier dynamic routes
+  const supplierEditMatch = pathname.match(/^\/suppliers\/([^\/]+)\/edit$/)
+  if (supplierEditMatch) {
+    return {
+      baseRoute: '/dashboard/suppliers',
+      internalRoute: `/dashboard/suppliers/${supplierEditMatch[1]}/edit`
+    }
+  }
+
+  const supplierViewMatch = pathname.match(/^\/suppliers\/([^\/]+)$/)
+  if (supplierViewMatch && supplierViewMatch[1] !== 'create') {
+    return {
+      baseRoute: '/dashboard/suppliers',
+      internalRoute: `/dashboard/suppliers/${supplierViewMatch[1]}`
+    }
+  }
+
+  // Handle driver dynamic routes
+  const driverEditMatch = pathname.match(/^\/drivers\/([^\/]+)\/edit$/)
+  if (driverEditMatch) {
+    return {
+      baseRoute: '/dashboard/drivers',
+      internalRoute: `/dashboard/drivers/${driverEditMatch[1]}/edit`
+    }
+  }
+
+  const driverViewMatch = pathname.match(/^\/drivers\/([^\/]+)$/)
+  if (driverViewMatch && driverViewMatch[1] !== 'create') {
+    return {
+      baseRoute: '/dashboard/drivers',
+      internalRoute: `/dashboard/drivers/${driverViewMatch[1]}`
     }
   }
 

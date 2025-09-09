@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { ChevronRight, Truck } from 'lucide-react'
+import { ChevronRight, Truck, User, Building2 } from 'lucide-react'
 
 interface BreadcrumbItem {
   label: string
@@ -113,58 +113,171 @@ export function PageContainer({
   const generateBreadcrumb = () => {
     // Helper to check if path is vehicles-related
     const isVehiclesPath = pathname.includes('/vehicles')
+    // Helper to check if path is drivers-related (Folder: dashboard/drivers, URL: /drivers via middleware)
+    const isDriversPath = pathname.includes('/drivers')
+    // Helper to check if path is suppliers-related (Folder: dashboard/suppliers, URL: /suppliers via middleware)
+    const isSuppliersPath = pathname.includes('/suppliers')
     
-    if (!isVehiclesPath) {
+    if (!isVehiclesPath && !isDriversPath && !isSuppliersPath) {
       return []
     }
 
-    // Vehicles main page - NO BREADCRUMB
-    if (pathname === '/vehicles' || pathname === '/dashboard/vehicles') {
-      return []
-    }
-    
-    // Create vehicle page
-    if (pathname.endsWith('/create') || pathname.includes('/create')) {
-      return [
-        { label: "Kendaraan", href: "/vehicles", key: "1", isLast: false, renderIcon: "Truck" },
-        { label: "Tambah Baru", href: undefined, key: "2", isLast: true, renderIcon: undefined }
-      ]
-    }
-    
-    // Edit vehicle page - check for /edit at the end
-    if (pathname.endsWith('/edit') || pathname.includes('/edit')) {
-      const pathParts = pathname.split('/')
-      const vehicleIdIndex = pathParts.findIndex(part => 
+    // ===== VEHICLES BREADCRUMB LOGIC =====
+    if (isVehiclesPath) {
+      // Vehicles main page - NO BREADCRUMB
+      if (pathname === '/vehicles' || pathname === '/dashboard/vehicles') {
+        return []
+      }
+      
+      // Create vehicle page
+      if (pathname.endsWith('/create') || pathname.includes('/create')) {
+        return [
+          { label: "Kendaraan", href: "/vehicles", key: "1", isLast: false, renderIcon: "Truck" },
+          { label: "Tambah Baru", href: undefined, key: "2", isLast: true, renderIcon: undefined }
+        ]
+      }
+      
+      // Edit vehicle page - check for /edit at the end
+      if (pathname.endsWith('/edit') || pathname.includes('/edit')) {
+        const pathParts = pathname.split('/')
+        const vehicleIdIndex = pathParts.findIndex(part => 
+          part.match(/^[a-f0-9\-]{36}$/) || part.match(/^[a-z0-9]{25}$/)
+        )
+        const vehicleId = vehicleIdIndex !== -1 ? pathParts[vehicleIdIndex] : null
+        const detailPath = vehicleId ? `/vehicles/${vehicleId}` : undefined
+        
+        return [
+          { label: "Kendaraan", href: "/vehicles", key: "1", isLast: false, renderIcon: "Truck" },
+          { label: vehicleData?.plateNumber || "Detail", href: detailPath, key: "2", isLast: false, renderIcon: undefined },
+          { label: "Edit", href: undefined, key: "3", isLast: true, renderIcon: undefined }
+        ]
+      }
+      
+      // Vehicle detail page - contains UUID but NOT create/edit
+      const pathParts = pathname.split('/').filter(Boolean)
+      const hasUUID = pathParts.some(part => 
         part.match(/^[a-f0-9\-]{36}$/) || part.match(/^[a-z0-9]{25}$/)
       )
-      const vehicleId = vehicleIdIndex !== -1 ? pathParts[vehicleIdIndex] : null
-      const detailPath = vehicleId ? `/vehicles/${vehicleId}` : undefined
+      const isDetailPage = hasUUID && !pathname.includes('/edit') && !pathname.includes('/create')
       
-      return [
-        { label: "Kendaraan", href: "/vehicles", key: "1", isLast: false, renderIcon: "Truck" },
-        { label: vehicleData?.plateNumber || "Detail", href: detailPath, key: "2", isLast: false, renderIcon: undefined },
-        { label: "Edit", href: undefined, key: "3", isLast: true, renderIcon: undefined }
-      ]
+      if (isDetailPage) {
+        return [
+          { label: "Kendaraan", href: "/vehicles", key: "1", isLast: false, renderIcon: "Truck" },
+          { label: vehicleData?.plateNumber || "Detail Kendaraan", href: undefined, key: "2", isLast: true, renderIcon: undefined }
+        ]
+      }
     }
-    
-    // Vehicle detail page - contains UUID but NOT create/edit
-    const pathParts = pathname.split('/').filter(Boolean)
-    const hasUUID = pathParts.some(part => 
-      part.match(/^[a-f0-9\-]{36}$/) || part.match(/^[a-z0-9]{25}$/)
-    )
-    const isDetailPage = hasUUID && !pathname.includes('/edit') && !pathname.includes('/create')
-    
-    if (isDetailPage) {
-      return [
-        { label: "Kendaraan", href: "/vehicles", key: "1", isLast: false, renderIcon: "Truck" },
-        { label: vehicleData?.plateNumber || "Detail Kendaraan", href: undefined, key: "2", isLast: true, renderIcon: undefined }
-      ]
+
+    // ===== DRIVERS BREADCRUMB LOGIC =====
+    if (isDriversPath) {
+      // Drivers main page - NO BREADCRUMB  
+      if (pathname === '/drivers') {
+        return []
+      }
+      
+      // Create driver page
+      if (pathname.endsWith('/create') || pathname.includes('/create')) {
+        return [
+          { label: "Driver", href: "/drivers", key: "1", isLast: false, renderIcon: "User" },
+          { label: "Tambah Baru", href: undefined, key: "2", isLast: true, renderIcon: undefined }
+        ]
+      }
+      
+      // Edit driver page
+      if (pathname.endsWith('/edit') || pathname.includes('/edit')) {
+        const pathParts = pathname.split('/')
+        const driverIdIndex = pathParts.findIndex(part => 
+          part.match(/^[a-f0-9\-]{36}$/) || part.match(/^[a-z0-9]{25}$/) || part.startsWith('DRV-')
+        )
+        const driverId = driverIdIndex !== -1 ? pathParts[driverIdIndex] : null
+        const detailPath = driverId ? `/drivers/${driverId}` : undefined
+        
+        return [
+          { label: "Driver", href: "/drivers", key: "1", isLast: false, renderIcon: "User" },
+          { label: "Detail Driver", href: detailPath, key: "2", isLast: false, renderIcon: undefined },
+          { label: "Edit", href: undefined, key: "3", isLast: true, renderIcon: undefined }
+        ]
+      }
+      
+      // Driver detail page - contains ID but NOT create/edit
+      const pathParts = pathname.split('/').filter(Boolean)
+      const hasDriverId = pathParts.some(part => 
+        part.match(/^[a-f0-9\-]{36}$/) || part.match(/^[a-z0-9]{25}$/) || part.startsWith('DRV-')
+      )
+      const isDetailPage = hasDriverId && !pathname.includes('/edit') && !pathname.includes('/create')
+      
+      if (isDetailPage) {
+        return [
+          { label: "Driver", href: "/drivers", key: "1", isLast: false, renderIcon: "User" },
+          { label: "Detail Driver", href: undefined, key: "2", isLast: true, renderIcon: undefined }
+        ]
+      }
+    }
+
+    // ===== SUPPLIERS BREADCRUMB LOGIC =====
+    if (isSuppliersPath) {
+      // Suppliers main page - NO BREADCRUMB  
+      if (pathname === '/suppliers') {
+        return []
+      }
+      
+      // Create supplier page
+      if (pathname.endsWith('/create') || pathname.includes('/create')) {
+        return [
+          { label: "Supplier", href: "/suppliers", key: "1", isLast: false, renderIcon: "Building2" },
+          { label: "Tambah Baru", href: undefined, key: "2", isLast: true, renderIcon: undefined }
+        ]
+      }
+      
+      // Edit supplier page
+      if (pathname.endsWith('/edit') || pathname.includes('/edit')) {
+        const pathParts = pathname.split('/')
+        const supplierIdIndex = pathParts.findIndex(part => 
+          part.match(/^[a-f0-9\-]{36}$/) || part.match(/^[a-z0-9]{25}$/)
+        )
+        const supplierId = supplierIdIndex !== -1 ? pathParts[supplierIdIndex] : null
+        const detailPath = supplierId ? `/suppliers/${supplierId}` : undefined
+        
+        return [
+          { label: "Supplier", href: "/suppliers", key: "1", isLast: false, renderIcon: "Building2" },
+          { label: "Detail Supplier", href: detailPath, key: "2", isLast: false, renderIcon: undefined },
+          { label: "Edit", href: undefined, key: "3", isLast: true, renderIcon: undefined }
+        ]
+      }
+      
+      // Supplier detail page - contains ID but NOT create/edit
+      const pathParts = pathname.split('/').filter(Boolean)
+      const hasSupplierId = pathParts.some(part => 
+        part.match(/^[a-f0-9\-]{36}$/) || part.match(/^[a-z0-9]{25}$/)
+      )
+      const isDetailPage = hasSupplierId && !pathname.includes('/edit') && !pathname.includes('/create')
+      
+      if (isDetailPage) {
+        return [
+          { label: "Supplier", href: "/suppliers", key: "1", isLast: false, renderIcon: "Building2" },
+          { label: "Detail Supplier", href: undefined, key: "2", isLast: true, renderIcon: undefined }
+        ]
+      }
     }
     
     return []
   }
 
   const breadcrumbItems = generateBreadcrumb()
+
+  // Helper to render icon based on string
+  const renderIcon = (iconName?: string) => {
+    switch (iconName) {
+      case 'Truck':
+        return <Truck className="h-4 w-4 mr-2" />
+      case 'User':
+        return <User className="h-4 w-4 mr-2" />
+      case 'Building2':
+        return <Building2 className="h-4 w-4 mr-2" />
+      default:
+        return null
+    }
+  }
 
   return (
     <div className={cn(
@@ -193,14 +306,16 @@ export function PageContainer({
                     
                     {/* Breadcrumb Link/Text */}
                     {item.isLast ? (
-                      <span className="font-medium text-foreground bg-muted px-3 py-1 rounded-md">
+                      <span className="font-medium text-foreground bg-muted px-3 py-1 rounded-md flex items-center">
+                        {renderIcon(item.renderIcon)}
                         {item.label}
                       </span>
                     ) : (
                       <Link 
                         href={item.href || '#'} 
-                        className="text-muted-foreground hover:text-primary hover:bg-muted px-3 py-1 rounded-md transition-all duration-200 font-medium"
+                        className="text-muted-foreground hover:text-primary hover:bg-muted px-3 py-1 rounded-md transition-all duration-200 font-medium flex items-center"
                       >
+                        {renderIcon(item.renderIcon)}
                         {item.label}
                       </Link>
                     )}
