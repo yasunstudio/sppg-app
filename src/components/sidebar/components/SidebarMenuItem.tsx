@@ -53,7 +53,7 @@ export function SidebarMenuItem({
         href={item.href}
         onClick={onLinkClick}
         className={cn(
-          "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out ml-6",
+          "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out ml-6",
           "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-sm",
           "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
           "group relative overflow-hidden",
