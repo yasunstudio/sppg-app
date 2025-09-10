@@ -82,7 +82,7 @@ export function SidebarMenuItem({
           <item.icon className="h-3 w-3" />
         </div>
         
-        <span className="truncate flex-1">{item.name}</span>
+        <span className="truncate flex-1 text-left">{item.name}</span>
         
         {/* Badge for submenu items */}
         {item.badge && (
@@ -136,7 +136,7 @@ export function SidebarMenuItem({
               <item.icon className="h-3.5 w-3.5 flex-shrink-0 transition-all duration-200" />
             </div>
             
-            <span className="truncate font-medium flex-1">{item.name}</span>
+                          <span className="truncate font-medium flex-1 text-left">{item.name}</span>
             
             <div className="ml-auto flex items-center gap-2">
               {item.badge && (
@@ -200,12 +200,12 @@ export function SidebarMenuItem({
             </div>
             
             <div className={cn(
-              "transition-all duration-300 ease-in-out overflow-hidden flex items-center justify-between flex-1",
+              "transition-all duration-300 ease-in-out overflow-hidden flex items-center flex-1",
               isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
             )}>
-              <span className="truncate font-medium">{item.name}</span>
+              <span className="truncate font-medium flex-1">{item.name}</span>
               
-              <div className="ml-auto flex items-center gap-1">
+              <div className="flex items-center gap-1">
                 {item.badge && (
                   <Badge variant="secondary" className="text-xs h-4 px-1.5 py-0">
                     {item.badge}
