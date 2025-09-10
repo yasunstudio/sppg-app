@@ -32,20 +32,20 @@ export function SidebarNavSection({
   }
 
   return (
-    <div className={cn("space-y-2", !isMainSection && "mt-6")}>
+    <div className={cn("space-y-1.5", !isMainSection && "mt-5")}>
       {!isMainSection && !isCollapsed && (
-        <div className="px-3 mb-4">
-          <h3 className="text-xs font-bold text-muted-foreground/80 uppercase tracking-widest mb-3 flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary/70 to-primary/40 shadow-sm" />
-            <span className="bg-gradient-to-r from-foreground/80 to-foreground/60 bg-clip-text">
+        <div className="px-3 mb-3">
+          <h3 className="text-xs font-semibold text-muted-foreground/75 uppercase tracking-wide mb-2 flex items-center gap-2">
+            <div className="w-1 h-1 rounded-full bg-gradient-to-r from-primary/60 to-primary/40" />
+            <span className="bg-gradient-to-r from-foreground/75 to-foreground/60 bg-clip-text">
               {title}
             </span>
           </h3>
-          <div className="h-px bg-gradient-to-r from-border/40 via-primary/15 to-transparent"></div>
+          <div className="h-px bg-gradient-to-r from-border/30 via-primary/10 to-transparent"></div>
         </div>
       )}
       
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         {visibleItems.map((item) => (
           <SidebarMenuItem
             key={item.href}
