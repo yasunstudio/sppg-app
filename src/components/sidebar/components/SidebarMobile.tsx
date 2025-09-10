@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
 import { useEffect } from "react"
 import { SidebarHeader } from "./SidebarHeader"
-import { SidebarNavSection } from "./SidebarNavSection"
+import SidebarNavSection from "./SidebarNavSection"
 import type { User } from "@/lib/types/user"
 import type { MenuSection, MenuItem } from "../types/sidebar.types"
 

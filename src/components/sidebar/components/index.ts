@@ -4,7 +4,7 @@ export { default as Sidebar } from "./Sidebar"
 // Sidebar Components
 export { SidebarHeader } from "./SidebarHeader"
 export { SidebarMenuItem } from "./SidebarMenuItem"
-export { SidebarNavSection } from "./SidebarNavSection"
+export { default as SidebarNavSection } from "./SidebarNavSection"
 export { SidebarExpandable } from "./SidebarExpandable"
 export { SidebarMobile } from "./SidebarMobile"
 

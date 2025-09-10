@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils"
 import { SidebarMenuItem } from "./SidebarMenuItem"
 import type { MenuItem } from "../types/sidebar.types"
+import { LucideIcon } from "lucide-react"
 
 interface SidebarNavSectionProps {
   title: string
@@ -11,49 +12,67 @@ interface SidebarNavSectionProps {
   onLinkClick?: () => void
   isMainSection?: boolean
   hasPermissionCheck?: (item: MenuItem) => boolean
+  children?: React.ReactNode
+  icon?: LucideIcon
+  description?: string
 }
 
-export function SidebarNavSection({ 
+export default function SidebarNavSection({ 
   title, 
-  items, 
+  items,
   isCollapsed = false, 
   onLinkClick,
   isMainSection = false,
-  hasPermissionCheck
+  hasPermissionCheck,
+  children,
+  icon: Icon,
+  description 
 }: SidebarNavSectionProps) {
-  // Filter items based on permissions if permission check is provided
-  const visibleItems = hasPermissionCheck 
-    ? items.filter(hasPermissionCheck) 
-    : items
-
-  // Don't render if no visible items
-  if (visibleItems.length === 0) {
-    return null
+  if (isCollapsed) {
+    return (
+      <div className="space-y-1">
+        {children || items?.map((item) => {
+          if (hasPermissionCheck && !hasPermissionCheck(item)) return null
+          return (
+            <SidebarMenuItem
+              key={item.href}
+              item={item}
+              isCollapsed={isCollapsed}
+              onLinkClick={onLinkClick}
+            />
+          )
+        })}
+      </div>
+    )
   }
 
   return (
-    <div className={cn("space-y-1.5", !isMainSection && "mt-5")}>
-      {!isMainSection && !isCollapsed && (
-        <div className="px-3 mb-3">
-          <h3 className="text-xs font-semibold text-muted-foreground/75 uppercase tracking-wide mb-2 flex items-center gap-2">
-            <div className="w-1 h-1 rounded-full bg-gradient-to-r from-primary/60 to-primary/40" />
-            <span className="bg-gradient-to-r from-foreground/75 to-foreground/60 bg-clip-text">
-              {title}
-            </span>
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 px-3 py-2">
+        {Icon && <Icon className="h-4 w-4 text-muted-foreground/70" />}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider truncate">
+            {title}
           </h3>
-          <div className="h-px bg-gradient-to-r from-border/30 via-primary/10 to-transparent"></div>
+          {description && (
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5 line-clamp-1">
+              {description}
+            </p>
+          )}
         </div>
-      )}
-      
+      </div>
       <div className="space-y-1">
-        {visibleItems.map((item) => (
-          <SidebarMenuItem
-            key={item.href}
-            item={item}
-            isCollapsed={isCollapsed}
-            onLinkClick={onLinkClick}
-          />
-        ))}
+        {children || items?.map((item) => {
+          if (hasPermissionCheck && !hasPermissionCheck(item)) return null
+          return (
+            <SidebarMenuItem
+              key={item.href}
+              item={item}
+              isCollapsed={isCollapsed}
+              onLinkClick={onLinkClick}
+            />
+          )
+        })}
       </div>
     </div>
   )

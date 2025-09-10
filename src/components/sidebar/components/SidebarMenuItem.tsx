@@ -53,15 +53,15 @@ export function SidebarMenuItem({
         href={item.href}
         onClick={onLinkClick}
         className={cn(
-          "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out ml-6",
-          "hover:bg-accent/60 hover:text-accent-foreground hover:shadow-sm",
+          "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out ml-6",
+          "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-sm",
           "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
           "group relative overflow-hidden",
-          "border-l-2 border-transparent hover:border-primary/30",
-          "backdrop-blur-sm",
+          "border-l-2 border-transparent hover:border-primary/40",
+          "backdrop-blur-sm bg-muted/20 hover:bg-muted/40",
           isCurrentItem 
-            ? "bg-primary/10 text-primary border-l-primary/60 shadow-sm font-medium ring-1 ring-primary/8" 
-            : "text-muted-foreground/85 hover:text-foreground hover:bg-accent/40"
+            ? "bg-primary/10 text-primary border-l-primary/60 shadow-sm font-medium ring-1 ring-primary/10" 
+            : "text-muted-foreground/85 hover:text-foreground"
         )}
       >
         {/* Refined submenu active indicator */}
@@ -107,14 +107,14 @@ export function SidebarMenuItem({
         <button
           onClick={handleClick}
           className={cn(
-            "w-full flex items-center rounded-md py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
-            "hover:bg-accent/60 hover:text-accent-foreground hover:shadow-sm",
+            "w-full flex items-center rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
+            "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-sm",
             "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
             "group relative overflow-hidden",
-            "backdrop-blur-sm px-3 gap-2.5 mx-0.5",
-            "border border-transparent hover:border-border/20",
+            "backdrop-blur-sm px-3 gap-2.5 mx-0",
+            "border border-transparent hover:border-border/30",
             isCurrentItem || isParentOfActive
-              ? "bg-primary/10 text-primary border-primary/15 shadow-sm font-medium" 
+              ? "bg-primary/10 text-primary border-primary/20 shadow-sm font-medium" 
               : "text-muted-foreground/85 hover:text-foreground"
           )}
         >
@@ -161,14 +161,14 @@ export function SidebarMenuItem({
           href={item.href}
           onClick={handleClick}
           className={cn(
-            "flex items-center rounded-md py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
-            "hover:bg-accent/60 hover:text-accent-foreground hover:shadow-sm",
+            "flex items-center rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
+            "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-sm",
             "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
             "group relative overflow-hidden",
-            "backdrop-blur-sm border border-transparent hover:border-border/20",
-            isCollapsed ? "px-2 justify-center mx-0.5" : "px-3 gap-2.5 mx-0.5",
+            "backdrop-blur-sm border border-transparent hover:border-border/30",
+            isCollapsed ? "px-2 justify-center mx-0" : "px-3 gap-2.5 mx-0",
             isCurrentItem 
-              ? "bg-primary/10 text-primary border-primary/15 shadow-sm font-medium" 
+              ? "bg-primary/10 text-primary border-primary/20 shadow-sm font-medium" 
               : "text-muted-foreground/85 hover:text-foreground"
           )}
           title={isCollapsed ? item.name : undefined}

@@ -70,8 +70,8 @@ export default function Sidebar({
           "fixed left-0 top-0 z-30 h-screen transition-all duration-300 ease-in-out",
           "hidden lg:flex lg:flex-col",
           // Enhanced background with proper dark/light mode support
-          "bg-card/95 backdrop-blur-xl border-r border-border/50",
-          "shadow-lg shadow-black/5 dark:shadow-black/20",
+          "bg-background/95 dark:bg-background/95 backdrop-blur-xl border-r border-border/40",
+          "shadow-xl shadow-black/5 dark:shadow-black/30",
           // Increase width for better menu visibility
           isCollapsed ? "w-16" : "w-72",
           className
@@ -87,8 +87,8 @@ export default function Sidebar({
         />
 
         {/* Navigation Content */}
-        <div className="flex-1 overflow-y-auto overscroll-contain bg-gradient-to-b from-transparent to-muted/10">
-          <nav className="p-4 pt-6 space-y-4" role="navigation">
+        <div className="flex-1 overflow-y-auto overscroll-contain bg-gradient-to-b from-transparent via-muted/5 to-muted/10 dark:from-transparent dark:via-muted/10 dark:to-muted/20">
+          <nav className="p-3 pt-4 space-y-3" role="navigation">
             {SIDEBAR_MENU_STRUCTURE.map((section: MenuSection) => {
               // Handle expandable sections
               if (section.isExpandable && section.menuType) {
@@ -129,18 +129,18 @@ export default function Sidebar({
 
         {/* Footer */}
         {!isCollapsed && (
-          <div className="border-t border-border/40 p-4 bg-gradient-to-r from-card/50 to-card/30 backdrop-blur-sm">
+          <div className="border-t border-border/30 p-4 bg-card/50 dark:bg-card/60 backdrop-blur-sm">
             <div className="flex items-center justify-between min-w-0">
               <div className="flex flex-col min-w-0 flex-1">
                 <p className="text-xs font-semibold truncate text-foreground/90">SPPG Online</p>
-                <p className="text-[10px] text-muted-foreground/80">v1.0.0 Professional</p>
+                <p className="text-[10px] text-muted-foreground/70">v1.0.0 Professional</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <div className={cn(
                   "w-2 h-2 rounded-full shadow-sm",
                   hasActiveMenu ? "bg-green-500 animate-pulse shadow-green-500/20" : "bg-muted-foreground/40"
                 )} />
-                <span className="text-[10px] text-muted-foreground/80 font-medium">
+                <span className="text-[10px] text-muted-foreground/70 font-medium">
                   {hasActiveMenu ? 'Online' : 'Ready'}
                 </span>
               </div>
