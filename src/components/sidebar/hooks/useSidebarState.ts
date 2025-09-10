@@ -11,11 +11,11 @@ const defaultMenuState: MenuState = {
   distribution: false,
   monitoring: false,
   quality: false,
+  operational: false,
   dataMaster: false,
-  procurement: false,
   system: false,
   preferences: {
-    autoExpandActive: false,
+    autoExpandActive: true,
     persistState: true,
     preventActiveCollapse: true
   }
@@ -29,17 +29,14 @@ export const useSidebarState = () => {
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
-          // Merge dengan default state untuk memastikan field baru ada
-          const mergedState = {
+          return {
             ...defaultMenuState,
             ...parsed,
             preferences: {
               ...defaultMenuState.preferences,
-              ...parsed.preferences,
-              autoExpandActive: false // Force disable auto-expand
+              ...parsed.preferences
             }
           }
-          return mergedState
         } catch (e) {
           console.warn('Professional sidebar: Failed to parse saved state')
         }

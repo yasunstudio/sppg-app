@@ -46,127 +46,60 @@ export const CORE_NAVIGATION: MenuItem[] = [
   },
 ]
 
-// 1. Data Master - Master Data Management
-export const DATA_MASTER_PENDIDIKAN: MenuItem[] = [
+// Data Master Section - Core Data Management
+export const DATA_MASTER: MenuItem[] = [
   {
-    name: "Sekolah",
+    name: "Data Pendidikan",
     href: "/dashboard/schools",
     icon: School,
     current: false,
+    description: "Kelola data sekolah, siswa, dan kelas",
   },
   {
-    name: "Siswa",
-    href: "/dashboard/students",
-    icon: GraduationCap,
-    current: false,
-  },
-  {
-    name: "Kelas",
-    href: "/dashboard/classes",
-    icon: Users,
-    current: false,
-  },
-]
-
-export const DATA_MASTER_MATERIAL: MenuItem[] = [
-  {
-    name: "Bahan Baku",
+    name: "Data Sumber Daya",
     href: "/dashboard/raw-materials",
     icon: Package,
     current: false,
+    description: "Manajemen bahan baku dan pemasok",
   },
   {
-    name: "Item/Produk",
-    href: "/dashboard/items",
-    icon: Package,
-    current: false,
-  },
-  {
-    name: "Pemasok",
-    href: "/dashboard/suppliers",
-    icon: ShoppingCart,
-    current: false,
-  },
-]
-
-export const DATA_MASTER_TRANSPORTASI: MenuItem[] = [
-  {
-    name: "Kendaraan",
+    name: "Data Transportasi",
     href: "/dashboard/vehicles",
     icon: Truck,
     current: false,
+    description: "Kelola kendaraan dan driver",
   },
   {
-    name: "Driver",
-    href: "/dashboard/drivers",
-    icon: UserCheck,
-    current: false,
-  },
-]
-
-export const DATA_MASTER_TEMPLATE: MenuItem[] = [
-  {
-    name: "Resep",
-    href: "/dashboard/recipes",
-    icon: BookOpen,
-    current: false,
-  },
-  {
-    name: "Standar Kualitas",
+    name: "Standar & Template",
     href: "/dashboard/quality-standards",
     icon: Shield,
     current: false,
+    description: "Template resep dan standar kualitas",
   },
 ]
 
 // Operational Management - Daily Operations
-// 2. Pengadaan & Inventori
-export const PENGADAAN_INVENTORI: MenuItem[] = [
+export const OPERATIONAL_MANAGEMENT: MenuItem[] = [
   {
-    name: "Order Pembelian",
+    name: "Pengadaan & Inventori",
     href: "/dashboard/purchase-orders",
     icon: ClipboardCheck,
     current: false,
+    description: "Kelola pembelian dan stok bahan",
   },
   {
-    name: "Manajemen Inventori",
+    name: "Inventori Stok",
     href: "/dashboard/inventory",
     icon: Package,
     current: false,
+    description: "Monitor dan kelola inventori real-time",
   },
   {
     name: "Penggunaan Sumber Daya",
     href: "/dashboard/resource-usage",
     icon: Activity,
     current: false,
-  },
-]
-
-// 3. Perencanaan Menu
-export const PERENCANAAN_MENU: MenuItem[] = [
-  {
-    name: "Ringkasan",
-    href: "/dashboard/menu-planning",
-    icon: LayoutGrid,
-    current: false,
-  },
-  {
-    name: "Perencanaan Menu",
-    href: "/dashboard/menu-planning/planning",
-    icon: Calendar,
-    current: false,
-  },
-  {
-    name: "Standar Nutrisi",
-    href: "/dashboard/menu-planning/nutrition",
-    icon: Heart,
-    current: false,
-  },
-  {
-    name: "AI Planner",
-    href: "/dashboard/menu-planning/ai-planner",
-    icon: TrendingUp,
-    current: false,
+    description: "Tracking penggunaan bahan dan resources",
   },
 ]
 
@@ -202,247 +135,288 @@ export const MENU_PLANNING_SUBMENUS: MenuItem[] = [
   },
 ]
 
-// 4. Produksi
-export const PRODUKSI: MenuItem[] = [
+export const PRODUCTION_SUBMENUS: MenuItem[] = [
   {
     name: "Dashboard Produksi",
     href: "/dashboard/production",
     icon: LayoutGrid,
     current: false,
+    description: "Overview aktivitas produksi harian"
   },
   {
     name: "Rencana Produksi",
     href: "/dashboard/production-plans",
     icon: Calendar,
     current: false,
+    description: "Jadwal dan rencana produksi"
   },
   {
     name: "Eksekusi Produksi",
     href: "/dashboard/production/execution",
     icon: PlayCircle,
     current: false,
+    description: "Pantau proses produksi real-time"
   },
   {
     name: "Batch Produksi",
     href: "/dashboard/production/batches",
     icon: Package,
     current: false,
+    description: "Kelola batch dan lot produksi"
   },
   {
     name: "Manajemen Sumber Daya",
     href: "/dashboard/production/resources",
     icon: Wrench,
     current: false,
+    description: "Alat, peralatan, dan maintenance"
   },
   {
     name: "Optimasi AI",
     href: "/dashboard/production/ai-optimizer",
     icon: TrendingUp,
     current: false,
+    badge: "AI",
+    description: "Optimasi produksi dengan AI"
   },
   {
     name: "Analitik Produksi",
     href: "/dashboard/production/analytics",
     icon: BarChart,
     current: false,
+    badge: "Pro",
+    description: "Laporan dan analisis performa"
   },
 ]
 
-// 5. Manajemen Kualitas
-export const MANAJEMEN_KUALITAS: MenuItem[] = [
+export const QUALITY_SUBMENUS: MenuItem[] = [
   {
     name: "Dashboard Kualitas",
     href: "/dashboard/quality",
     icon: LayoutGrid,
     current: false,
+    description: "Ringkasan kontrol kualitas harian"
   },
   {
     name: "Inspeksi Kualitas",
     href: "/dashboard/quality-checks",
     icon: ClipboardCheck,
     current: false,
+    description: "Pemeriksaan dan validasi kualitas"
   },
   {
-    name: "Titik Kontrol Kritis",
-    href: "/dashboard/quality-checkpoints",
-    icon: ClipboardCheck,
+    name: "Standar Kualitas",
+    href: "/dashboard/quality-standards",
+    icon: TestTube,
     current: false,
+    description: "Kelola standar dan parameter"
   },
   {
     name: "Dokumentasi Foto",
     href: "/dashboard/production/quality/photo-documentation",
     icon: Eye,
     current: false,
+    description: "Dokumentasi visual kualitas"
   },
   {
-    name: "Laporan Kualitas",
-    href: "/dashboard/production/quality/reports",
-    icon: FileBarChart,
+    name: "Sampel Makanan",
+    href: "/dashboard/food-samples",
+    icon: TestTube,
     current: false,
+    description: "Kelola sampel untuk pengujian"
   },
 ]
 
-// 6. Distribusi
-export const DISTRIBUSI: MenuItem[] = [
+export const DISTRIBUTION_SUBMENUS: MenuItem[] = [
   {
     name: "Ringkasan Distribusi",
     href: "/dashboard/distributions",
     icon: LayoutGrid,
     current: false,
+    description: "Overview distribusi dan pengiriman"
   },
   {
     name: "Sekolah Distribusi",
     href: "/dashboard/distributions/schools",
     icon: School,
     current: false,
+    description: "Kelola distribusi per sekolah"
   },
   {
     name: "Pelacakan Pengiriman",
     href: "/dashboard/distributions/tracking",
     icon: Eye,
     current: false,
+    description: "Real-time tracking pengiriman"
   },
   {
     name: "Perencanaan Rute",
     href: "/dashboard/distributions/routes",
     icon: Truck,
     current: false,
+    description: "Optimasi rute pengiriman"
+  },
+  {
+    name: "Kendaraan & Driver",
+    href: "/dashboard/vehicles",
+    icon: Truck,
+    current: false,
+    description: "Manajemen armada dan driver",
+    submenu: [
+      {
+        name: "Kendaraan",
+        href: "/dashboard/vehicles",
+        icon: Truck,
+        current: false,
+      },
+      {
+        name: "Driver",
+        href: "/dashboard/drivers",
+        icon: UserCheck,
+        current: false,
+      },
+    ]
   },
 ]
 
-// 7. Monitoring & Laporan
-export const MONITORING_LAPORAN: MenuItem[] = [
+export const MONITORING_SUBMENUS: MenuItem[] = [
   {
     name: "Dashboard Monitoring",
     href: "/dashboard/monitoring",
     icon: LayoutGrid,
     current: false,
+    description: "Pusat kendali monitoring sistem"
   },
   {
     name: "Monitoring Real-time",
     href: "/dashboard/monitoring/real-time",
     icon: Activity,
     current: false,
+    description: "Pantau aktivitas real-time"
   },
   {
     name: "Analitik & Insights",
     href: "/dashboard/monitoring/analytics",
     icon: BarChart,
     current: false,
+    description: "Analisis mendalam dan insights"
   },
   {
     name: "Evaluasi Kinerja",
     href: "/dashboard/performance",
     icon: TrendingUp,
     current: false,
+    description: "KPI dan evaluasi performa"
   },
   {
     name: "Laporan Eksekutif",
     href: "/dashboard/monitoring/reports",
     icon: FileBarChart,
     current: false,
+    description: "Laporan untuk manajemen"
   },
 ]
 
-// 8. Layanan Profesional
-export const LAYANAN_PROFESIONAL: MenuItem[] = [
+export const PROFESSIONAL_SERVICES: MenuItem[] = [
   {
     name: "Konsultasi Ahli Gizi",
     href: "/dashboard/nutrition-consultations",
     icon: Heart,
     current: false,
+    description: "Konsultasi dengan ahli gizi profesional"
   },
   {
     name: "Uji Laboratorium",
     href: "/dashboard/food-samples",
     icon: TestTube,
     current: false,
+    description: "Analisis kualitas makanan di laboratorium"
   },
 ]
 
-// 9. Keuangan & Anggaran
-export const KEUANGAN_ANGGARAN: MenuItem[] = [
-  {
-    name: "Keuangan & Anggaran",
-    href: "/dashboard/financial",
-    icon: DollarSign,
-    current: false,
-  },
-]
-
-// 10. Komunikasi & Feedback
-export const KOMUNIKASI_FEEDBACK: MenuItem[] = [
-  {
-    name: "Notifikasi",
-    href: "/dashboard/notifications",
-    icon: Bell,
-    current: false,
-  },
-  {
-    name: "Evaluasi & Feedback",
-    href: "/dashboard/feedback",
-    icon: MessageSquare,
-    current: false,
-  },
-]
-
-// 11. Manajemen Limbah
-export const MANAJEMEN_LIMBAH: MenuItem[] = [
-  {
-    name: "Manajemen Limbah",
-    href: "/dashboard/waste-records",
-    icon: Trash,
-    current: false,
-  },
-]
-
-// 12. Manajemen Pengguna
-export const MANAJEMEN_PENGGUNA: MenuItem[] = [
-  {
-    name: "Profil Pengguna",
-    href: "/dashboard/profile",
-    icon: User,
-    current: false,
-  },
-]
-
-// 13. Manajemen Sistem
-export const MANAJEMEN_SISTEM: MenuItem[] = [
+export const SYSTEM_MANAGEMENT: MenuItem[] = [
   {
     name: "Manajemen Pengguna",
     href: "/dashboard/users",
     icon: Users,
     current: false,
+    description: "Kelola pengguna dan akses sistem",
+    submenu: [
+      {
+        name: "Daftar Pengguna",
+        href: "/dashboard/users",
+        icon: Users,
+        current: false,
+        description: "Data lengkap pengguna sistem"
+      },
+      {
+        name: "Manajemen Role",
+        href: "/dashboard/roles",
+        icon: Shield,
+        current: false,
+        description: "Kelola peran dan hak akses"
+      },
+      {
+        name: "Penugasan Role",
+        href: "/dashboard/user-roles",
+        icon: UserCheck,
+        current: false,
+        description: "Assign role ke pengguna"
+      },
+    ]
   },
   {
-    name: "Manajemen Role",
-    href: "/dashboard/roles",
+    name: "Keamanan & Audit",
+    href: "/dashboard/audit-logs",
     icon: Shield,
     current: false,
+    description: "Log keamanan dan audit sistem",
+    submenu: [
+      {
+        name: "Log Audit",
+        href: "/dashboard/audit-logs",
+        icon: Shield,
+        current: false,
+        description: "Riwayat aktivitas sistem"
+      },
+      {
+        name: "Notifikasi Sistem",
+        href: "/dashboard/notifications",
+        icon: Bell,
+        current: false,
+        description: "Notifikasi dan peringatan"
+      },
+    ]
   },
   {
-    name: "Penugasan Role",
-    href: "/dashboard/user-roles",
-    icon: UserCheck,
-    current: false,
-  },
-  {
-    name: "Konfigurasi Sistem",
+    name: "Konfigurasi & Admin",
     href: "/dashboard/system-config",
     icon: Settings,
     current: false,
-  },
-  {
-    name: "Log Audit",
-    href: "/dashboard/audit-logs",
-    icon: ClipboardCheck,
-    current: false,
-  },
-  {
-    name: "Panel Admin",
-    href: "/dashboard/admin",
-    icon: Wrench,
-    current: false,
+    description: "Pengaturan dan administrasi sistem",
+    submenu: [
+      {
+        name: "Konfigurasi Sistem",
+        href: "/dashboard/system-config",
+        icon: Settings,
+        current: false,
+        description: "Pengaturan aplikasi global"
+      },
+      {
+        name: "Panel Administrator",
+        href: "/dashboard/admin",
+        icon: Wrench,
+        current: false,
+        description: "Tools administrasi lanjutan"
+      },
+      {
+        name: "Profil Pengguna",
+        href: "/dashboard/profile",
+        icon: User,
+        current: false,
+        description: "Kelola profil dan preferensi"
+      },
+    ]
   },
 ]
 
@@ -486,88 +460,68 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
   },
   {
     title: "Data Master",
-    items: [
-      ...DATA_MASTER_PENDIDIKAN,
-      ...DATA_MASTER_MATERIAL,
-      ...DATA_MASTER_TRANSPORTASI,
-      ...DATA_MASTER_TEMPLATE,
-    ],
+    items: DATA_MASTER,
     isExpandable: true,
     menuType: "dataMaster",
-    pathMatch: "/dashboard/schools",
+    pathMatch: "/dashboard/schools|/dashboard/students|/dashboard/classes|/dashboard/raw-materials|/dashboard/items|/dashboard/suppliers|/dashboard/vehicles|/dashboard/drivers|/dashboard/quality-standards|/dashboard/quality-checkpoints|/dashboard/recipes",
   },
   {
-    title: "Pengadaan & Inventori",
-    items: PENGADAAN_INVENTORI,
+    title: "Operasional Harian",
+    items: OPERATIONAL_MANAGEMENT,
     isExpandable: true,
-    menuType: "procurement",
-    pathMatch: "/dashboard/purchase-orders",
+    menuType: "operational",
+    pathMatch: "/dashboard/purchase-orders|/dashboard/inventory|/dashboard/resource-usage",
   },
   {
     title: "Perencanaan Menu",
-    items: PERENCANAAN_MENU,
+    items: MENU_PLANNING_SUBMENUS,
     isExpandable: true,
     menuType: "menuPlanning",
     pathMatch: "/dashboard/menu-planning",
   },
   {
     title: "Produksi",
-    items: PRODUKSI,
+    items: PRODUCTION_SUBMENUS,
     isExpandable: true,
     menuType: "production",
     pathMatch: "/dashboard/production",
   },
   {
-    title: "Manajemen Kualitas",
-    items: MANAJEMEN_KUALITAS,
+    title: "Kontrol Kualitas",
+    items: QUALITY_SUBMENUS,
     isExpandable: true,
     menuType: "quality",
     pathMatch: "/dashboard/quality",
   },
   {
-    title: "Distribusi",
-    items: DISTRIBUSI,
+    title: "Distribusi & Pengiriman",
+    items: DISTRIBUTION_SUBMENUS,
     isExpandable: true,
     menuType: "distribution",
     pathMatch: "/dashboard/distribution",
   },
   {
-    title: "Monitoring & Laporan",
-    items: MONITORING_LAPORAN,
+    title: "Monitoring & Analitik",
+    items: MONITORING_SUBMENUS,
     isExpandable: true,
     menuType: "monitoring",
     pathMatch: "/dashboard/monitoring",
   },
   {
     title: "Layanan Profesional",
-    items: LAYANAN_PROFESIONAL,
+    items: PROFESSIONAL_SERVICES,
     isExpandable: false,
   },
   {
-    title: "Keuangan & Anggaran",
-    items: KEUANGAN_ANGGARAN,
-    isExpandable: false,
-  },
-  {
-    title: "Komunikasi & Feedback",
-    items: KOMUNIKASI_FEEDBACK,
-    isExpandable: false,
-  },
-  {
-    title: "Manajemen Limbah",
-    items: MANAJEMEN_LIMBAH,
-    isExpandable: false,
-  },
-  {
-    title: "Profil Pengguna",
-    items: MANAJEMEN_PENGGUNA,
-    isExpandable: false,
-  },
-  {
-    title: "Manajemen Sistem",
-    items: MANAJEMEN_SISTEM,
+    title: "Administrasi Sistem",
+    items: SYSTEM_MANAGEMENT,
     isExpandable: true,
     menuType: "system",
-    pathMatch: "/dashboard/admin",
+    pathMatch: "/dashboard/system",
+  },
+  {
+    title: "Fitur Tambahan",
+    items: OTHER_FEATURES,
+    isExpandable: false,
   },
 ]
