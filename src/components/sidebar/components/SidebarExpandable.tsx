@@ -56,32 +56,32 @@ export function SidebarExpandable({
           <DropdownMenuTrigger asChild>
             <button
               className={cn(
-                "flex w-full items-center rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
-                "hover:bg-accent/70 hover:text-accent-foreground hover:shadow-lg hover:scale-[1.02]",
-                "focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:bg-accent/60",
+                "flex w-full items-center rounded-lg py-3 text-sm font-medium transition-all duration-200 ease-in-out",
+                "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-md hover:scale-[1.01]",
+                "focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1",
                 "active:scale-[0.98] group relative overflow-hidden",
                 "px-2 justify-center mx-1 border border-transparent hover:border-border/30",
                 hasActiveSubmenu 
-                  ? "bg-primary/20 text-primary shadow-lg border-primary/30 ring-1 ring-primary/20" 
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-primary/15 text-primary shadow-sm border-primary/20" 
+                  : "text-muted-foreground/90 hover:text-foreground"
               )}
               title={title}
             >
               {/* Enhanced animated background for active section */}
               {hasActiveSubmenu && (
                 <>
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-primary/5 to-transparent rounded-xl" />
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-gradient-to-b from-primary/60 via-primary to-primary/60 rounded-r-full shadow-lg shadow-primary/30" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-primary/4 to-transparent rounded-lg" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary/70 via-primary to-primary/70 rounded-r-full shadow-sm" />
                 </>
               )}
               
               <div className="relative z-10 flex items-center justify-center">
                 <div className={cn(
-                  "flex items-center justify-center rounded-lg transition-all duration-200",
-                  "w-6 h-6",
+                  "flex items-center justify-center rounded-md transition-all duration-200",
+                  "w-5 h-5",
                   hasActiveSubmenu 
-                    ? "bg-primary/25 text-primary shadow-md ring-1 ring-primary/20" 
-                    : "bg-muted/50 text-muted-foreground group-hover:bg-accent/50 group-hover:text-accent-foreground"
+                    ? "bg-primary/20 text-primary shadow-sm" 
+                    : "bg-muted/40 text-muted-foreground/80 group-hover:bg-accent/40 group-hover:text-accent-foreground"
                 )}>
                   <IconComponent className="h-4 w-4 flex-shrink-0 transition-colors duration-200" />
                 </div>
@@ -111,11 +111,11 @@ export function SidebarExpandable({
 
   // When expanded, render normally
   return (
-    <div className="mt-8">
+    <div className="mt-6">
       <div className="px-3 mb-4">
-        <h3 className="text-xs font-bold text-muted-foreground/90 uppercase tracking-widest mb-3 flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary to-primary/60 shadow-sm" />
-          <span className="bg-gradient-to-r from-muted-foreground/80 to-muted-foreground/60 bg-clip-text">
+        <h3 className="text-xs font-bold text-muted-foreground/80 uppercase tracking-widest mb-3 flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary/70 to-primary/40 shadow-sm" />
+          <span className="bg-gradient-to-r from-foreground/80 to-foreground/60 bg-clip-text">
             {title}
           </span>
         </h3>
@@ -126,32 +126,32 @@ export function SidebarExpandable({
         onClick={onToggle}
         data-menu-type={menuType}
         className={cn(
-          "flex w-full items-center rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
-          "hover:bg-accent/70 hover:text-accent-foreground hover:shadow-lg hover:scale-[1.02]",
-          "focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:bg-accent/60",
+          "flex w-full items-center rounded-lg py-3 text-sm font-medium transition-all duration-200 ease-in-out",
+          "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-md hover:scale-[1.01]",
+          "focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1",
           "active:scale-[0.98] group relative overflow-hidden",
           "px-4 gap-3 mx-2 border border-transparent hover:border-border/30",
           hasActiveSubmenu
-            ? "bg-primary/20 text-primary border-primary/30 shadow-lg font-semibold ring-1 ring-primary/20" 
-            : "text-muted-foreground hover:text-foreground"
+            ? "bg-primary/15 text-primary border-primary/20 shadow-sm font-semibold" 
+            : "text-muted-foreground/90 hover:text-foreground"
         )}
         title={`${title} ${hasActiveSubmenu ? '(Active - Cannot collapse)' : ''}`}
       >
         {/* Enhanced animated background for active section */}
         {hasActiveSubmenu && (
           <>
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-primary/5 to-transparent rounded-xl" />
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-gradient-to-b from-primary/80 via-primary to-primary/80 rounded-r-full shadow-lg shadow-primary/30" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-primary/4 to-transparent rounded-lg" />
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary/70 via-primary to-primary/70 rounded-r-full shadow-sm" />
           </>
         )}
         
         <div className="relative z-10 flex items-center w-full gap-3">
           <div className={cn(
-            "flex items-center justify-center rounded-xl transition-all duration-200",
-            "w-8 h-8 flex-shrink-0",
+            "flex items-center justify-center rounded-md transition-all duration-200",
+            "w-6 h-6 flex-shrink-0",
             hasActiveSubmenu 
-              ? "bg-primary/25 text-primary shadow-md ring-1 ring-primary/20" 
-              : "bg-muted/50 text-muted-foreground group-hover:bg-accent/50 group-hover:text-accent-foreground group-hover:shadow-sm"
+              ? "bg-primary/20 text-primary shadow-sm" 
+              : "bg-muted/40 text-muted-foreground/80 group-hover:bg-accent/40 group-hover:text-accent-foreground"
           )}>
             <IconComponent className="h-4 w-4" />
           </div>

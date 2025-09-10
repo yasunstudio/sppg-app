@@ -21,6 +21,9 @@ export interface MenuItem {
   icon: LucideIcon
   current: boolean
   permission?: string[]
+  submenu?: MenuItem[]
+  badge?: string
+  description?: string
 }
 
 export interface MenuSection {

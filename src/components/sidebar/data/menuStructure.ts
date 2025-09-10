@@ -34,14 +34,14 @@ import type { MenuItem, MenuSection } from "../types/sidebar.types"
 
 export const CORE_NAVIGATION: MenuItem[] = [
   {
-    name: "Beranda",
+    name: "Dashboard",
     href: "/dashboard",
     icon: LayoutGrid,
     current: false,
   },
 ]
 
-export const DATA_MASTER_MANAGEMENT: MenuItem[] = [
+export const EDUCATIONAL_MANAGEMENT: MenuItem[] = [
   {
     name: "Sekolah",
     href: "/dashboard/schools",
@@ -60,6 +60,9 @@ export const DATA_MASTER_MANAGEMENT: MenuItem[] = [
     icon: Users,
     current: false,
   },
+]
+
+export const RESOURCE_MANAGEMENT: MenuItem[] = [
   {
     name: "Bahan Baku",
     href: "/dashboard/raw-materials",
@@ -73,33 +76,32 @@ export const DATA_MASTER_MANAGEMENT: MenuItem[] = [
     current: false,
   },
   {
-    name: "Kendaraan",
+    name: "Kendaraan & Driver",
     href: "/dashboard/vehicles",
     icon: Truck,
     current: false,
-  },
-  {
-    name: "Driver",
-    href: "/dashboard/drivers",
-    icon: UserCheck,
-    current: false,
+    submenu: [
+      {
+        name: "Kendaraan",
+        href: "/dashboard/vehicles",
+        icon: Truck,
+        current: false,
+      },
+      {
+        name: "Driver",
+        href: "/dashboard/drivers",
+        icon: UserCheck,
+        current: false,
+      },
+    ]
   },
 ]
 
-export const PROCUREMENT_MANAGEMENT: MenuItem[] = [
+export const OPERATIONS_MANAGEMENT: MenuItem[] = [
   {
-    name: "Order Pembelian",
+    name: "Pengadaan",
     href: "/dashboard/purchase-orders",
     icon: ClipboardCheck,
-    current: false,
-  },
-]
-
-export const INVENTORY_MANAGEMENT: MenuItem[] = [
-  {
-    name: "Manajemen Item",
-    href: "/dashboard/items",
-    icon: Package,
     current: false,
   },
   {
@@ -107,17 +109,31 @@ export const INVENTORY_MANAGEMENT: MenuItem[] = [
     href: "/dashboard/inventory",
     icon: Package,
     current: false,
+    submenu: [
+      {
+        name: "Manajemen Item",
+        href: "/dashboard/items",
+        icon: Package,
+        current: false,
+      },
+      {
+        name: "Stok Inventori",
+        href: "/dashboard/inventory",
+        icon: Package,
+        current: false,
+      },
+      {
+        name: "Penggunaan Sumber Daya",
+        href: "/dashboard/resource-usage",
+        icon: Activity,
+        current: false,
+      },
+    ]
   },
   {
-    name: "Resep",
+    name: "Manajemen Resep",
     href: "/dashboard/recipes",
     icon: BookOpen,
-    current: false,
-  },
-  {
-    name: "Penggunaan Sumber Daya",
-    href: "/dashboard/resource-usage",
-    icon: Activity,
     current: false,
   },
 ]
@@ -134,6 +150,7 @@ export const MENU_PLANNING_SUBMENUS: MenuItem[] = [
     href: "/dashboard/recipes",
     icon: ChefHat,
     current: false,
+    badge: "New"
   },
   {
     name: "Perencanaan Menu",
@@ -152,6 +169,7 @@ export const MENU_PLANNING_SUBMENUS: MenuItem[] = [
     href: "/dashboard/menu-planning/ai-planner",
     icon: TrendingUp,
     current: false,
+    badge: "Beta"
   },
 ]
 
@@ -191,12 +209,14 @@ export const PRODUCTION_SUBMENUS: MenuItem[] = [
     href: "/dashboard/production/ai-optimizer",
     icon: TrendingUp,
     current: false,
+    badge: "AI"
   },
   {
     name: "Analitik Produksi",
     href: "/dashboard/production/analytics",
     icon: BarChart,
     current: false,
+    badge: "Pro"
   },
 ]
 
@@ -293,48 +313,43 @@ export const PROFESSIONAL_SERVICES: MenuItem[] = [
     href: "/dashboard/nutrition-consultations",
     icon: Heart,
     current: false,
+    description: "Konsultasi dengan ahli gizi profesional"
   },
   {
     name: "Uji Laboratorium",
     href: "/dashboard/food-samples",
     icon: TestTube,
     current: false,
-  },
-]
-
-export const USER_MANAGEMENT: MenuItem[] = [
-  {
-    name: "Profil Pengguna",
-    href: "/dashboard/profile",
-    icon: User,
-    current: false,
+    description: "Analisis kualitas makanan di laboratorium"
   },
 ]
 
 export const SYSTEM_MANAGEMENT: MenuItem[] = [
   {
-    name: "Notifikasi",
-    href: "/dashboard/notifications",
-    icon: Bell,
-    current: false,
-  },
-  {
     name: "Manajemen Pengguna",
     href: "/dashboard/users",
     icon: Users,
     current: false,
-  },
-  {
-    name: "Manajemen Role",
-    href: "/dashboard/roles",
-    icon: Shield,
-    current: false,
-  },
-  {
-    name: "Penugasan Role Pengguna",
-    href: "/dashboard/user-roles",
-    icon: UserCheck,
-    current: false,
+    submenu: [
+      {
+        name: "Daftar Pengguna",
+        href: "/dashboard/users",
+        icon: Users,
+        current: false,
+      },
+      {
+        name: "Manajemen Role",
+        href: "/dashboard/roles",
+        icon: Shield,
+        current: false,
+      },
+      {
+        name: "Penugasan Role",
+        href: "/dashboard/user-roles",
+        icon: UserCheck,
+        current: false,
+      },
+    ]
   },
   {
     name: "Konfigurasi Sistem",
@@ -343,9 +358,29 @@ export const SYSTEM_MANAGEMENT: MenuItem[] = [
     current: false,
   },
   {
-    name: "Log Audit",
+    name: "Keamanan & Audit",
     href: "/dashboard/audit-logs",
     icon: Shield,
+    current: false,
+    submenu: [
+      {
+        name: "Log Audit",
+        href: "/dashboard/audit-logs",
+        icon: Shield,
+        current: false,
+      },
+      {
+        name: "Notifikasi Sistem",
+        href: "/dashboard/notifications",
+        icon: Bell,
+        current: false,
+      },
+    ]
+  },
+  {
+    name: "Profil Pengguna",
+    href: "/dashboard/profile",
+    icon: User,
     current: false,
   },
   {
@@ -362,18 +397,21 @@ export const OTHER_FEATURES: MenuItem[] = [
     href: "/dashboard/waste-management",
     icon: Trash,
     current: false,
+    description: "Kelola limbah makanan dan daur ulang"
   },
   {
     name: "Keuangan & Anggaran",
     href: "/dashboard/financial",
     icon: DollarSign,
     current: false,
+    description: "Laporan keuangan dan perencanaan anggaran"
   },
   {
     name: "Evaluasi & Feedback",
     href: "/dashboard/feedback",
     icon: MessageSquare,
     current: false,
+    description: "Feedback dari siswa dan evaluasi program"
   },
 ]
 
@@ -385,8 +423,18 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
     isExpandable: false,
   },
   {
-    title: "Data Master",
-    items: DATA_MASTER_MANAGEMENT,
+    title: "Manajemen Pendidikan",
+    items: EDUCATIONAL_MANAGEMENT,
+    isExpandable: false,
+  },
+  {
+    title: "Manajemen Sumber Daya",
+    items: RESOURCE_MANAGEMENT,
+    isExpandable: false,
+  },
+  {
+    title: "Operasional",
+    items: OPERATIONS_MANAGEMENT,
     isExpandable: false,
   },
   {
@@ -397,16 +445,6 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
     pathMatch: "/dashboard/menu-planning",
   },
   {
-    title: "Pengadaan",
-    items: PROCUREMENT_MANAGEMENT,
-    isExpandable: false,
-  },
-  {
-    title: "Inventori & Material",
-    items: INVENTORY_MANAGEMENT,
-    isExpandable: false,
-  },
-  {
     title: "Produksi",
     items: PRODUCTION_SUBMENUS,
     isExpandable: true,
@@ -414,21 +452,21 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
     pathMatch: "/dashboard/production",
   },
   {
-    title: "Manajemen Kualitas",
+    title: "Kontrol Kualitas",
     items: QUALITY_SUBMENUS,
     isExpandable: true,
     menuType: "quality",
     pathMatch: "/dashboard/quality",
   },
   {
-    title: "Distribusi",
+    title: "Distribusi & Pengiriman",
     items: DISTRIBUTION_SUBMENUS,
     isExpandable: true,
     menuType: "distribution",
     pathMatch: "/dashboard/distribution",
   },
   {
-    title: "Monitoring & Laporan",
+    title: "Monitoring & Analitik",
     items: MONITORING_SUBMENUS,
     isExpandable: true,
     menuType: "monitoring",
@@ -440,18 +478,15 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
     isExpandable: false,
   },
   {
-    title: "Pengguna",
-    items: USER_MANAGEMENT,
-    isExpandable: false,
-  },
-  {
-    title: "Fitur Lainnya",
-    items: OTHER_FEATURES,
-    isExpandable: false,
-  },
-  {
-    title: "Manajemen Sistem",
+    title: "Administrasi Sistem",
     items: SYSTEM_MANAGEMENT,
+    isExpandable: true,
+    menuType: "system",
+    pathMatch: "/dashboard/system",
+  },
+  {
+    title: "Fitur Tambahan",
+    items: OTHER_FEATURES,
     isExpandable: false,
   },
 ]
