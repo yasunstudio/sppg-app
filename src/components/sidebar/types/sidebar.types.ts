@@ -6,6 +6,9 @@ export interface MenuState {
   distribution: boolean
   monitoring: boolean
   quality: boolean
+  operational: boolean
+  dataMaster: boolean
+  system: boolean
   preferences: MenuPreferences
 }
 
@@ -59,7 +62,7 @@ export interface SidebarContextType {
   handleMobileLinkClick: () => void
 }
 
-export type MenuType = 'production' | 'menuPlanning' | 'distribution' | 'monitoring' | 'quality'
+export type MenuType = 'production' | 'menuPlanning' | 'distribution' | 'monitoring' | 'quality' | 'operational' | 'dataMaster' | 'system'
 
 export interface AnalyticsMetadata {
   action: string

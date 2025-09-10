@@ -193,13 +193,13 @@ export function SidebarExpandable({
       </button>
       
       {isExpanded && (
-        <div className="mt-3 space-y-1 pl-8 border-l-2 border-border/40 ml-6 relative">
+        <div className="mt-2 space-y-1 pl-8 relative">
           {/* Enhanced animated connector line */}
-          <div className="absolute -left-[2px] top-0 w-0.5 h-full bg-gradient-to-b from-primary/40 via-primary/20 to-transparent rounded-full" />
+          <div className="absolute left-6 top-0 w-0.5 h-full bg-gradient-to-b from-border/40 via-border/20 to-transparent rounded-full" />
           
           {/* Enhanced section indicator */}
           {hasActiveSubmenu && (
-            <div className="absolute -left-[9px] top-0 w-4 h-0.5 bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-sm" />
+            <div className="absolute left-5 top-0 w-4 h-0.5 bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-sm" />
           )}
           
           {visibleItems.map((item) => (

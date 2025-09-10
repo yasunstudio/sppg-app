@@ -53,98 +53,28 @@ export const DATA_MASTER: MenuItem[] = [
     href: "/dashboard/schools",
     icon: School,
     current: false,
-    submenu: [
-      {
-        name: "Manajemen Sekolah",
-        href: "/dashboard/schools",
-        icon: School,
-        current: false,
-      },
-      {
-        name: "Data Siswa",
-        href: "/dashboard/students",
-        icon: GraduationCap,
-        current: false,
-      },
-      {
-        name: "Data Kelas",
-        href: "/dashboard/classes",
-        icon: Users,
-        current: false,
-      },
-    ]
+    description: "Kelola data sekolah, siswa, dan kelas",
   },
   {
     name: "Data Sumber Daya",
     href: "/dashboard/raw-materials",
     icon: Package,
     current: false,
-    submenu: [
-      {
-        name: "Bahan Baku",
-        href: "/dashboard/raw-materials",
-        icon: Package,
-        current: false,
-      },
-      {
-        name: "Manajemen Item",
-        href: "/dashboard/items",
-        icon: Archive,
-        current: false,
-      },
-      {
-        name: "Data Pemasok",
-        href: "/dashboard/suppliers",
-        icon: Building2,
-        current: false,
-      },
-    ]
+    description: "Manajemen bahan baku dan pemasok",
   },
   {
     name: "Data Transportasi",
     href: "/dashboard/vehicles",
     icon: Truck,
     current: false,
-    submenu: [
-      {
-        name: "Kendaraan",
-        href: "/dashboard/vehicles",
-        icon: Truck,
-        current: false,
-      },
-      {
-        name: "Driver",
-        href: "/dashboard/drivers",
-        icon: UserCheck,
-        current: false,
-      },
-    ]
+    description: "Kelola kendaraan dan driver",
   },
   {
-    name: "Data Standar & Template",
+    name: "Standar & Template",
     href: "/dashboard/quality-standards",
     icon: Shield,
     current: false,
-    submenu: [
-      {
-        name: "Standar Kualitas",
-        href: "/dashboard/quality-standards",
-        icon: Shield,
-        current: false,
-      },
-      {
-        name: "Titik Kontrol Kritis",
-        href: "/dashboard/quality-checkpoints",
-        icon: ClipboardCheck,
-        current: false,
-      },
-      {
-        name: "Template Resep",
-        href: "/dashboard/recipes",
-        icon: BookOpen,
-        current: false,
-      },
-    ]
+    description: "Template resep dan standar kualitas",
   },
 ]
 
@@ -155,26 +85,21 @@ export const OPERATIONAL_MANAGEMENT: MenuItem[] = [
     href: "/dashboard/purchase-orders",
     icon: ClipboardCheck,
     current: false,
-    submenu: [
-      {
-        name: "Purchase Orders",
-        href: "/dashboard/purchase-orders",
-        icon: ClipboardCheck,
-        current: false,
-      },
-      {
-        name: "Inventori Stok",
-        href: "/dashboard/inventory",
-        icon: Package,
-        current: false,
-      },
-      {
-        name: "Penggunaan Sumber Daya",
-        href: "/dashboard/resource-usage",
-        icon: Activity,
-        current: false,
-      },
-    ]
+    description: "Kelola pembelian dan stok bahan",
+  },
+  {
+    name: "Inventori Stok",
+    href: "/dashboard/inventory",
+    icon: Package,
+    current: false,
+    description: "Monitor dan kelola inventori real-time",
+  },
+  {
+    name: "Penggunaan Sumber Daya",
+    href: "/dashboard/resource-usage",
+    icon: Activity,
+    current: false,
+    description: "Tracking penggunaan bahan dan resources",
   },
 ]
 
@@ -536,12 +461,16 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
   {
     title: "Data Master",
     items: DATA_MASTER,
-    isExpandable: false,
+    isExpandable: true,
+    menuType: "dataMaster",
+    pathMatch: "/dashboard/schools|/dashboard/students|/dashboard/classes|/dashboard/raw-materials|/dashboard/items|/dashboard/suppliers|/dashboard/vehicles|/dashboard/drivers|/dashboard/quality-standards|/dashboard/quality-checkpoints|/dashboard/recipes",
   },
   {
     title: "Operasional Harian",
     items: OPERATIONAL_MANAGEMENT,
-    isExpandable: false,
+    isExpandable: true,
+    menuType: "operational",
+    pathMatch: "/dashboard/purchase-orders|/dashboard/inventory|/dashboard/resource-usage",
   },
   {
     title: "Perencanaan Menu",

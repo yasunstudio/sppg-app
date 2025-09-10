@@ -28,6 +28,32 @@ export const useActiveMenu = (pathname: string) => {
         path.startsWith("/dashboard/nutrition-consultations")) {
       return 'quality'
     }
+    if (path.startsWith("/dashboard/purchase-orders") || 
+        path.startsWith("/dashboard/inventory")) {
+      return 'operational'
+    }
+    if (path.startsWith("/dashboard/schools") || 
+        path.startsWith("/dashboard/students") ||
+        path.startsWith("/dashboard/classes") ||
+        path.startsWith("/dashboard/raw-materials") ||
+        path.startsWith("/dashboard/items") ||
+        path.startsWith("/dashboard/suppliers") ||
+        path.startsWith("/dashboard/vehicles") ||
+        path.startsWith("/dashboard/drivers") ||
+        path.startsWith("/dashboard/quality-standards") ||
+        path.startsWith("/dashboard/quality-checkpoints")) {
+      return 'dataMaster'
+    }
+    if (path.startsWith("/dashboard/users") || 
+        path.startsWith("/dashboard/roles") ||
+        path.startsWith("/dashboard/user-roles") ||
+        path.startsWith("/dashboard/audit-logs") ||
+        path.startsWith("/dashboard/notifications") ||
+        path.startsWith("/dashboard/system-config") ||
+        path.startsWith("/dashboard/admin") ||
+        path.startsWith("/dashboard/profile")) {
+      return 'system'
+    }
     return null
   }
 
@@ -58,7 +84,10 @@ export const useActiveMenu = (pathname: string) => {
       menuPlanning: 'Perencanaan Menu',
       distribution: 'Distribusi',
       monitoring: 'Monitoring & Laporan',
-      quality: 'Manajemen Kualitas'
+      quality: 'Manajemen Kualitas',
+      operational: 'Operasional Harian',
+      dataMaster: 'Data Master',
+      system: 'Administrasi Sistem'
     }
 
     return {

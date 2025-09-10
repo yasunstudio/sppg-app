@@ -53,22 +53,22 @@ export function SidebarMenuItem({
         href={item.href}
         onClick={onLinkClick}
         className={cn(
-          "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out ml-6",
+          "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out",
           "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-sm",
           "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
           "group relative overflow-hidden",
           "border-l-2 border-transparent hover:border-primary/40",
           "backdrop-blur-sm bg-muted/20 hover:bg-muted/40",
           isCurrentItem 
-            ? "bg-primary/10 text-primary border-l-primary/60 shadow-sm font-medium ring-1 ring-primary/10" 
+            ? "bg-primary/15 text-primary border-l-primary shadow-md font-semibold ring-2 ring-primary/20" 
             : "text-muted-foreground/85 hover:text-foreground"
         )}
       >
-        {/* Refined submenu active indicator */}
+        {/* Enhanced submenu active indicator */}
         {isCurrentItem && (
           <>
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-gradient-to-b from-primary/60 to-primary rounded-r-full" />
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/4 via-transparent to-transparent rounded-md" />
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-primary via-primary to-primary/80 rounded-r-full shadow-lg" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-primary/4 to-transparent rounded-lg" />
           </>
         )}
         
@@ -76,8 +76,8 @@ export function SidebarMenuItem({
           "flex items-center justify-center rounded transition-all duration-200 flex-shrink-0",
           "w-4 h-4",
           isCurrentItem 
-            ? "bg-primary/12 text-primary" 
-            : "bg-muted/20 text-muted-foreground/70 group-hover:bg-accent/20 group-hover:text-accent-foreground"
+            ? "bg-primary/20 text-primary shadow-sm border border-primary/30" 
+            : "bg-muted/30 text-muted-foreground/70 group-hover:bg-accent/30 group-hover:text-accent-foreground"
         )}>
           <item.icon className="h-3 w-3" />
         </div>
@@ -114,24 +114,24 @@ export function SidebarMenuItem({
             "backdrop-blur-sm px-3 gap-2.5 mx-0",
             "border border-transparent hover:border-border/30",
             isCurrentItem || isParentOfActive
-              ? "bg-primary/10 text-primary border-primary/20 shadow-sm font-medium" 
+              ? "bg-primary/15 text-primary border-primary/30 shadow-md font-semibold ring-2 ring-primary/15" 
               : "text-muted-foreground/85 hover:text-foreground"
           )}
         >
-          {/* Refined Active indicator */}
+          {/* Enhanced Active indicator */}
           {(isCurrentItem || isParentOfActive) && (
             <>
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-gradient-to-b from-primary/60 via-primary to-primary/60 rounded-r-full" />
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/6 via-transparent to-transparent rounded-md" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary via-primary to-primary/80 shadow-lg shadow-primary/30 rounded-r-sm" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-transparent to-transparent rounded-md" />
             </>
           )}
           
           <div className="relative z-10 flex items-center gap-2.5 w-full">
             <div className={cn(
-              "flex items-center justify-center rounded transition-all duration-200 w-5 h-5",
+              "flex items-center justify-center rounded transition-all duration-200 w-5 h-5 border",
               isCurrentItem || isParentOfActive
-                ? "bg-primary/15 text-primary" 
-                : "bg-muted/30 text-muted-foreground/70 group-hover:bg-accent/30 group-hover:text-accent-foreground"
+                ? "bg-primary/20 text-primary border-primary/40 shadow-sm" 
+                : "bg-muted/30 text-muted-foreground/70 group-hover:bg-accent/30 group-hover:text-accent-foreground border-transparent"
             )}>
               <item.icon className="h-3.5 w-3.5 flex-shrink-0 transition-all duration-200" />
             </div>
@@ -168,16 +168,16 @@ export function SidebarMenuItem({
             "backdrop-blur-sm border border-transparent hover:border-border/30",
             isCollapsed ? "px-2 justify-center mx-0" : "px-3 gap-2.5 mx-0",
             isCurrentItem 
-              ? "bg-primary/10 text-primary border-primary/20 shadow-sm font-medium" 
+              ? "bg-primary/15 text-primary border-primary/30 shadow-md font-semibold ring-2 ring-primary/15" 
               : "text-muted-foreground/85 hover:text-foreground"
           )}
           title={isCollapsed ? item.name : undefined}
         >
-          {/* Refined Active indicator */}
+          {/* Enhanced Active indicator */}
           {isCurrentItem && (
             <>
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-gradient-to-b from-primary/60 via-primary to-primary/60 rounded-r-full" />
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/6 via-transparent to-transparent rounded-md" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary via-primary to-primary/80 shadow-lg shadow-primary/30 rounded-r-sm" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-transparent to-transparent rounded-md" />
             </>
           )}
           
@@ -186,11 +186,11 @@ export function SidebarMenuItem({
             isCollapsed ? "justify-center" : "gap-2.5 w-full"
           )}>
             <div className={cn(
-              "flex items-center justify-center rounded transition-all duration-200",
+              "flex items-center justify-center rounded transition-all duration-200 border",
               isCollapsed ? "w-4 h-4" : "w-5 h-5",
               isCurrentItem 
-                ? "bg-primary/15 text-primary" 
-                : "bg-muted/30 text-muted-foreground/70 group-hover:bg-accent/30 group-hover:text-accent-foreground"
+                ? "bg-primary/20 text-primary border-primary/40 shadow-sm" 
+                : "bg-muted/30 text-muted-foreground/70 group-hover:bg-accent/30 group-hover:text-accent-foreground border-transparent"
             )}>
               <item.icon className={cn(
                 "flex-shrink-0 transition-all duration-200",
@@ -226,10 +226,12 @@ export function SidebarMenuItem({
       {hasSubmenu && !isCollapsed && (
         <div className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
-          "border-l border-border/25 ml-4 mt-0.5",
+          "ml-8 mt-0.5 relative",
           isSubmenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         )}>
-          <div className="py-1 space-y-0.5 bg-gradient-to-r from-muted/4 to-transparent rounded-r-md pl-1">
+          {/* Connector line */}
+          <div className="absolute left-0 top-0 w-0.5 h-full bg-border/30 rounded-full" />
+          <div className="py-1 space-y-0.5 pl-4">
             {item.submenu?.map((subItem) => (
               <SidebarMenuItem
                 key={subItem.href}
