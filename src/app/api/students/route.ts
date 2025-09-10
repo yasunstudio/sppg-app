@@ -44,13 +44,22 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({
+      success: true,
       data: students,
-      total: students.length
+      pagination: {
+        total: students.length,
+        page: 1,
+        limit: students.length,
+        pages: 1
+      }
     })
   } catch (error) {
     console.error('Error fetching students:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch students' },
+      { 
+        success: false,
+        error: 'Failed to fetch students' 
+      },
       { status: 500 }
     )
   }
@@ -75,7 +84,10 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!name || !nisn || !age || !gender || !grade || !parentName || !schoolId) {
       return NextResponse.json(
-        { error: 'Semua field yang wajib harus diisi' },
+        { 
+          success: false,
+          error: 'Semua field yang wajib harus diisi' 
+        },
         { status: 400 }
       )
     }
@@ -90,7 +102,10 @@ export async function POST(request: NextRequest) {
 
     if (existingStudent) {
       return NextResponse.json(
-        { error: 'NISN sudah terdaftar di sekolah ini' },
+        { 
+          success: false,
+          error: 'NISN sudah terdaftar di sekolah ini' 
+        },
         { status: 400 }
       )
     }
@@ -129,13 +144,19 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({
-      ...student,
-      message: 'Siswa berhasil ditambahkan'
+      success: true,
+      data: {
+        ...student,
+        message: 'Siswa berhasil ditambahkan'
+      }
     })
   } catch (error) {
     console.error('Error creating student:', error)
     return NextResponse.json(
-      { error: 'Gagal menambahkan siswa' },
+      { 
+        success: false,
+        error: 'Gagal menambahkan siswa' 
+      },
       { status: 500 }
     )
   }

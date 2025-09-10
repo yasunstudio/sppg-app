@@ -29,8 +29,8 @@ import {
   Plus
 } from 'lucide-react'
 import { usePermission } from '@/components/guards/permission-guard'
-import type { WasteRecord } from '../utils/waste-types'
-import { getWasteTypeColor, getSourceColor, formatWasteType, formatSource, formatDateShort } from '../utils/waste-formatters'
+import type { WasteRecord } from '../utils'
+import { getWasteTypeColor, getSourceColor, formatWasteType, formatSource, formatDateShort } from '../utils'
 
 interface WasteTableViewProps {
   wasteRecords: WasteRecord[]

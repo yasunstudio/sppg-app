@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
-import type { WasteRecord, WasteStats, PaginationData, WasteRecordsResponse, FilterState, PaginationState } from '../utils/waste-types'
+import type { WasteRecord, WasteStats, PaginationData, WasteRecordsResponse, FilterState, PaginationState } from '../utils'
 
 interface UseWasteRecordsProps {
   filters: FilterState

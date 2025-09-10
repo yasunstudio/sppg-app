@@ -47,29 +47,29 @@ export function UserRolePageActions({ onRefresh, isLoading = false }: UserRolePa
         className="hidden sm:flex"
       >
         <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-        Refresh
+        Muat Ulang
       </Button>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Export</span>
+            <span className="hidden sm:inline">Ekspor</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
-            Export CSV
+            Ekspor CSV
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
-            Export Excel
+            Ekspor Excel
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleImport}>
             <Upload className="h-4 w-4 mr-2" />
-            Import Data
+            Impor Data
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -77,7 +77,7 @@ export function UserRolePageActions({ onRefresh, isLoading = false }: UserRolePa
       <Button onClick={handleCreateUserRole} size="sm">
         <Plus className="h-4 w-4 mr-2" />
         <span className="hidden sm:inline">Tugaskan Role</span>
-        <span className="sm:hidden">Assign</span>
+        <span className="sm:hidden">Tugaskan</span>
       </Button>
     </div>
   )

@@ -1,56 +1,94 @@
-import * as z from "zod"
+import { z } from 'zod'
 
-// User Role Enum
-export enum UserRole {
-  SUPER_ADMIN = "SUPER_ADMIN",
-  ADMIN = "ADMIN", 
-  CHEF = "CHEF",
-  NUTRITIONIST = "NUTRITIONIST",
-  USER = "USER"
-}
-
-// User Status Enum  
-export enum UserStatus {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE", 
-  SUSPENDED = "SUSPENDED"
-}
-
-// User Create Schema
-export const userCreateSchema = z.object({
-  name: z.string().min(1, "Name is required").min(2, "Name must be at least 2 characters"),
-  email: z.string().min(1, "Email is required").email("Invalid email format"),
-  password: z.string().min(1, "Password is required").min(8, "Password must be at least 8 characters"),
-  phone: z.string().optional(),
-  role: z.nativeEnum(UserRole),
-  status: z.nativeEnum(UserStatus),
-  schoolId: z.string().optional(),
-  avatar: z.string().optional(),
+// User schemas - Following vehicle pattern with Indonesian language
+export const createUserSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email harus diisi')
+    .email('Format email tidak valid')
+    .max(255, 'Email maksimal 255 karakter'),
+  
+  username: z
+    .string()
+    .nullable()
+    .optional(),
+  
+  fullName: z
+    .string()
+    .min(1, 'Nama lengkap harus diisi')
+    .max(100, 'Nama lengkap maksimal 100 karakter'),
+  
+  password: z
+    .string()
+    .min(8, 'Password minimal 8 karakter')
+    .max(255, 'Password maksimal 255 karakter')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password harus mengandung huruf kecil, huruf besar, dan angka'),
+  
+  confirmPassword: z
+    .string()
+    .min(1, 'Konfirmasi password harus diisi'),
+  
+  phone: z
+    .string()
+    .nullable()
+    .optional(),
+  
+  address: z
+    .string()
+    .nullable()
+    .optional(),
+  
+  isActive: z.boolean().default(true).optional(),
+  
+  roleIds: z.array(z.string()).default([]).optional()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Password dan konfirmasi password tidak sama",
+  path: ["confirmPassword"],
 })
 
-// User Update Schema (password optional for updates)
-export const userUpdateSchema = z.object({
-  name: z.string().min(1, "Name is required").min(2, "Name must be at least 2 characters"),
-  email: z.string().min(1, "Email is required").email("Invalid email format"),
-  password: z.string().min(8, "Password must be at least 8 characters").optional(),
-  phone: z.string().optional(),
-  role: z.nativeEnum(UserRole),
-  status: z.nativeEnum(UserStatus),
-  schoolId: z.string().optional(),
-  avatar: z.string().optional(),
+export const updateUserSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email harus diisi')
+    .email('Format email tidak valid')
+    .max(255, 'Email maksimal 255 karakter')
+    .optional(),
+  
+  username: z
+    .string()
+    .nullable()
+    .optional(),
+  
+  fullName: z
+    .string()
+    .min(1, 'Nama lengkap harus diisi')
+    .max(100, 'Nama lengkap maksimal 100 karakter')
+    .optional(),
+  
+  phone: z
+    .string()
+    .nullable()
+    .optional(),
+  
+  address: z
+    .string()
+    .nullable()
+    .optional(),
+  
+  isActive: z.boolean().optional(),
+  
+  roleIds: z.array(z.string()).optional()
 })
 
-// Filter Schema
 export const userFilterSchema = z.object({
-  searchTerm: z.string().optional(),
-  selectedRole: z.string().optional(),
-  selectedStatus: z.string().optional(),
-  selectedSchool: z.string().optional(),
-  currentPage: z.number().min(1).default(1),
-  itemsPerPage: z.number().min(1).max(100).default(10),
+  search: z.string().optional(),
+  status: z.enum(['all', 'active', 'inactive']).default('all'),
+  role: z.string().optional(),
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).max(100).default(10)
 })
 
-// Type definitions from schemas
-export type UserCreateFormData = z.infer<typeof userCreateSchema>
-export type UserUpdateFormData = z.infer<typeof userUpdateSchema>
+// Export types
+export type CreateUserFormData = z.infer<typeof createUserSchema>
+export type UpdateUserFormData = z.infer<typeof updateUserSchema>
 export type UserFilterData = z.infer<typeof userFilterSchema>

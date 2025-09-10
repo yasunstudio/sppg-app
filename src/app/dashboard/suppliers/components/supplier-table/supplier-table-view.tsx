@@ -21,7 +21,7 @@ import {
 import { formatDate, formatPhoneNumber } from '../utils/supplier-formatters'
 import type { Supplier } from '../utils/supplier-types'
 import { useRouter } from 'next/navigation'
-import { usePermission } from '@/hooks/use-permission'
+import { usePermission } from '@/hooks/use-role-permissions'
 
 interface SupplierTableViewProps {
   suppliers: Supplier[]

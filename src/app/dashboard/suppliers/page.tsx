@@ -1,6 +1,6 @@
-import { Metadata } from "next"
 import { SupplierPageClient } from "./components/supplier-page-client"
-import { PermissionGuard } from '@/components/guards/permission-guard'
+import { PermissionGuard } from "@/components/guards/permission-guard"
+import { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "Supplier Management - Supply Chain | SPPG Management System",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 
 export default async function SuppliersPage() {
   return (
-    <PermissionGuard permission="suppliers.view">
+    <PermissionGuard permission="production.view">
       <SupplierPageClient />
     </PermissionGuard>
   )

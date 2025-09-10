@@ -1,24 +1,37 @@
-"use client"
+'use client'
 
 import { useState, useEffect } from 'react'
 
-export const useResponsive = () => {
-  const [isMobile, setIsMobile] = useState(false)
-  const [isTablet, setIsTablet] = useState(false)
-  const [isDesktop, setIsDesktop] = useState(false)
+export function useResponsive() {
+  const [screenSize, setScreenSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0,
+  })
 
   useEffect(() => {
-    const checkScreenSize = () => {
-      const width = window.innerWidth
-      setIsMobile(width < 768)
-      setIsTablet(width >= 768 && width < 1024)
-      setIsDesktop(width >= 1024)
+    if (typeof window === 'undefined') return
+
+    const handleResize = () => {
+      setScreenSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
     }
 
-    checkScreenSize()
-    window.addEventListener('resize', checkScreenSize)
-    return () => window.removeEventListener('resize', checkScreenSize)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  return { isMobile, isTablet, isDesktop }
+  const isMobile = screenSize.width < 768
+  const isTablet = screenSize.width >= 768 && screenSize.width < 1024
+  const isDesktop = screenSize.width >= 1024
+  const isLarge = screenSize.width >= 1280
+
+  return {
+    screenSize,
+    isMobile,
+    isTablet, 
+    isDesktop,
+    isLarge,
+  }
 }

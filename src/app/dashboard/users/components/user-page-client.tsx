@@ -14,8 +14,8 @@ export function UserPageClient() {
 
   return (
     <PageContainer
-      title="User Management"
-      description="Manage user accounts, roles, and permissions for the SPPG management system."
+      title="Manajemen Pengguna"
+      description="Kelola akun pengguna, atur peran dan izin, dan monitor aktivitas pengguna."
       showBreadcrumb={true}
       actions={<UserPageActions onRefresh={handleRefresh} />}
     >

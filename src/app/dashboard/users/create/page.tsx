@@ -3,25 +3,25 @@ import { PermissionGuard } from "@/components/guards/permission-guard"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Add New User - User Management | SPPG Management System",
-  description: "Register a new user to your SPPG management system. Add complete user details including profile information, role assignments, permissions, and account settings for SPPG system access.",
+  title: "Tambah Pengguna Baru - Manajemen Pengguna | SPPG Management System",
+  description: "Daftarkan pengguna baru ke sistem manajemen SPPG. Tambahkan detail lengkap pengguna termasuk informasi pribadi, peran, izin, dan parameter operasional untuk jaringan distribusi makanan SPPG.",
   keywords: [
     // Primary keywords
     "add user", "new user registration", "user form", "user management",
     // Indonesian keywords
     "tambah pengguna", "registrasi pengguna baru", "form pengguna", "manajemen pengguna",
     // SPPG specific
-    "SPPG user registration", "system user management", "user account creation",
+    "SPPG user registration", "SPPG pengguna", "registrasi akun SPPG",
     // Technical keywords
-    "user management system", "user database", "user profile setup",
+    "user management system", "user database", "user specifications",
     // Process keywords
-    "user onboarding", "account registration process", "user documentation",
+    "user onboarding", "user registration process", "user documentation",
     // Feature keywords
-    "role assignment", "permission setup", "user access control"
+    "role assignment", "permission setup", "user monitoring setup"
   ],
   openGraph: {
-    title: "Add New User - SPPG User Management",
-    description: "Register a new user for SPPG management system. Complete user registration with profile details and role assignment.",
+    title: "Tambah Pengguna Baru - SPPG Manajemen Pengguna",
+    description: "Daftarkan pengguna baru untuk sistem SPPG. Registrasi lengkap pengguna dengan peran dan pengaturan izin.",
     type: "website",
     siteName: "SPPG Management System",
     locale: "id_ID",
@@ -29,11 +29,11 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Add New User - User Management",
-    description: "Register new user for SPPG system with complete profile setup.",
+    title: "Tambah Pengguna Baru - SPPG Manajemen Pengguna",
+    description: "Daftarkan pengguna baru untuk sistem SPPG.",
   },
   robots: {
-    index: false,
+    index: false, // Private admin form
     follow: false,
     noarchive: true,
     nosnippet: true,
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
-    "apple-mobile-web-app-title": "Add New User",
+    "apple-mobile-web-app-title": "SPPG User Registration",
   }
 }
 

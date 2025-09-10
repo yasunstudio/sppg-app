@@ -1,11 +1,16 @@
 import { Metadata } from "next"
-import { RolesManagement } from "./components/roles-management"
+import { RolePageClient } from "./components"
+import { PermissionGuard } from "@/components/guards/permission-guard"
 
 export const metadata: Metadata = {
-  title: "Role Management | SPPG",
-  description: "Comprehensive role management system for SPPG application.",
+  title: "Manajemen Role | SPPG",
+  description: "Sistem manajemen role dan permissions yang komprehensif untuk aplikasi SPPG.",
 }
 
 export default async function RolesPage() {
-  return <RolesManagement />
+  return (
+    <PermissionGuard permission="system.config" redirectTo="/dashboard">
+      <RolePageClient />
+    </PermissionGuard>
+  )
 }

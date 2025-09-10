@@ -24,7 +24,10 @@ export async function GET(
 
     if (!school) {
       return NextResponse.json(
-        { error: 'Sekolah tidak ditemukan' },
+        { 
+          success: false,
+          error: 'Sekolah tidak ditemukan' 
+        },
         { status: 404 }
       )
     }
@@ -45,11 +48,17 @@ export async function GET(
       lastUpdated: school.updatedAt.toISOString()
     }
 
-    return NextResponse.json(schoolWithCounts)
+    return NextResponse.json({
+      success: true,
+      data: schoolWithCounts
+    })
   } catch (error) {
     console.error('Error fetching school:', error)
     return NextResponse.json(
-      { error: 'Gagal mengambil data sekolah' },
+      { 
+        success: false,
+        error: 'Gagal mengambil data sekolah' 
+      },
       { status: 500 }
     )
   }
@@ -78,7 +87,10 @@ export async function PUT(
     // Validate required fields
     if (!name || !principalName || !principalPhone || !address) {
       return NextResponse.json(
-        { error: 'Nama sekolah, nama kepala sekolah, telepon, dan alamat harus diisi' },
+        { 
+          success: false,
+          error: 'Nama sekolah, nama kepala sekolah, telepon, dan alamat harus diisi' 
+        },
         { status: 400 }
       )
     }
@@ -90,7 +102,10 @@ export async function PUT(
 
     if (!existingSchool) {
       return NextResponse.json(
-        { error: 'Sekolah tidak ditemukan' },
+        { 
+          success: false,
+          error: 'Sekolah tidak ditemukan' 
+        },
         { status: 404 }
       )
     }
@@ -105,7 +120,10 @@ export async function PUT(
 
     if (nameConflict) {
       return NextResponse.json(
-        { error: 'Nama sekolah sudah terdaftar' },
+        { 
+          success: false,
+          error: 'Nama sekolah sudah terdaftar' 
+        },
         { status: 400 }
       )
     }
@@ -125,21 +143,27 @@ export async function PUT(
     })
 
     return NextResponse.json({
-      id: updatedSchool.id,
-      name: updatedSchool.name,
-      address: updatedSchool.address,
-      principalName: updatedSchool.principalName,
-      principalPhone: updatedSchool.principalPhone,
-      totalStudents: updatedSchool.totalStudents,
-      notes: updatedSchool.notes,
-      latitude: updatedSchool.latitude,
-      longitude: updatedSchool.longitude,
+      success: true,
+      data: {
+        id: updatedSchool.id,
+        name: updatedSchool.name,
+        address: updatedSchool.address,
+        principalName: updatedSchool.principalName,
+        principalPhone: updatedSchool.principalPhone,
+        totalStudents: updatedSchool.totalStudents,
+        notes: updatedSchool.notes,
+        latitude: updatedSchool.latitude,
+        longitude: updatedSchool.longitude
+      },
       message: 'Sekolah berhasil diperbarui'
     })
   } catch (error) {
     console.error('Error updating school:', error)
     return NextResponse.json(
-      { error: 'Gagal memperbarui sekolah' },
+      { 
+        success: false,
+        error: 'Gagal memperbarui sekolah' 
+      },
       { status: 500 }
     )
   }
@@ -168,14 +192,20 @@ export async function DELETE(
 
     if (!school) {
       return NextResponse.json(
-        { error: 'Sekolah tidak ditemukan' },
+        { 
+          success: false,
+          error: 'Sekolah tidak ditemukan' 
+        },
         { status: 404 }
       )
     }
 
     if (school._count.students > 0 || school._count.classes > 0) {
       return NextResponse.json(
-        { error: 'Tidak dapat menghapus sekolah yang masih memiliki siswa atau kelas' },
+        { 
+          success: false,
+          error: 'Tidak dapat menghapus sekolah yang masih memiliki siswa atau kelas' 
+        },
         { status: 400 }
       )
     }
@@ -187,12 +217,16 @@ export async function DELETE(
     })
 
     return NextResponse.json({
+      success: true,
       message: 'Sekolah berhasil dihapus'
     })
   } catch (error) {
     console.error('Error deleting school:', error)
     return NextResponse.json(
-      { error: 'Gagal menghapus sekolah' },
+      { 
+        success: false,
+        error: 'Gagal menghapus sekolah' 
+      },
       { status: 500 }
     )
   }

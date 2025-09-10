@@ -3,33 +3,51 @@ import { PermissionGuard } from "@/components/guards/permission-guard"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "User Management - Account Operations | SPPG Management System",
-  description: "Comprehensive user management dashboard for SPPG management system. Manage user accounts, roles, permissions, and access control with advanced user analytics and reporting.",
+  title: "User Management - Manajemen Pengguna | SPPG Management System",
+  description: "Dashboard manajemen pengguna komprehensif untuk sistem SPPG. Kelola akun pengguna, atur peran dan izin, pantau aktivitas pengguna, dan awasi siklus hidup pengguna dengan analitik dan pelaporan canggih.",
   keywords: [
     // Primary keywords
-    "user management", "account management", "user dashboard", "user operations",
-    "user administration", "role management", "permission control", "user analytics",
-    
-    // Secondary keywords
-    "user accounts", "user monitoring", "user permissions", "user reporting",
-    "access control", "user roles", "account administration", "user tracking",
-    
+    "user management", "pengguna management", "user dashboard", "manajemen pengguna",
+    // Indonesian keywords
+    "manajemen pengguna", "dashboard pengguna", "administrasi pengguna", "kelola pengguna",
     // SPPG specific
-    "SPPG user management", "school user accounts", "educational user system",
-    "staff management", "employee accounts", "school administration users",
-    
+    "SPPG users", "SPPG pengguna", "sistem pengguna SPPG", "akun SPPG",
     // Technical keywords
-    "user management system", "account management platform", "user dashboard",
-    "user analytics", "user management software", "role-based access control"
+    "user tracking", "role management", "permission management", "user monitoring",
+    // Process keywords
+    "user operations", "account management", "user status", "user performance",
+    // Feature keywords
+    "real-time monitoring", "user alerts", "operational efficiency", "user reporting"
   ],
   openGraph: {
-    title: "User Management Dashboard - SPPG Management System",
-    description: "Manage user accounts, roles, and permissions with comprehensive tracking, analytics, and reporting tools for educational institutions.",
+    title: "User Management - SPPG Manajemen Pengguna",
+    description: "Kelola semua pengguna sistem SPPG dengan alat pelacakan, manajemen peran, dan operasional yang canggih.",
     type: "website",
+    siteName: "SPPG Management System",
+    locale: "id_ID",
+    url: "/dashboard/users",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "User Management - SPPG Manajemen Pengguna",
+    description: "Manajemen pengguna komprehensif untuk sistem SPPG.",
   },
   robots: {
-    index: true,
-    follow: true,
+    index: false, // Private admin dashboard
+    follow: false,
+    noarchive: true,
+    nosnippet: true,
+  },
+  alternates: {
+    canonical: "/dashboard/users",
+  },
+  other: {
+    "application-name": "SPPG Management System",
+    "format-detection": "telephone=no",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-title": "SPPG User Dashboard",
   }
 }
 

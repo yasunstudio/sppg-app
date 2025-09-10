@@ -45,10 +45,14 @@ interface User {
   avatar?: string
 }
 
-export function RoleDetails() {
+interface RoleDetailsProps {
+  roleId?: string
+}
+
+export function RoleDetails({ roleId: propRoleId }: RoleDetailsProps = {}) {
   const params = useParams()
   const router = useRouter()
-  const roleId = params.roleId as string
+  const roleId = propRoleId || (params.roleId as string)
   
   const [role, setRole] = useState<Role | null>(null)
   const [users, setUsers] = useState<User[]>([])

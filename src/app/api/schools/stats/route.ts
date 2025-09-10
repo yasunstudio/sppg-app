@@ -29,15 +29,21 @@ export async function GET(request: NextRequest) {
     ])
 
     return NextResponse.json({
-      totalStudents,
-      totalClasses, 
-      totalSchools,
-      averageStudentsPerSchool: Math.round(averageStudentsPerSchool._avg?.totalStudents || 0)
+      success: true,
+      data: {
+        totalStudents,
+        totalClasses, 
+        totalSchools,
+        averageStudentsPerSchool: Math.round(averageStudentsPerSchool._avg?.totalStudents || 0)
+      }
     })
   } catch (error) {
     console.error('Error fetching school stats:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch school statistics' },
+      { 
+        success: false,
+        error: 'Failed to fetch school statistics' 
+      },
       { status: 500 }
     )
   }

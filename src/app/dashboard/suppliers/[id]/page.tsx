@@ -20,7 +20,7 @@ interface SupplierDetailsPageProps {
 export default async function SupplierDetailsPage({ params }: SupplierDetailsPageProps) {
   const { id } = await params
   return (
-    <PermissionGuard permission="suppliers.view">
+    <PermissionGuard permission="production.view">
       <SupplierDetails supplierId={id} />
     </PermissionGuard>
   )

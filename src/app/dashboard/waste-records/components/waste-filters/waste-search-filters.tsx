@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Search, X } from 'lucide-react'
-import type { FilterState } from '../utils/waste-types'
+import type { FilterState } from '../utils'
 
 interface WasteSearchFiltersProps {
   filters: FilterState

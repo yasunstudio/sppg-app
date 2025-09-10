@@ -1,69 +1,54 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { 
-  ArrowLeft, 
-  Edit, 
-  Trash2, 
-  User, 
-  School, 
-  Calendar, 
-  Users, 
-  Activity,
-  FileText,
-  AlertTriangle,
-  CheckCircle
-} from "lucide-react"
-import { toast } from "sonner"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { 
+  User,
+  Users,
+  GraduationCap,
+  School,
+  Heart,
+  AlertTriangle,
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Calendar,
+  Building,
+  Phone
+} from "lucide-react"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { formatDate, formatGrade, formatAllergies } from "./utils/student-formatters"
 
 interface Student {
   id: string
-  nisn: string
   name: string
-  age: number
-  gender: "MALE" | "FEMALE"
   grade: string
-  parentName: string
+  schoolId: string
+  allergies?: string | null
   notes?: string | null
   createdAt: string
   updatedAt: string
-  school: {
+  school?: {
     id: string
     name: string
-    address: string
-    type: string
+    principalName: string
+    principalPhone: string
   }
-  nutritionConsultations: Array<{
-    id: string
-    date: string
-    status: string
-    consultationType: string
-  }>
-  feedback: Array<{
-    id: string
-    date: string
-    type: string
-    rating: number
-  }>
-  _count: {
-    nutritionConsultations: number
-    feedback: number
+  _count?: {
+    distributions: number
+    nutritionRecords: number
   }
 }
 
@@ -71,99 +56,74 @@ interface StudentDetailsProps {
   studentId: string
 }
 
-export function StudentDetails({ studentId }: StudentDetailsProps) {
+export default function StudentDetails({ studentId }: StudentDetailsProps) {
   const router = useRouter()
   const [student, setStudent] = useState<Student | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
-    fetchStudent()
-  }, [studentId])
+    const fetchStudent = async () => {
+      try {
+        const response = await fetch(`/api/students/${studentId}`)
+        const result = await response.json()
 
-  const fetchStudent = async () => {
-    try {
-      const response = await fetch(`/api/students/${studentId}`)
-      if (response.ok) {
-        const student = await response.json()
-        setStudent(student)
-      } else {
-        toast.error('Student not found')
-        router.push('/dashboard/students')
+        if (result.success && result.data) {
+          setStudent(result.data)
+        } else {
+          toast.error("Student tidak ditemukan")
+          router.push("/dashboard/students")
+        }
+      } catch (error) {
+        console.error("Error fetching student:", error)
+        toast.error("Gagal memuat data student")
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error('Error fetching student:', error)
-      toast.error('Failed to fetch student details')
-    } finally {
-      setIsLoading(false)
     }
+
+    if (studentId) {
+      fetchStudent()
+    }
+  }, [studentId, router])
+
+  const handleEdit = () => {
+    router.push(`/dashboard/students/${studentId}/edit`)
   }
 
   const handleDelete = async () => {
-    if (!student) return
-    
+    if (!confirm("Apakah Anda yakin ingin menghapus student ini? Tindakan ini tidak dapat dibatalkan.")) {
+      return
+    }
+
     setIsDeleting(true)
     try {
-      const response = await fetch(`/api/students/${student.id}`, {
-        method: 'DELETE',
+      const response = await fetch(`/api/students/${studentId}`, {
+        method: "DELETE",
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete student')
-      }
+      const result = await response.json()
 
-      toast.success('Student deleted successfully')
-      router.push('/dashboard/students')
+      if (result.success) {
+        toast.success("Student berhasil dihapus")
+        router.push("/dashboard/students")
+      } else {
+        toast.error(result.message || "Gagal menghapus student")
+      }
     } catch (error) {
-      console.error('Error deleting student:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to delete student')
+      console.error("Error deleting student:", error)
+      toast.error("Gagal menghapus student")
     } finally {
       setIsDeleting(false)
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
-
-  const getGenderBadge = (gender: "MALE" | "FEMALE") => {
-    return gender === "MALE" ? (
-      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-        Laki-laki
-      </Badge>
-    ) : (
-      <Badge variant="outline" className="bg-pink-50 text-pink-700 border-pink-200">
-        Perempuan
-      </Badge>
-    )
-  }
-
-  const getStatusBadge = (status: string) => {
-    const colors = {
-      COMPLETED: "bg-green-50 text-green-700 border-green-200",
-      SCHEDULED: "bg-blue-50 text-blue-700 border-blue-200",
-      CANCELLED: "bg-red-50 text-red-700 border-red-200",
-      IN_PROGRESS: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    }
-    
-    return (
-      <Badge variant="outline" className={colors[status as keyof typeof colors] || "bg-gray-50 text-gray-700 border-gray-200"}>
-        {status.replace('_', ' ')}
-      </Badge>
-    )
-  }
-
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <span>Loading student details...</span>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Memuat data student...</p>
         </div>
       </div>
     )
@@ -171,331 +131,221 @@ export function StudentDetails({ studentId }: StudentDetailsProps) {
 
   if (!student) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-semibold">Student not found</h3>
-          <p className="text-muted-foreground">The student you're looking for doesn't exist.</p>
-          <Button className="mt-4" onClick={() => router.push('/dashboard/students')}>
-            Back to Students
-          </Button>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Student Tidak Ditemukan</h3>
+            <p className="text-gray-600 mb-4">Student yang Anda cari tidak dapat ditemukan.</p>
+            <Button onClick={() => router.push("/dashboard/students")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Kembali ke Daftar Student
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{student.name}</h1>
-            <p className="text-muted-foreground">
-              NISN: {student.nisn} • Grade {student.grade} • {student.school.name}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => router.push(`/dashboard/students/${student.id}/edit`)}
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Student</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete <strong>{student.name}</strong>? 
-                  This action cannot be undone and will remove all associated records.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  {isDeleting ? 'Deleting...' : 'Delete'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Kelas</p>
+                <p className="text-2xl font-bold">{formatGrade(student.grade)}</p>
+              </div>
+              <GraduationCap className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Sekolah</p>
+                <p className="text-2xl font-bold truncate">{student.school?.name || 'N/A'}</p>
+              </div>
+              <School className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Status Alergi</p>
+                <p className="text-2xl font-bold">
+                  {student.allergies ? (
+                    <Badge variant="destructive" className="text-xs">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Ada Alergi
+                    </Badge>
+                  ) : (
+                    <Badge variant="default" className="text-xs">
+                      <Heart className="h-3 w-3 mr-1" />
+                      Aman
+                    </Badge>
+                  )}
+                </p>
+              </div>
+              <Heart className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Distribusi</p>
+                <p className="text-2xl font-bold">{student._count?.distributions || 0}</p>
+              </div>
+              <Users className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Information */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Student Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Student Information
-              </CardTitle>
+      {/* Main Details */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Student Information */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-xl">Informasi Student</CardTitle>
               <CardDescription>
-                Basic details and personal information
+                Detail lengkap informasi student
               </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">NISN</label>
-                  <p className="text-lg font-mono">{student.nisn}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Full Name</label>
-                  <p className="text-lg">{student.name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Age</label>
-                  <p className="text-lg">{student.age} years old</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Gender</label>
-                  <div className="mt-1">
-                    {getGenderBadge(student.gender)}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Grade</label>
-                  <p className="text-lg">Grade {student.grade}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Parent/Guardian</label>
-                  <p className="text-lg">{student.parentName}</p>
-                </div>
-              </div>
-
-              {student.notes && (
-                <>
-                  <Separator />
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Additional Notes</label>
-                    <p className="mt-1 text-sm leading-relaxed">{student.notes}</p>
-                  </div>
-                </>
-              )}
-
-              <Separator />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <label className="font-medium text-muted-foreground">Registered</label>
-                  <p>{formatDate(student.createdAt)}</p>
-                </div>
-                <div>
-                  <label className="font-medium text-muted-foreground">Last Updated</label>
-                  <p>{formatDate(student.updatedAt)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* School Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <School className="h-5 w-5" />
-                School Information
-              </CardTitle>
-              <CardDescription>
-                Details about the assigned school
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">School Name</label>
-                  <p className="text-lg">{student.school.name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">School Type</label>
-                  <p className="text-lg">{student.school.type}</p>
-                </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleEdit}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {isDeleting ? "Menghapus..." : "Hapus"}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Nama Lengkap</label>
+                <p className="text-sm font-medium">{student.name}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Address</label>
-                <p className="text-sm text-muted-foreground mt-1">{student.school.address}</p>
+                <label className="text-sm font-medium text-muted-foreground">Kelas</label>
+                <p className="text-sm font-medium">{formatGrade(student.grade)}</p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push(`/dashboard/schools/${student.school.id}`)}
-              >
-                View School Details
-              </Button>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Recent Nutrition Consultations */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Recent Nutrition Consultations
-              </CardTitle>
-              <CardDescription>
-                Latest nutrition consultation records
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {student.nutritionConsultations && student.nutritionConsultations.length > 0 ? (
-                <div className="space-y-3">
-                  {student.nutritionConsultations.slice(0, 5).map((consultation) => (
-                    <div key={consultation.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <Activity className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{consultation.consultationType}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDate(consultation.date)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {getStatusBadge(consultation.status)}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/dashboard/nutrition-consultations/${consultation.id}`)}
-                        >
-                          View
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                  {student.nutritionConsultations.length > 5 && (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => router.push(`/dashboard/nutrition-consultations?student=${student.id}`)}
-                    >
-                      View All Consultations ({student._count?.nutritionConsultations || 0})
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <Activity className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-4 text-lg font-semibold">No Consultations</h3>
-                  <p className="text-muted-foreground">No nutrition consultations recorded yet.</p>
-                  <Button
-                    className="mt-4"
-                    onClick={() => router.push(`/dashboard/nutrition-consultations/create?student=${student.id}`)}
-                  >
-                    Schedule Consultation
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            <Separator />
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Quick Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Quick Stats
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Nutrition Consultations</span>
-                <Badge variant="secondary">{student._count?.nutritionConsultations || 0}</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Feedback Records</span>
-                <Badge variant="secondary">{student._count?.feedback || 0}</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Registration Status</span>
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                  <CheckCircle className="mr-1 h-3 w-3" />
-                  Active
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => router.push(`/dashboard/nutrition-consultations/create?student=${student.id}`)}
-              >
-                <Activity className="mr-2 h-4 w-4" />
-                Schedule Consultation
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => router.push(`/dashboard/feedback/create?student=${student.id}`)}
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                Add Feedback
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => router.push(`/dashboard/students/${student.id}/edit`)}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Student
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Student Guidelines */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Guidelines
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 text-sm">
-                <div className="rounded-lg border p-3">
-                  <h4 className="font-medium mb-2">Nutrition Program</h4>
-                  <p className="text-muted-foreground">
-                    Students receive regular nutrition consultations and meal programs based on their age and grade level.
-                  </p>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Informasi Sekolah</label>
+              <div className="mt-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{student.school?.name || 'Sekolah tidak terdaftar'}</span>
                 </div>
-                <div className="rounded-lg border p-3">
-                  <h4 className="font-medium mb-2">Health Monitoring</h4>
-                  <p className="text-muted-foreground">
-                    Regular health check-ups and nutrition assessments to ensure optimal growth and development.
-                  </p>
-                </div>
+                {student.school?.principalName && (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Kepala Sekolah: {student.school.principalName}</span>
+                  </div>
+                )}
+                {student.school?.principalPhone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{student.school.principalPhone}</span>
+                  </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+
+            <Separator />
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Status Alergi</label>
+              <div className="mt-1">
+                {student.allergies ? (
+                  <div className="space-y-2">
+                    <Badge variant="destructive" className="mr-2">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Memiliki Alergi
+                    </Badge>
+                    <p className="text-sm bg-red-50 border border-red-200 rounded-md p-2">
+                      <strong>Alergi:</strong> {formatAllergies(student.allergies)}
+                    </p>
+                  </div>
+                ) : (
+                  <Badge variant="default">
+                    <Heart className="h-3 w-3 mr-1" />
+                    Tidak Ada Alergi
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {student.notes && (
+              <>
+                <Separator />
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Catatan</label>
+                  <p className="text-sm mt-1 bg-gray-50 border rounded-md p-2">{student.notes}</p>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* System Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Informasi Sistem</CardTitle>
+            <CardDescription>
+              Data sistem dan riwayat perubahan
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">ID Student</TableCell>
+                  <TableCell>{student.id}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Tanggal Dibuat</TableCell>
+                  <TableCell>{formatDate(student.createdAt)}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Terakhir Diperbarui</TableCell>
+                  <TableCell>{formatDate(student.updatedAt)}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Total Distribusi</TableCell>
+                  <TableCell>{student._count?.distributions || 0} kali</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Record Nutrisi</TableCell>
+                  <TableCell>{student._count?.nutritionRecords || 0} record</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

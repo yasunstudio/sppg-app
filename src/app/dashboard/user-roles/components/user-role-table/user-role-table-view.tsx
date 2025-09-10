@@ -83,7 +83,7 @@ export function UserRoleTableView({ userRoles, isFiltering }: UserRoleTableViewP
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={assignment.user.avatar} alt={assignment.user.name} />
+                      <AvatarImage src={assignment.user.avatar || undefined} alt={assignment.user.name} />
                       <AvatarFallback className="text-xs">
                         {getInitials(assignment.user.name)}
                       </AvatarFallback>
@@ -108,8 +108,8 @@ export function UserRoleTableView({ userRoles, isFiltering }: UserRoleTableViewP
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge className={getStatusColor(assignment.isActive)}>
-                    {formatUserRoleStatus(assignment.isActive)}
+                  <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                    Aktif
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -119,7 +119,7 @@ export function UserRoleTableView({ userRoles, isFiltering }: UserRoleTableViewP
                 </TableCell>
                 <TableCell>
                   <div className="text-sm">
-                    {assignment.assignedByUser?.name || 'System'}
+                    System
                   </div>
                 </TableCell>
                 <TableCell>

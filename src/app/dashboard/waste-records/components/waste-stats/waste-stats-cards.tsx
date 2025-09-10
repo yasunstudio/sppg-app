@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Trash2, Weight, TrendingUp, Building } from 'lucide-react'
-import type { WasteStats } from '../utils/waste-types'
+import type { WasteStats } from '../utils'
 
 interface WasteStatsCardsProps {
   stats: WasteStats | null

@@ -13,7 +13,7 @@ export function SupplierCreatePageClient() {
       description="Daftarkan supplier baru ke dalam sistem manajemen rantai pasok."
       showBreadcrumb={true}
       actions={
-        <Link href="/suppliers">
+        <Link href="/dashboard/suppliers">
           <Button variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Kembali ke Daftar

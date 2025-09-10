@@ -1,83 +1,199 @@
-"use client"
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { toast } from 'sonner'
-import type { User, UserStats, PaginationData, UsersResponse, FilterState, PaginationState } from '../utils/user-types'
+import type { User, UserStats, UserFilters } from '../utils/user-types'
 
-interface UseUsersProps {
-  filters: FilterState
-  pagination: PaginationState
+interface UseUsersParams {
+  filters?: UserFilters
+  page?: number
+  limit?: number
 }
 
-export const useUsers = ({ filters, pagination }: UseUsersProps) => {
+interface UseUsersReturn {
+  users: User[]
+  stats: UserStats | null
+  pagination: {
+    currentPage: number
+    totalPages: number
+    totalCount: number
+    hasMore: boolean
+    itemsPerPage: number
+  } | null
+  loading: boolean
+  error: string | null
+  refreshUsers: () => void
+  createUser: (data: any) => Promise<User>
+  updateUser: (id: string, data: any) => Promise<User>
+  deleteUser: (id: string) => Promise<void>
+  searchUsers: (term: string) => void
+  filterByStatus: (status: string) => void
+  filterByRole: (role: string) => void
+}
+
+export function useUsers(params: UseUsersParams = {}): UseUsersReturn {
+  const { filters, page = 1, limit = 20 } = params
+  
   const [users, setUsers] = useState<User[]>([])
   const [stats, setStats] = useState<UserStats | null>(null)
-  const [paginationData, setPaginationData] = useState<PaginationData | null>(null)
+  const [pagination, setPagination] = useState<{
+    currentPage: number
+    totalPages: number
+    totalCount: number
+    hasMore: boolean
+    itemsPerPage: number
+  } | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isFiltering, setIsFiltering] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const fetchUsers = useCallback(async (isFilteringRequest = false) => {
+  const fetchUsers = useCallback(async () => {
     try {
-      if (isFilteringRequest) {
-        setIsFiltering(true)
-      } else {
-        setLoading(true)
-      }
+      setLoading(true)
+      setError(null)
       
-      const params = new URLSearchParams({
-        page: pagination.currentPage.toString(),
-        limit: pagination.itemsPerPage.toString(),
-        search: filters.searchTerm || '',
-        role: filters.selectedRole !== 'all' ? filters.selectedRole : '',
-        status: filters.selectedStatus !== 'all' ? filters.selectedStatus : '',
-        school: filters.selectedSchool !== 'all' ? filters.selectedSchool : ''
+      const queryParams = new URLSearchParams({
+        offset: ((page - 1) * limit).toString(),
+        limit: limit.toString(),
+        ...(filters?.selectedStatus && filters.selectedStatus !== 'all' && { 
+          isActive: filters.selectedStatus === 'active' ? 'true' : 'false' 
+        }),
+        ...(filters?.selectedRole && filters.selectedRole !== 'all' && { role: filters.selectedRole }),
+        ...(filters?.searchTerm && { search: filters.searchTerm })
       })
 
-      const response = await fetch(`/api/users?${params}`)
+      const response = await fetch(`/api/users?${queryParams}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch users')
       }
 
-      const data: UsersResponse = await response.json()
+      const result = await response.json()
       
-      if (data.success) {
-        setUsers(data.data)
-        setStats(data.stats)
-        setPaginationData(data.pagination)
-      } else {
-        toast.error('Gagal memuat data pengguna')
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch users')
       }
-    } catch (error) {
-      console.error('Error fetching users:', error)
-      toast.error('Terjadi kesalahan saat memuat data pengguna')
-    } finally {
-      if (isFilteringRequest) {
-        setIsFiltering(false)
-      } else {
-        setLoading(false)
-      }
-    }
-  }, [filters, pagination])
 
-  // Initial load
-  useEffect(() => {
+      setUsers(result.data || [])
+      setStats(result.stats || null)
+      setPagination(result.pagination || null)
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
+      setError(errorMessage)
+      console.error('Error fetching users:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [filters, page, limit])
+
+  const refreshUsers = useCallback(() => {
     fetchUsers()
+  }, [fetchUsers])
+
+  const createUser = useCallback(async (data: any): Promise<User> => {
+    const response = await fetch('/api/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to create user')
+    }
+
+    const result = await response.json()
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to create user')
+    }
+
+    // Refresh the list after creating
+    await fetchUsers()
+    
+    return result.data
+  }, [fetchUsers])
+
+  const updateUser = useCallback(async (id: string, data: any): Promise<User> => {
+    const response = await fetch(`/api/users/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to update user')
+    }
+
+    const result = await response.json()
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to update user')
+    }
+
+    // Refresh the list after updating
+    await fetchUsers()
+    
+    return result.data
+  }, [fetchUsers])
+
+  const deleteUser = useCallback(async (id: string): Promise<void> => {
+    const response = await fetch(`/api/users/${id}`, {
+      method: 'DELETE',
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to delete user')
+    }
+
+    const result = await response.json()
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to delete user')
+    }
+
+    // Refresh the list after deleting
+    await fetchUsers()
+  }, [fetchUsers])
+
+  const searchUsers = useCallback((term: string) => {
+    // This would be handled by refetching with new search term
+    // The actual implementation would update filters and refetch
+    console.log('Search users:', term)
   }, [])
 
-  // Filter/pagination changes
+  const filterByStatus = useCallback((status: string) => {
+    // This would be handled by refetching with new status filter
+    console.log('Filter by status:', status)
+  }, [])
+
+  const filterByRole = useCallback((role: string) => {
+    // This would be handled by refetching with new role filter
+    console.log('Filter by role:', role)
+  }, [])
+
+  // Effect to fetch users when dependencies change
   useEffect(() => {
-    if (!loading) {
-      fetchUsers(true)
-    }
-  }, [filters, pagination, fetchUsers, loading])
+    fetchUsers()
+  }, [fetchUsers])
 
   return {
     users,
     stats,
-    paginationData,
+    pagination,
     loading,
-    isFiltering,
-    refetch: () => fetchUsers(true)
+    error,
+    refreshUsers,
+    createUser,
+    updateUser,
+    deleteUser,
+    searchUsers,
+    filterByStatus,
+    filterByRole
   }
 }

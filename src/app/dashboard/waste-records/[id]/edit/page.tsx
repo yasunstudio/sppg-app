@@ -10,7 +10,7 @@ interface EditWasteRecordPageProps {
 export default async function EditWasteRecordPage({ params }: EditWasteRecordPageProps) {
   const { id } = await params
   return (
-    <PermissionGuard permission="waste.edit" redirectTo="/dashboard/waste-management">
+    <PermissionGuard permission="waste.edit" redirectTo="/dashboard/waste-records">
       <EditWasteRecord recordId={id} />
     </PermissionGuard>
   )

@@ -21,8 +21,8 @@ import {
   Trash2,
   Plus
 } from 'lucide-react'
-import type { WasteRecord } from '../utils/waste-types'
-import { getWasteTypeColor, getSourceColor, formatWasteType, formatSource, formatDate } from '../utils/waste-formatters'
+import type { WasteRecord } from '../utils'
+import { getWasteTypeColor, getSourceColor, formatWasteType, formatSource, formatDate } from '../utils'
 
 interface WasteGridViewProps {
   wasteRecords: WasteRecord[]

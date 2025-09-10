@@ -1,14 +1,14 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { PageContainer } from '@/components/layout/page-container'
-import { UserRolePageClient } from './components/user-role-page-client'
+import { UserRoleManagement } from './components/user-role-management'
 import { UserRolePageActions } from './components/user-role-page-actions'
 import { Shield } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'User Role Management | SPPG',
-  description: 'Comprehensive user role management system for SPPG application. Assign and manage user roles and permissions.',
-  keywords: ['user roles', 'permissions', 'access control', 'user management', 'SPPG'],
+  title: 'Manajemen Role Pengguna | SPPG',
+  description: 'Sistem manajemen role pengguna komprehensif untuk aplikasi SPPG. Tugaskan dan kelola role pengguna serta izin.',
+  keywords: ['role pengguna', 'izin', 'kontrol akses', 'manajemen pengguna', 'SPPG'],
 }
 
 function UserRolePageSkeleton() {
@@ -33,12 +33,12 @@ function UserRolePageSkeleton() {
 export default function UserRolesPage() {
   return (
     <PageContainer
-      title="User Role Management"
-      description="Assign and manage user roles and permissions"
+      title="Manajemen Role Pengguna"
+      description="Tugaskan dan kelola role pengguna serta izin"
       actions={<UserRolePageActions />}
     >
       <Suspense fallback={<UserRolePageSkeleton />}>
-        <UserRolePageClient />
+        <UserRoleManagement />
       </Suspense>
     </PageContainer>
   )

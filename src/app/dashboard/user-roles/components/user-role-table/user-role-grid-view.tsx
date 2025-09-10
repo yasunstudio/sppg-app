@@ -67,7 +67,7 @@ export function UserRoleGridView({ userRoles, isFiltering }: UserRoleGridViewPro
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={assignment.user.avatar} alt={assignment.user.name} />
+                    <AvatarImage src={assignment.user.avatar || undefined} alt={assignment.user.name} />
                     <AvatarFallback>
                       {getInitials(assignment.user.name)}
                     </AvatarFallback>
@@ -107,8 +107,8 @@ export function UserRoleGridView({ userRoles, isFiltering }: UserRoleGridViewPro
                     <Shield className="mr-1 h-3 w-3" />
                     {formatRoleName(assignment.role.name)}
                   </Badge>
-                  <Badge className={getStatusColor(assignment.isActive)}>
-                    {formatUserRoleStatus(assignment.isActive)}
+                  <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                    Aktif
                   </Badge>
                 </div>
 
@@ -126,7 +126,7 @@ export function UserRoleGridView({ userRoles, isFiltering }: UserRoleGridViewPro
                     <span>Oleh:</span>
                   </div>
                   <div className="text-right">
-                    {assignment.assignedByUser?.name || 'System'}
+                    System
                   </div>
                 </div>
 

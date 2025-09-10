@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Save, Loader2 } from 'lucide-react'
 import { Control } from 'react-hook-form'
-import { SupplierBasicFields, SupplierStatusFields } from "./fields"
+import { SupplierBasicFields, SupplierStatusFields } from "./forms/fields"
 
 interface SupplierFormLayoutProps {
   title: string

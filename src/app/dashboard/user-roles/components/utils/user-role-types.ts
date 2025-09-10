@@ -4,24 +4,17 @@ export interface UserRole {
   userId: string
   roleId: string
   assignedAt: string
-  assignedBy: string
-  isActive: boolean
   user: {
     id: string
     name: string
     email: string
-    avatar?: string
+    avatar?: string | null
   }
   role: {
     id: string
     name: string
-    description: string
+    description: string | null
     permissions: string[]
-  }
-  assignedByUser?: {
-    id: string
-    name: string
-    email: string
   }
 }
 
@@ -30,7 +23,13 @@ export interface UserRoleStats {
   active: number
   inactive: number
   rolesCount: number
+  usersCount: number
   recent30Days: number
+  roleBreakdown: {
+    role: string
+    count: number
+    percentage: number
+  }[]
 }
 
 export interface PaginationData {
@@ -38,6 +37,8 @@ export interface PaginationData {
   totalPages: number
   totalCount: number
   itemsPerPage: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
 }
 
 export interface UserRolesResponse {
@@ -55,31 +56,40 @@ export interface FilterState {
 }
 
 export interface UserRoleFilters {
-  search: string
-  role: string
-  status: string
-  dateRange: string
+  searchTerm?: string
+  selectedRole?: string
+  selectedStatus?: string
+  selectedUser?: string
+  currentPage?: number
+  itemsPerPage?: number
 }
 
 export interface PaginationState {
   currentPage: number
   itemsPerPage: number
+  totalPages: number
+  totalCount: number
 }
 
 export interface Role {
   id: string
   name: string
-  description: string
+  description: string | null
   permissions: string[]
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
+  userCount?: number
 }
 
 export interface User {
   id: string
   name: string
   email: string
-  avatar?: string
+  avatar?: string | null
   isActive: boolean
+  roles: {
+    role: {
+      id: string
+      name: string
+      description: string | null
+    }
+  }[]
 }

@@ -1,11 +1,23 @@
 import { Metadata } from "next"
-import { RoleEdit } from "../../components/role-edit"
+import { EditRole } from "../../components"
+import { PermissionGuard } from "@/components/guards/permission-guard"
+
+interface RoleEditPageProps {
+  params: Promise<{
+    roleId: string
+  }>
+}
 
 export const metadata: Metadata = {
   title: "Edit Role | SPPG",
-  description: "Edit role information and permissions",
+  description: "Edit informasi role dan permissions dalam sistem",
 }
 
-export default async function RoleEditPage() {
-  return <RoleEdit />
+export default async function RoleEditPage({ params }: RoleEditPageProps) {
+  const { roleId } = await params
+  return (
+    <PermissionGuard permission="system.config" redirectTo="/dashboard/roles">
+      <EditRole roleId={roleId} />
+    </PermissionGuard>
+  )
 }

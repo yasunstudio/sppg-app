@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Save, Loader2 } from 'lucide-react'
 import { Control } from 'react-hook-form'
-import { VehicleBasicFields, VehicleServiceFields, VehicleDocumentFields } from "./fields"
+import { VehicleBasicFields, VehicleServiceFields, VehicleDocumentFields } from "./forms/fields"
 
 interface VehicleFormLayoutProps {
   title: string

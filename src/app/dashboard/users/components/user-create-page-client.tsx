@@ -1,27 +1,41 @@
 "use client"
 
-import { CreateUser } from "./create-user"
+import { UserCreateForm } from "./forms"
 import { PageContainer } from "@/components/layout"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export function UserCreatePageClient() {
+  const router = useRouter()
+
+  const handleSuccess = () => {
+    router.push("/dashboard/users")
+  }
+
+  const handleCancel = () => {
+    router.push("/dashboard/users")
+  }
+
   return (
     <PageContainer
-      title="Add New User"
-      description="Register a new user to your SPPG management system."
+      title="Tambah Pengguna Baru"
+      description="Daftarkan pengguna baru ke dalam sistem manajemen SPPG."
       showBreadcrumb={true}
       actions={
         <Link href="/dashboard/users">
           <Button variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to List
+            Kembali ke Daftar
           </Button>
         </Link>
       }
     >
-      <CreateUser />
+      <UserCreateForm 
+        onSuccess={handleSuccess}
+        onCancel={handleCancel}
+      />
     </PageContainer>
   )
 }

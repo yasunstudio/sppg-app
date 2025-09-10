@@ -1,137 +1,144 @@
-"use client"
+'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Search, Filter, RefreshCw } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Search, X } from 'lucide-react'
-import type { FilterState } from '../utils/user-types'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Card, CardContent } from '@/components/ui/card'
+import type { UserFilters } from '../utils/user-types'
+import { USER_STATUS_OPTIONS, USER_ROLE_OPTIONS } from '../utils/user-types'
 
 interface UserSearchFiltersProps {
-  filters: FilterState
-  onSearchChange: (value: string) => void
-  onRoleChange: (value: string) => void
-  onStatusChange: (value: string) => void
-  onSchoolChange: (value: string) => void
-  onItemsPerPageChange: (value: string) => void
-  itemsPerPage: number
+  filters: UserFilters
+  onFiltersChange: (filters: UserFilters) => void
+  onReset: () => void
+  loading?: boolean
 }
 
 export function UserSearchFilters({
   filters,
-  onSearchChange,
-  onRoleChange,
-  onStatusChange,
-  onSchoolChange,
-  onItemsPerPageChange,
-  itemsPerPage
+  onFiltersChange,
+  onReset,
+  loading = false
 }: UserSearchFiltersProps) {
-  const hasActiveFilters = filters.searchTerm || 
-    filters.selectedRole !== 'all' || 
-    filters.selectedStatus !== 'all' || 
-    filters.selectedSchool !== 'all'
+  const handleSearchChange = (value: string) => {
+    onFiltersChange({
+      ...filters,
+      searchTerm: value
+    })
+  }
 
-  const clearAllFilters = () => {
-    onSearchChange('')
-    onRoleChange('all')
-    onStatusChange('all') 
-    onSchoolChange('all')
+  const handleStatusChange = (value: string) => {
+    onFiltersChange({
+      ...filters,
+      selectedStatus: value
+    })
+  }
+
+  const handleRoleChange = (value: string) => {
+    onFiltersChange({
+      ...filters,
+      selectedRole: value
+    })
+  }
+
+  const handleReset = () => {
+    onReset()
   }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Search className="h-5 w-5" />
-          Pencarian & Filter
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Search Input - Full Width */}
-        <div className="w-full">
-          <Input
-            placeholder="Cari berdasarkan nama, email, atau sekolah..."
-            value={filters.searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full"
-          />
-        </div>
-
-        {/* Filters Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Role Filter */}
-          <Select value={filters.selectedRole} onValueChange={onRoleChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Semua role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Role</SelectItem>
-              <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-              <SelectItem value="ADMIN">Admin</SelectItem>
-              <SelectItem value="CHEF">Chef</SelectItem>
-              <SelectItem value="NUTRITIONIST">Nutritionist</SelectItem>
-              <SelectItem value="VIEWER">Viewer</SelectItem>
-            </SelectContent>
-          </Select>
+      <CardContent className="pt-6">
+        <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
+          {/* Search Input */}
+          <div className="flex-1">
+            <Label htmlFor="search" className="sr-only">
+              Cari pengguna
+            </Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="search"
+                placeholder="Cari nama, email, atau username..."
+                value={filters.searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-10"
+                disabled={loading}
+              />
+            </div>
+          </div>
 
           {/* Status Filter */}
-          <Select value={filters.selectedStatus} onValueChange={onStatusChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Semua status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Status</SelectItem>
-              <SelectItem value="ACTIVE">Aktif</SelectItem>
-              <SelectItem value="INACTIVE">Tidak Aktif</SelectItem>
-              <SelectItem value="SUSPENDED">Ditangguhkan</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* School Filter */}
-          <Select value={filters.selectedSchool} onValueChange={onSchoolChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Semua sekolah" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Sekolah</SelectItem>
-              {/* TODO: Add dynamic school options */}
-            </SelectContent>
-          </Select>
-
-          {/* Items Per Page */}
-          <Select value={itemsPerPage.toString()} onValueChange={onItemsPerPageChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 per halaman</SelectItem>
-              <SelectItem value="10">10 per halaman</SelectItem>
-              <SelectItem value="20">20 per halaman</SelectItem>
-              <SelectItem value="50">50 per halaman</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Clear Filters */}
-        <div className="flex justify-end">
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearAllFilters}
-              className="flex items-center gap-2"
+          <div className="w-full lg:w-48">
+            <Label htmlFor="status" className="sr-only">
+              Filter status
+            </Label>
+            <Select
+              value={filters.selectedStatus}
+              onValueChange={handleStatusChange}
+              disabled={loading}
             >
-              <X className="h-4 w-4" />
-              Hapus Filter
-            </Button>
-          )}
+              <SelectTrigger>
+                <SelectValue placeholder="Filter status" />
+              </SelectTrigger>
+              <SelectContent>
+                {USER_STATUS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Role Filter */}
+          <div className="w-full lg:w-48">
+            <Label htmlFor="role" className="sr-only">
+              Filter role
+            </Label>
+            <Select
+              value={filters.selectedRole}
+              onValueChange={handleRoleChange}
+              disabled={loading}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Filter role" />
+              </SelectTrigger>
+              <SelectContent>
+                {USER_ROLE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Reset Button */}
+          <Button
+            variant="outline"
+            onClick={handleReset}
+            disabled={loading}
+            className="w-full lg:w-auto"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Reset
+          </Button>
         </div>
+
+        {/* Active Filters Indicator */}
+        {(filters.searchTerm || filters.selectedStatus !== 'all' || filters.selectedRole !== 'all') && (
+          <div className="mt-4 text-sm text-muted-foreground">
+            <Filter className="inline h-3 w-3 mr-1" />
+            Filter aktif: {' '}
+            {[
+              filters.searchTerm && `Pencarian: "${filters.searchTerm}"`,
+              filters.selectedStatus !== 'all' && `Status: ${USER_STATUS_OPTIONS.find(opt => opt.value === filters.selectedStatus)?.label}`,
+              filters.selectedRole !== 'all' && `Role: ${USER_ROLE_OPTIONS.find(opt => opt.value === filters.selectedRole)?.label}`
+            ].filter(Boolean).join(', ')}
+          </div>
+        )}
       </CardContent>
     </Card>
   )

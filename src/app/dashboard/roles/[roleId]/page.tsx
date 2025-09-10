@@ -1,11 +1,23 @@
 import { Metadata } from "next"
-import { RoleDetails } from "../components/role-details"
+import { RoleDetails } from "../components"
+import { PermissionGuard } from "@/components/guards/permission-guard"
 
-export const metadata: Metadata = {
-  title: "Role Details | SPPG",
-  description: "View role details and permissions",
+interface RoleDetailsPageProps {
+  params: Promise<{
+    roleId: string
+  }>
 }
 
-export default async function RoleDetailsPage() {
-  return <RoleDetails />
+export const metadata: Metadata = {
+  title: "Detail Role | SPPG",
+  description: "Lihat detail role dan permissions yang dimiliki",
+}
+
+export default async function RoleDetailsPage({ params }: RoleDetailsPageProps) {
+  const { roleId } = await params
+  return (
+    <PermissionGuard permission="system.config" redirectTo="/dashboard/roles">
+      <RoleDetails roleId={roleId} />
+    </PermissionGuard>
+  )
 }

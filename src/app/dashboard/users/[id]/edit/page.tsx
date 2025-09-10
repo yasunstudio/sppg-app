@@ -26,25 +26,25 @@ export async function generateMetadata({ params }: EditUserPageProps): Promise<M
       if (result.success && result.data) {
         const user = result.data
         return {
-          title: `Edit ${user.name} - User Management | SPPG User System`,
-          description: `Edit comprehensive user information for ${user.name} (${user.email}). Update profile details, role assignments, account status, permissions, and security settings for SPPG system users.`,
+          title: `Edit ${user.fullName} - Manajemen Pengguna | SPPG Management System`,
+          description: `Edit informasi lengkap pengguna ${user.fullName} (${user.email}). Perbarui profil, peran, izin, status operasional, dokumentasi, dan catatan aktivitas untuk sistem SPPG.`,
           keywords: [
             // User specific
-            "edit user", "update user", "user management", user.name, user.email, user.role,
+            "edit user", "update user", "user management", user.email, user.fullName,
             // Indonesian terms
-            "edit pengguna", "update pengguna", "manajemen pengguna", "ubah data pengguna",
+            "edit pengguna", "update pengguna", "management pengguna", "ubah data pengguna",
             // SPPG specific
-            "SPPG user edit", "system user management", "user account update",
+            "SPPG user edit", "SPPG pengguna edit", "sistem pengguna SPPG",
             // Technical terms
-            "user management system", "user database update", "user profile update",
+            "user management system", "user database update", "user specifications",
             // Process terms
-            "user modification", "role assignment", "permission updates", "account settings",
+            "user modification", "role assignment", "permission updates", "activity records",
             // Feature terms
-            "user documentation", "status updates", "security settings", "profile management"
+            "user documentation", "status updates", "profile management", "access control"
           ],
           openGraph: {
-            title: `Edit ${user.name} - SPPG User Management`,
-            description: `Edit user information for ${user.name} with ${user.role} role. Update profile, permissions, and account settings.`,
+            title: `Edit ${user.fullName} - SPPG Manajemen Pengguna`,
+            description: `Edit informasi pengguna ${user.fullName} dengan email ${user.email}. Perbarui peran, izin, dan pengaturan.`,
             type: "website",
             siteName: "SPPG Management System",
             locale: "id_ID",
@@ -52,8 +52,8 @@ export async function generateMetadata({ params }: EditUserPageProps): Promise<M
           },
           twitter: {
             card: "summary",
-            title: `Edit ${user.name} - User Management`,
-            description: `Update user profile and permissions for SPPG system.`,
+            title: `Edit ${user.fullName} - Manajemen Pengguna`,
+            description: `Perbarui spesifikasi pengguna dan pengaturan untuk sistem SPPG.`,
           },
           robots: {
             index: false,
@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: EditUserPageProps): Promise<M
             "mobile-web-app-capable": "yes",
             "apple-mobile-web-app-capable": "yes",
             "apple-mobile-web-app-status-bar-style": "default",
-            "apple-mobile-web-app-title": `Edit ${user.name}`,
+            "apple-mobile-web-app-title": `Edit ${user.fullName}`,
           }
         }
       }
@@ -81,12 +81,12 @@ export async function generateMetadata({ params }: EditUserPageProps): Promise<M
   
   // Fallback metadata
   return {
-    title: "Edit User - SPPG Management System",
-    description: "Edit and update user information in the SPPG user management system.",
-    keywords: ["edit user", "update user", "user management", "SPPG", "user profile"],
+    title: "Edit Pengguna - SPPG Management System",
+    description: "Edit dan perbarui informasi pengguna dalam sistem manajemen SPPG.",
+    keywords: ["edit pengguna", "update pengguna", "manajemen pengguna", "SPPG", "pengguna maintenance"],
     openGraph: {
-      title: "Edit User - SPPG Management System",
-      description: "Edit and update user information in the SPPG user management system.",
+      title: "Edit Pengguna - SPPG Management System",
+      description: "Edit dan perbarui informasi pengguna dalam sistem manajemen SPPG.",
       type: "website",
       locale: "id_ID",
     },
@@ -103,15 +103,15 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
   return (
     <PermissionGuard permission="users.edit" redirectTo="/dashboard/users">
       <PageContainer
-        title="Edit User"
-        description="Update user information and account settings."
+        title="Edit Pengguna"
+        description="Perbarui informasi pengguna dan pengaturan peran."
         showBreadcrumb={true}
         actions={
           <div className="flex gap-2">
             <Link href={`/dashboard/users/${id}`}>
               <Button variant="outline">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Details
+                Kembali ke Detail
               </Button>
             </Link>
           </div>

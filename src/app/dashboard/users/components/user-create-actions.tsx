@@ -1,47 +1,89 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft, Save, RotateCcw, AlertCircle } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface UserCreateActionsProps {
-  isSubmitting?: boolean
-  onSubmit?: () => void
-  formId?: string
+  onSave?: () => void
+  onReset?: () => void
+  isSaving?: boolean
+  hasUnsavedChanges?: boolean
 }
 
 export function UserCreateActions({ 
-  isSubmitting = false, 
-  onSubmit,
-  formId = "user-create-form"
+  onSave, 
+  onReset, 
+  isSaving = false,
+  hasUnsavedChanges = false 
 }: UserCreateActionsProps) {
+  const router = useRouter()
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false)
+
+  const handleBackClick = () => {
+    if (hasUnsavedChanges) {
+      setShowUnsavedWarning(true)
+    } else {
+      router.push('/dashboard/users')
+    }
+  }
+
+  const confirmLeave = () => {
+    setShowUnsavedWarning(false)
+    router.push('/dashboard/users')
+  }
+
+  const cancelLeave = () => {
+    setShowUnsavedWarning(false)
+  }
+
   return (
-    <div className="flex items-center justify-between">
-      <Button variant="outline" asChild>
-        <Link href="/dashboard/users">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Users
-        </Link>
-      </Button>
+    <div className="space-y-4">
+      {showUnsavedWarning && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Ada perubahan yang belum disimpan. Apakah Anda yakin ingin meninggalkan halaman ini?
+            <div className="flex gap-2 mt-2">
+              <Button size="sm" variant="destructive" onClick={confirmLeave}>
+                Ya, Tinggalkan
+              </Button>
+              <Button size="sm" variant="outline" onClick={cancelLeave}>
+                Batal
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
       
-      <Button
-        type="submit"
-        form={formId}
-        disabled={isSubmitting}
-        onClick={onSubmit}
-      >
-        {isSubmitting ? (
-          <>
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-            Creating...
-          </>
-        ) : (
-          <>
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={handleBackClick}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Kembali ke Daftar
+        </Button>
+        
+        <div className="flex gap-2 ml-auto">
+          <Button 
+            variant="outline" 
+            onClick={onReset}
+            disabled={isSaving}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset
+          </Button>
+          
+          <Button 
+            onClick={onSave}
+            disabled={isSaving}
+          >
             <Save className="h-4 w-4 mr-2" />
-            Create User
-          </>
-        )}
-      </Button>
+            {isSaving ? 'Menyimpan...' : 'Simpan Pengguna'}
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

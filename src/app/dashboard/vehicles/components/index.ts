@@ -1,11 +1,20 @@
 // Vehicle Components
 export { CreateVehicle } from './create-vehicle'
-export { default as VehicleDetails } from './vehicle-details'
 export { EditVehicle } from './edit-vehicle'
+export { default as VehicleDetails } from './vehicle-details'
 export { VehicleFormLayout } from './vehicle-form-layout'
+
+// Page Components
+export { VehiclePageClient } from './vehicle-page-client'
+export { VehicleCreatePageClient } from './vehicle-create-page-client'
+export { VehiclePageActions } from './vehicle-page-actions'
+export { VehicleCreateActions } from './vehicle-create-actions'
 
 // Main modular components
 export { VehicleManagement } from './vehicle-management'
+
+// Form exports
+export * from './forms'
 
 // Stats components
 export { VehicleStatsCards } from './vehicle-stats/vehicle-stats-cards'
@@ -20,12 +29,8 @@ export { VehicleGridView } from './vehicle-table/vehicle-grid-view'
 // Pagination components
 export { VehiclePagination } from './vehicle-pagination/vehicle-pagination'
 
-// Hooks
-export { useVehicles } from './hooks/use-vehicles'
-export { useResponsive } from './hooks/use-responsive'
-export { useVehicleForm } from './hooks/use-vehicle-form'
+// Hooks exports
+export * from './hooks'
 
-// Types and utilities
-export * from './utils/vehicle-types'
-export * from './utils/vehicle-formatters'
-export * from './utils/vehicle-schemas'
+// Utils exports
+export * from './utils'

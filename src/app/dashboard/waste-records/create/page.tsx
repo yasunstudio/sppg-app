@@ -46,7 +46,7 @@ export const metadata: Metadata = {
 
 export default function CreateWasteRecordPage() {
   return (
-    <PermissionGuard permission="waste.create" redirectTo="/dashboard/waste-management">
+    <PermissionGuard permission="waste.create" redirectTo="/dashboard/waste-records">
       <WasteCreatePageClient />
     </PermissionGuard>
   )

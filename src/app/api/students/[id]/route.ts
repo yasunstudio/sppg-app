@@ -24,16 +24,25 @@ export async function GET(
 
     if (!student) {
       return NextResponse.json(
-        { error: 'Siswa tidak ditemukan' },
+        { 
+          success: false,
+          error: 'Siswa tidak ditemukan' 
+        },
         { status: 404 }
       )
     }
 
-    return NextResponse.json(student)
+    return NextResponse.json({
+      success: true,
+      data: student
+    })
   } catch (error) {
     console.error('Error fetching student:', error)
     return NextResponse.json(
-      { error: 'Gagal mengambil data siswa' },
+      { 
+        success: false,
+        error: 'Gagal mengambil data siswa' 
+      },
       { status: 500 }
     )
   }
@@ -62,7 +71,10 @@ export async function PUT(
     // Validate required fields
     if (!name || !nisn || !grade || !age || !gender || !parentName || !schoolId) {
       return NextResponse.json(
-        { error: 'Semua field yang wajib harus diisi' },
+        { 
+          success: false,
+          error: 'Semua field yang wajib harus diisi' 
+        },
         { status: 400 }
       )
     }
@@ -74,7 +86,10 @@ export async function PUT(
 
     if (!existingStudent) {
       return NextResponse.json(
-        { error: 'Siswa tidak ditemukan' },
+        { 
+          success: false,
+          error: 'Siswa tidak ditemukan' 
+        },
         { status: 404 }
       )
     }
@@ -89,7 +104,10 @@ export async function PUT(
 
     if (nisnConflict) {
       return NextResponse.json(
-        { error: 'NISN sudah terdaftar' },
+        { 
+          success: false,
+          error: 'NISN sudah terdaftar' 
+        },
         { status: 400 }
       )
     }
@@ -117,13 +135,19 @@ export async function PUT(
     })
 
     return NextResponse.json({
-      ...student,
-      message: 'Siswa berhasil diperbarui'
+      success: true,
+      data: {
+        ...student,
+        message: 'Siswa berhasil diperbarui'
+      }
     })
   } catch (error) {
     console.error('Error updating student:', error)
     return NextResponse.json(
-      { error: 'Gagal memperbarui siswa' },
+      { 
+        success: false,
+        error: 'Gagal memperbarui siswa' 
+      },
       { status: 500 }
     )
   }
@@ -143,7 +167,10 @@ export async function DELETE(
 
     if (!student) {
       return NextResponse.json(
-        { error: 'Siswa tidak ditemukan' },
+        { 
+          success: false,
+          error: 'Siswa tidak ditemukan' 
+        },
         { status: 404 }
       )
     }
@@ -153,12 +180,16 @@ export async function DELETE(
     })
 
     return NextResponse.json({
+      success: true,
       message: 'Siswa berhasil dihapus'
     })
   } catch (error) {
     console.error('Error deleting student:', error)
     return NextResponse.json(
-      { error: 'Gagal menghapus siswa' },
+      { 
+        success: false,
+        error: 'Gagal menghapus siswa' 
+      },
       { status: 500 }
     )
   }

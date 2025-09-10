@@ -1,218 +1,279 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { toast } from "sonner"
-import { ArrowLeft, Edit, Trash2, UserIcon, Mail, Phone, Building, Calendar, Clock } from "lucide-react"
-import Link from "next/link"
-import type { User } from "./utils/user-types"
-import { formatUserRole, formatUserStatus, getUserRoleColor, getUserStatusColor, formatDate, getInitials } from "./utils/user-formatters"
+import { Separator } from "@/components/ui/separator"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { 
+  User,
+  Shield,
+  CircleCheck,
+  CircleX,
+  Calendar,
+  FileText,
+  Activity,
+  MapPin,
+  Timer,
+  AlertTriangle,
+  Loader2,
+  Mail,
+  Phone,
+  Building
+} from "lucide-react"
+import { useUserDetails } from "./hooks/use-user-details"
 
 interface UserDetailsProps {
   userId: string
 }
 
-export function UserDetails({ userId }: UserDetailsProps) {
+const formatDate = (dateString: string) => {
+  return new Intl.DateTimeFormat('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(new Date(dateString))
+}
+
+const formatDateShort = (dateString: string) => {
+  return new Intl.DateTimeFormat('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  }).format(new Date(dateString))
+}
+
+const statusTranslations = {
+  "ACTIVE": "Aktif",
+  "INACTIVE": "Tidak Aktif",
+  "SUSPENDED": "Suspended",
+  "PENDING": "Menunggu"
+}
+
+export default function UserDetails({ userId }: UserDetailsProps) {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<User | null>(null)
+  const { 
+    user, 
+    activities, 
+    isLoading, 
+    isActivitiesLoading, 
+    error,
+    refreshUser 
+  } = useUserDetails(userId)
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch(`/api/users/${userId}`)
-        if (!response.ok) throw new Error('Failed to fetch user')
-        
-        const userData: User = await response.json()
-        setUser(userData)
-      } catch (error) {
-        console.error('Error fetching user:', error)
-        toast.error('Gagal memuat data pengguna')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUser()
-  }, [userId])
-
-  const handleDelete = async () => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete user')
-      }
-
-      toast.success('Pengguna berhasil dihapus')
-      router.push('/dashboard/users')
-    } catch (error) {
-      console.error('Error deleting user:', error)
-      toast.error('Gagal menghapus pengguna')
-    }
-  }
-
-  if (loading) {
+  // Loading state
+  if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-        </div>
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center text-muted-foreground">Memuat data pengguna...</div>
-          </CardContent>
-        </Card>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Memuat data pengguna...</span>
       </div>
     )
   }
 
-  if (!user) {
+  // Error state
+  if (error || !user) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/users">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Pengguna Tidak Ditemukan</h1>
-            <p className="text-muted-foreground">Data pengguna tidak dapat ditemukan</p>
-          </div>
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <AlertTriangle className="h-12 w-12 text-red-500" />
+        <div className="text-center">
+          <h3 className="text-lg font-semibold">Pengguna Tidak Ditemukan</h3>
+          <p className="text-muted-foreground">
+            {error || 'Data pengguna tidak dapat dimuat'}
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <Button onClick={refreshUser} variant="outline">
+            Coba Lagi
+          </Button>
         </div>
       </div>
+    )
+  }
+
+  const getStatusBadge = (isActive: boolean) => {
+    return (
+      <Badge variant={isActive ? "default" : "secondary"}>
+        {isActive ? (
+          <>
+            <CircleCheck className="h-3 w-3 mr-1" />
+            Aktif
+          </>
+        ) : (
+          <>
+            <CircleX className="h-3 w-3 mr-1" />
+            Tidak Aktif
+          </>
+        )}
+      </Badge>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/users">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Detail Pengguna</h1>
-            <p className="text-muted-foreground">Informasi lengkap pengguna</p>
+      {/* Basic Information Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 rounded-lg bg-primary/10">
+                <User className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-2xl">{user.fullName}</CardTitle>
+                <CardDescription>{user.email}</CardDescription>
+              </div>
+            </div>
+            {getStatusBadge(user.isActive)}
           </div>
-        </div>
-
-        <div className="flex gap-2">
-          <Link href={`/dashboard/users/${userId}/edit`}>
-            <Button variant="outline">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          </Link>
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Hapus
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Profile Card */}
-        <Card className="lg:col-span-1">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="text-lg">
-                  {getInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-            <CardTitle>{user.name}</CardTitle>
-            <CardDescription>{user.email}</CardDescription>
-            <div className="flex justify-center gap-2 mt-4">
-              <Badge className={getUserRoleColor(user.role)}>
-                {formatUserRole(user.role)}
-              </Badge>
-              <Badge className={getUserStatusColor(user.status)}>
-                {formatUserStatus(user.status)}
-              </Badge>
-            </div>
-          </CardHeader>
-        </Card>
-
-        {/* Details Card */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserIcon className="h-5 w-5" />
-              Informasi Pengguna
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Email</p>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                  </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Contact Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center">
+                <Mail className="h-5 w-5 mr-2" />
+                Informasi Kontak
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Email:</span>
+                  <span className="font-medium">{user.email}</span>
                 </div>
-
                 {user.phone && (
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Nomor Telepon</p>
-                      <p className="text-sm text-muted-foreground">{user.phone}</p>
-                    </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Telepon:</span>
+                    <span className="font-medium">{user.phone}</span>
                   </div>
                 )}
-
-                {user.school && (
-                  <div className="flex items-center gap-3">
-                    <Building className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Sekolah</p>
-                      <p className="text-sm text-muted-foreground">{user.school.name}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Tanggal Dibuat</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(user.createdAt)}</p>
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Status:</span>
+                  {getStatusBadge(user.isActive)}
                 </div>
+              </div>
+            </div>
 
-                <div className="flex items-center gap-3">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Terakhir Diperbarui</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(user.updatedAt)}</p>
+            {/* Role Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center">
+                <Shield className="h-5 w-5 mr-2" />
+                Peran & Izin
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <span className="text-muted-foreground">Peran:</span>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {user.roles && user.roles.map((userRole, index) => (
+                      <Badge key={index} variant="outline">
+                        {userRole.role.name}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+
+          <Separator className="my-6" />
+
+          {/* Account Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center">
+                <Calendar className="h-5 w-5 mr-2" />
+                Informasi Akun
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Dibuat:</span>
+                  <span className="font-medium">{formatDateShort(user.createdAt)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Diperbarui:</span>
+                  <span className="font-medium">{formatDateShort(user.updatedAt)}</span>
+                </div>
+                {user.lastLogin && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Login Terakhir:</span>
+                    <span className="font-medium">{formatDate(user.lastLogin)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center">
+                <Activity className="h-5 w-5 mr-2" />
+                Statistik
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Login:</span>
+                  <span className="font-medium">{user.loginCount || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Aktivitas Terakhir:</span>
+                  <span className="font-medium">
+                    {user.lastActivity ? formatDate(user.lastActivity) : 'Tidak ada'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Activities */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Activity className="h-5 w-5 mr-2" />
+            Aktivitas Terbaru
+          </CardTitle>
+          <CardDescription>
+            Riwayat aktivitas pengguna terbaru
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isActivitiesLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span>Memuat aktivitas...</span>
+            </div>
+          ) : activities && activities.length > 0 ? (
+            <div className="space-y-4">
+              {activities.slice(0, 10).map((activity, index) => (
+                <div key={index} className="flex items-start space-x-3 pb-3 border-b last:border-0">
+                  <div className="p-2 rounded-lg bg-muted">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{activity.action}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDate(activity.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Belum ada aktivitas terbaru</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

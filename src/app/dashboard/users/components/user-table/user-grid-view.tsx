@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Edit, Trash2, Eye, EyeOff, MoreHorizontal, Users, CheckCircle, Calendar, Clock } from 'lucide-react'
+import { Edit, Trash2, Eye, MoreHorizontal, Users, CheckCircle, Calendar, Clock } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,38 +13,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import Link from 'next/link'
-
-interface User {
-  id: string
-  name: string | null
-  email: string
-  role: string
-  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
-  createdAt: string
-  lastLoginAt: string | null
-  emailVerified: boolean
-  phone: string | null
-  address: string | null
-  avatar: string | null
-}
+import { Skeleton } from '@/components/ui/skeleton'
+import { formatDate, getInitials, getStatusColor, getRoleColor } from '../utils/user-formatters'
+import type { User } from '../utils/user-types'
 
 interface UserGridViewProps {
   users: User[]
-  loading: boolean
-  onStatusToggle: (user: User) => void
-  onDelete: (user: User) => void
-  getRoleBadge: (role: string) => React.ReactNode
-  getStatusBadge: (status: string) => React.ReactNode
+  loading?: boolean
+  onView?: (userId: string) => void
+  onEdit?: (userId: string) => void
+  onDelete?: (userId: string) => void
 }
 
 export function UserGridView({ 
   users, 
-  loading, 
-  onStatusToggle, 
-  onDelete, 
-  getRoleBadge, 
-  getStatusBadge 
+  loading = false, 
+  onView,
+  onEdit,
+  onDelete
 }: UserGridViewProps) {
   if (loading) {
     return (
@@ -54,14 +40,16 @@ export function UserGridView({
             <CardContent className="p-6">
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
-                  <div className="h-10 w-10 bg-muted rounded-full"></div>
+                  <Skeleton className="h-10 w-10 rounded-full" />
                   <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-muted rounded w-3/4"></div>
-                    <div className="h-3 bg-muted rounded w-1/2"></div>
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
                   </div>
                 </div>
-                <div className="h-6 bg-muted rounded w-20"></div>
-                <div className="h-3 bg-muted rounded w-full"></div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -72,150 +60,115 @@ export function UserGridView({
 
   if (users.length === 0) {
     return (
-      <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm">
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <Users className="w-12 h-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            Tidak ada data user
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium text-muted-foreground mb-2">
+            Tidak ada pengguna ditemukan
           </h3>
-          <p className="text-muted-foreground mb-4">
-            Mulai tambahkan user untuk melihat data di sini.
+          <p className="text-sm text-muted-foreground">
+            Coba ubah filter pencarian Anda atau tambah pengguna baru.
           </p>
-          <Button asChild>
-            <Link href="/dashboard/users/create">
-              <Users className="w-4 h-4 mr-2" />
-              Tambah User
-            </Link>
-          </Button>
         </CardContent>
       </Card>
     )
   }
 
+  const getUserRole = (user: User) => {
+    if (user.roles && user.roles.length > 0) {
+      return user.roles[0].role.name
+    }
+    return 'No Role'
+  }
+
+  const getUserStatus = (user: User) => {
+    return user.isActive ? 'active' : 'inactive'
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {users.map((user) => (
-        <Card key={user.id} className="bg-card/80 backdrop-blur-sm border-border shadow-sm hover:shadow-md transition-all duration-200">
+        <Card key={user.id} className="hover:shadow-md transition-shadow">
           <CardContent className="p-6">
-            <div className="space-y-4">
-              {/* Header */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  <Avatar>
-                    {user.avatar ? (
-                      <AvatarImage src={user.avatar} alt={user.name || ""} />
-                    ) : (
-                      <AvatarFallback>
-                        {user.name?.charAt(0) || user.email.charAt(0)}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">
-                      {user.name || 'No name'}
-                    </h3>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {user.email}
-                    </p>
-                    {user.emailVerified && (
-                      <div className="flex items-center gap-1 text-xs text-green-600 mt-1">
-                        <CheckCircle className="h-3 w-3" />
-                        Verified
-                      </div>
-                    )}
-                  </div>
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-3 flex-1">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={user.avatar || ''} alt={user.name} />
+                  <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-sm truncate">{user.name}</h3>
+                  <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background border-border">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem asChild>
-                      <Link 
-                        href={`/dashboard/users/${user.id}/edit`}
-                        className="flex items-center text-foreground hover:bg-muted cursor-pointer"
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit User
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onStatusToggle(user)}
-                      className="flex items-center text-foreground hover:bg-muted cursor-pointer"
-                    >
-                      {user.status === 'ACTIVE' ? (
-                        <>
-                          <EyeOff className="h-4 w-4 mr-2" />
-                          Deactivate
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Activate
-                        </>
-                      )}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => onDelete(user)}
-                      className="flex items-center text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete User
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {onView && (
+                    <DropdownMenuItem onClick={() => onView(user.id)}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      Lihat Detail
+                    </DropdownMenuItem>
+                  )}
+                  {onEdit && (
+                    <DropdownMenuItem onClick={() => onEdit(user.id)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                  )}
+                  {onDelete && (
+                    <DropdownMenuItem 
+                      onClick={() => onDelete(user.id)}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Hapus
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
-              {/* Role and Status */}
+            <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between">
-                {getRoleBadge(user.role)}
-                {getStatusBadge(user.status)}
+                <span className="text-xs text-muted-foreground">Peran:</span>
+                <Badge variant="outline" className={getRoleColor(getUserRole(user))}>
+                  {getUserRole(user)}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Status:</span>
+                <Badge variant="outline" className={getStatusColor(user.isActive)}>
+                  {user.isActive ? 'Aktif' : 'Tidak Aktif'}
+                </Badge>
               </div>
 
-              {/* Contact Info */}
-              {(user.phone || user.address) && (
-                <div className="space-y-1 pt-2 border-t border-border">
-                  {user.phone && (
-                    <div className="text-xs text-muted-foreground">
-                      📞 {user.phone}
-                    </div>
-                  )}
-                  {user.address && (
-                    <div className="text-xs text-muted-foreground truncate">
-                      📍 {user.address}
-                    </div>
-                  )}
+              {user.phone && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Telepon:</span>
+                  <span className="text-xs">{user.phone}</span>
                 </div>
               )}
 
-              {/* Timestamps */}
-              <div className="space-y-2 pt-2 border-t border-border">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground flex items-center">
-                    <Clock className="w-3 h-3 mr-1" />
-                    Last Login
-                  </span>
-                  <span className="font-medium text-foreground">
-                    {user.lastLoginAt 
-                      ? new Date(user.lastLoginAt).toLocaleDateString('id-ID')
-                      : "Never"
-                    }
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground flex items-center">
-                    <Calendar className="w-3 h-3 mr-1" />
-                    Created
-                  </span>
-                  <span className="font-medium text-foreground">
-                    {new Date(user.createdAt).toLocaleDateString('id-ID')}
-                  </span>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Terdaftar:</span>
+                <span className="text-xs">{formatDate(user.createdAt)}</span>
               </div>
+
+              {user.emailVerified && (
+                <div className="flex items-center text-green-600">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  <span className="text-xs">Email Terverifikasi</span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

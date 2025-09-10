@@ -26,82 +26,100 @@ export async function generateMetadata({ params }: UserDetailPageProps): Promise
       if (result.success && result.data) {
         const user = result.data
         return {
-          title: `${user.name} - User Details | SPPG User Management`,
-          description: `Comprehensive user details for ${user.name} (${user.email}) with ${user.role} role. View complete profile information, account status, permissions, and activity history for SPPG system users.`,
+          title: `${user.fullName} - Detail Pengguna | SPPG Manajemen Pengguna`,
+          description: `Informasi lengkap pengguna ${user.fullName} (${user.email}) dengan peran ${user.roles?.map((r: any) => r.role.name).join(', ')}. Lihat spesifikasi lengkap, riwayat aktivitas, status operasional, dan metrik kinerja untuk sistem SPPG.`,
           keywords: [
-            'user management',
-            'user profile',
-            'account details',
-            'user information',
-            user.name,
-            user.email,
-            user.role,
-            'SPPG users'
+            // User specific
+            "user details", "pengguna details", user.email, user.fullName,
+            // Indonesian terms
+            "detail pengguna", "informasi pengguna", "spesifikasi pengguna", "data pengguna",
+            // SPPG specific
+            "SPPG user", "SPPG pengguna", "sistem pengguna", "database pengguna",
+            // Technical terms
+            "user specifications", "activity history", "operational status", "user analytics",
+            // Process terms
+            "user tracking", "performance monitoring", "role management", "permission history",
+            // Feature terms
+            "user documentation", "activity records", "usage statistics", "operational metrics"
           ],
           openGraph: {
-            title: `${user.name} - User Profile | SPPG`,
-            description: `View detailed information for user ${user.name} including role, status, and account details.`,
-            type: 'profile',
+            title: `${user.fullName} - SPPG Detail Pengguna`,
+            description: `${user.fullName} dengan email ${user.email}. Status: ${user.isActive ? 'Aktif' : 'Tidak Aktif'}. Informasi lengkap pengguna dan riwayat aktivitas.`,
+            type: "website",
+            siteName: "SPPG Management System",
+            locale: "id_ID",
+            url: `/dashboard/users/${id}`,
           },
+          twitter: {
+            card: "summary",
+            title: `${user.fullName} - Detail Pengguna`,
+            description: `${user.fullName} dengan spesifikasi lengkap dan riwayat aktivitas.`,
+          },
+          robots: {
+            index: false, // Private admin page
+            follow: false,
+            noarchive: true,
+            nosnippet: true,
+          },
+          alternates: {
+            canonical: `/dashboard/users/${id}`,
+          },
+          other: {
+            "application-name": "SPPG Management System",
+            "format-detection": "telephone=no",
+            "mobile-web-app-capable": "yes",
+            "apple-mobile-web-app-capable": "yes",
+            "apple-mobile-web-app-status-bar-style": "default",
+            "apple-mobile-web-app-title": `${user.fullName} Details`,
+          }
         }
       }
     }
-    
-    // Fallback metadata if API call fails or returns invalid data
-    return {
-      title: 'User Details | SPPG User Management',
-      description: 'View comprehensive user information including profile details, role permissions, and account status in the SPPG system.',
-      keywords: [
-        'user management',
-        'user profile',
-        'account details',
-        'user information',
-        'SPPG users'
-      ],
-      openGraph: {
-        title: 'User Details | SPPG',
-        description: 'View detailed user information and account management.',
-        type: 'profile',
-      },
-    }
   } catch (error) {
     console.error('Error generating metadata:', error)
-    return {
-      title: 'User Details | SPPG User Management',
-      description: 'View comprehensive user information including profile details, role permissions, and account status in the SPPG system.',
-      robots: {
-        index: false,
-        follow: false,
-      }
+  }
+
+  // Fallback metadata
+  return {
+    title: "Detail Pengguna - SPPG Manajemen Pengguna",
+    description: "Lihat informasi lengkap pengguna, spesifikasi, dan riwayat aktivitas dalam sistem manajemen SPPG.",
+    keywords: ["detail pengguna", "manajemen pengguna", "informasi pengguna", "SPPG", "spesifikasi pengguna"],
+    openGraph: {
+      title: "Detail Pengguna - SPPG Manajemen Pengguna",
+      description: "Lihat informasi lengkap pengguna dan spesifikasi dalam sistem manajemen SPPG.",
+      type: "website",
+      locale: "id_ID",
+    },
+    robots: {
+      index: false,
+      follow: false,
     }
   }
 }
 
 export default async function UserDetailPage({ params }: UserDetailPageProps) {
   const { id } = await params
-
+  
   return (
     <PermissionGuard permission="users.view" redirectTo="/dashboard/users">
       <PageContainer
-        title="User Details"
-        description="View detailed information about this user and their account history."
+        title="Detail Pengguna"
+        description="Informasi lengkap pengguna dan riwayat aktivitas."
         showBreadcrumb={true}
         actions={
           <div className="flex gap-2">
             <Link href="/dashboard/users">
               <Button variant="outline">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to List
+                Kembali ke Daftar
               </Button>
             </Link>
-            <PermissionGuard permission="users.edit" fallback={null}>
-              <Link href={`/dashboard/users/${id}/edit`}>
-                <Button>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit User
-                </Button>
-              </Link>
-            </PermissionGuard>
+            <Link href={`/dashboard/users/${id}/edit`}>
+              <Button>
+                <Edit className="h-4 w-4 mr-2" />
+                Ubah Pengguna
+              </Button>
+            </Link>
           </div>
         }
       >

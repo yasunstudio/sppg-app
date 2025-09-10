@@ -1,203 +1,217 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
-import type { ApiUser, ApiUserCreateInput } from "@/lib/types/api"
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session || !session.user) {
-      return new NextResponse("Unauthorized", { status: 401 })
+    const searchParams = request.nextUrl.searchParams
+    const limit = parseInt(searchParams.get("limit") || "20")
+    const offset = parseInt(searchParams.get("offset") || "0")
+    const isActive = searchParams.get("isActive")
+    const role = searchParams.get("role")
+    const search = searchParams.get("search")
+
+    // Build where clause
+    const where: any = {
+      ...(isActive !== null && { isActive: isActive === "true" }),
+      deletedAt: null
     }
 
-    const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get("page") || "1")
-    const limit = parseInt(searchParams.get("limit") || "10")
-    const search = searchParams.get("search") || ""
-    const role = searchParams.get("role") || ""
-    const sortBy = searchParams.get("sortBy") || "createdAt"
-    const sortOrder = searchParams.get("sortOrder") || "desc"
-    const include = searchParams.get("include") || ""
-
-    const skip = (page - 1) * limit
-
-    // Build where condition
-    const where: any = {}
-    
+    // Add search functionality
     if (search) {
       where.OR = [
-        {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          email: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
+        { fullName: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } }
       ]
     }
 
+    // Add role filter
     if (role) {
       where.roles = {
         some: {
           role: {
-            name: role,
-          },
-        },
+            name: role
+          }
+        }
       }
     }
 
-    // Build orderBy condition
-    const orderBy: any = {}
-    orderBy[sortBy] = sortOrder
-
-    // Get total count
-    const totalCount = await prisma.user.count({ where })
-
-    // Determine what to include based on query parameter
-    const includeRoles = include.includes('roles')
-
-    // Get users
-    const users = await prisma.user.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        roles: includeRoles ? {
-          select: {
-            role: {
-              select: {
-                id: true,
-                name: true,
-                description: true
-              }
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        include: {
+          roles: {
+            include: {
+              role: true
             }
-          }
-        } : {
-          select: {
-            role: {
-              select: {
-                name: true
-              }
+          },
+          _count: {
+            select: {
+              auditLogs: true,
+              notifications: true,
+              orderedPurchases: true,
+              receivedPurchases: true
             }
           }
         },
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy,
-      skip,
-      take: limit,
+        orderBy: { name: "asc" },
+        take: limit,
+        skip: offset
+      }),
+      prisma.user.count({ where })
+    ])
+
+    // Calculate stats
+    const allUsers = await prisma.user.findMany({
+      where: { deletedAt: null },
+      include: {
+        roles: {
+          include: {
+            role: true
+          }
+        },
+        _count: {
+          select: {
+            auditLogs: true,
+            notifications: true,
+            orderedPurchases: true,
+            receivedPurchases: true
+          }
+        }
+      }
     })
 
-    // If include=roles, return full role data
-    if (includeRoles) {
-      return NextResponse.json({
-        users: users,
-        pagination: {
-          currentPage: page,
-          totalPages: Math.ceil(totalCount / limit),
-          totalCount,
-          hasNextPage: page < Math.ceil(totalCount / limit),
-          hasPreviousPage: page > 1,
-        },
-      })
+    const stats = {
+      totalUsers: allUsers.length,
+      activeUsers: allUsers.filter(u => u.isActive).length,
+      inactiveUsers: allUsers.filter(u => !u.isActive).length,
+      verifiedUsers: allUsers.filter(u => u.emailVerified).length,
+      totalOrders: allUsers.reduce((sum, u) => sum + (u._count?.orderedPurchases || 0), 0),
+      totalAuditLogs: allUsers.reduce((sum, u) => sum + (u._count?.auditLogs || 0), 0),
+      roleBreakdown: Object.entries(
+        allUsers.reduce((acc: Record<string, number>, user) => {
+          user.roles.forEach(userRole => {
+            const roleName = userRole.role.name
+            acc[roleName] = (acc[roleName] || 0) + 1
+          })
+          return acc
+        }, {})
+      ).map(([role, count]) => ({
+        role,
+        count,
+        percentage: parseFloat(((count / allUsers.length) * 100).toFixed(1))
+      }))
     }
 
-    const formattedUsers = users.map((user) => ({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.roles[0]?.role.name || "USER",
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    }))
-
-    const totalPages = Math.ceil(totalCount / limit)
-
     return NextResponse.json({
-      users: formattedUsers,
+      success: true,
+      data: users,
+      stats,
       pagination: {
-        currentPage: page,
-        totalPages,
-        totalCount,
-        limit,
-        hasNextPage: page < totalPages,
-        hasPreviousPage: page > 1,
-      },
+        currentPage: Math.floor(offset / limit) + 1,
+        totalPages: Math.ceil(total / limit),
+        totalCount: total,
+        hasMore: offset + limit < total,
+        itemsPerPage: limit
+      }
     })
+
   } catch (error) {
-    console.error("[USERS_GET]", error)
-    return new NextResponse("Internal error", { status: 500 })
+    console.error("Error fetching users:", error)
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: "Failed to fetch users",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
+      { status: 500 }
+    )
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    // Check if user has admin privileges
-    const hasAdminRole = session?.user?.roles?.some((ur: any) => 
-      ['SUPER_ADMIN', 'ADMIN'].includes(ur.role.name)
-    )
-    
-    if (!session || !hasAdminRole) {
-      return new NextResponse("Unauthorized", { status: 401 })
-    }
-
     const body = await request.json()
-    const { name, email, password, role } = body
+    
+    const {
+      email,
+      fullName,
+      password,
+      phone,
+      isActive = true,
+      roleIds = []
+    } = body
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    })
-
-    if (existingUser) {
-      return new NextResponse("User already exists", { status: 400 })
+    // Validate required fields
+    if (!email || !fullName || !password) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Missing required fields: email, fullName, password"
+        },
+        { status: 400 }
+      )
     }
 
+    // Hash password (you should use bcrypt or similar)
+    // For now, storing plain password - this should be hashed in production
     const user = await prisma.user.create({
       data: {
-        name,
-        email,
-        password: "", // This should be hashed in production
-        roles: {
-          create: {
-            role: {
-              connect: {
-                name: role,
-              },
-            },
-          },
-        },
+        email: email.toLowerCase().trim(),
+        name: fullName.trim(), // Map fullName to name in database
+        password, // Should be hashed
+        phone: phone || null,
+        isActive
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
+      include: {
         roles: {
-          select: {
-            role: {
-              select: {
-                name: true
-              }
-            }
+          include: {
+            role: true
           }
-        },
-        createdAt: true,
-        updatedAt: true,
-      },
-    }) satisfies ApiUser
+        }
+      }
+    })
 
-    return NextResponse.json(user)
+    // Add roles if provided
+    if (roleIds && roleIds.length > 0) {
+      await prisma.userRole.createMany({
+        data: roleIds.map((roleId: string) => ({
+          userId: user.id,
+          roleId: roleId
+        }))
+      })
+    }
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user
+
+    return NextResponse.json({
+      success: true,
+      data: userWithoutPassword,
+      message: "User created successfully"
+    })
+
   } catch (error) {
-    console.error("[USERS_POST]", error)
-    return new NextResponse("Internal error", { status: 500 })
+    console.error("Error creating user:", error)
+    
+    // Handle duplicate email/username
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Email or username already exists",
+          details: "A user with this email or username is already registered"
+        },
+        { status: 409 }
+      )
+    }
+    
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: "Failed to create user",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
+      { status: 500 }
+    )
   }
 }

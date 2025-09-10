@@ -38,6 +38,15 @@ export async function GET(request: NextRequest) {
       prisma.school.count({ where })
     ])
 
+    // Calculate stats
+    const stats = {
+      totalSchools: total,
+      totalStudents: schools.reduce((sum, school) => sum + school.students.length, 0),
+      totalClasses: schools.reduce((sum, school) => sum + school.classes.length, 0),
+      averageStudentsPerSchool: total > 0 ? Math.round(schools.reduce((sum, school) => sum + school.students.length, 0) / total) : 0,
+      schoolsWithClasses: schools.filter(school => school.classes.length > 0).length
+    }
+
     // Transform response
     const schoolsWithCounts = schools.map(school => ({
       id: school.id,
@@ -56,7 +65,9 @@ export async function GET(request: NextRequest) {
     }))
 
     return NextResponse.json({
+      success: true,
       data: schoolsWithCounts,
+      stats,
       pagination: {
         page,
         limit,
@@ -67,7 +78,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching schools:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch schools' },
+      { 
+        success: false,
+        error: 'Failed to fetch schools' 
+      },
       { status: 500 }
     )
   }
@@ -92,7 +106,10 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!name || !principalName || !address) {
       return NextResponse.json(
-        { error: 'Nama sekolah, nama kepala sekolah, dan alamat harus diisi' },
+        { 
+          success: false,
+          error: 'Nama sekolah, nama kepala sekolah, dan alamat harus diisi' 
+        },
         { status: 400 }
       )
     }
@@ -106,7 +123,10 @@ export async function POST(request: NextRequest) {
 
     if (existingSchool) {
       return NextResponse.json(
-        { error: 'Nama sekolah sudah terdaftar' },
+        { 
+          success: false,
+          error: 'Nama sekolah sudah terdaftar' 
+        },
         { status: 400 }
       )
     }
@@ -125,24 +145,30 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({
-      id: school.id,
-      name: school.name,
-      principalName: school.principalName,
-      principalPhone: school.principalPhone,
-      address: school.address,
-      totalStudents: school.totalStudents,
-      notes: school.notes,
-      latitude: school.latitude,
-      longitude: school.longitude,
-      createdAt: school.createdAt,
-      updatedAt: school.updatedAt,
-      studentCount: 0,
-      classCount: 0
+      success: true,
+      data: {
+        id: school.id,
+        name: school.name,
+        principalName: school.principalName,
+        principalPhone: school.principalPhone,
+        address: school.address,
+        totalStudents: school.totalStudents,
+        notes: school.notes,
+        latitude: school.latitude,
+        longitude: school.longitude,
+        createdAt: school.createdAt,
+        updatedAt: school.updatedAt,
+        studentCount: 0,
+        classCount: 0
+      }
     }, { status: 201 })
   } catch (error) {
     console.error('Error creating school:', error)
     return NextResponse.json(
-      { error: 'Failed to create school' },
+      { 
+        success: false,
+        error: 'Failed to create school' 
+      },
       { status: 500 }
     )
   }

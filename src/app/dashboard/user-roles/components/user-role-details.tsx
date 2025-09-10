@@ -59,7 +59,7 @@ const permissionLabels: Record<string, string> = {
   'recipes.manage': 'Kelola Resep',
 }
 
-export function UserRoleDetails() {
+export default function UserRoleDetails() {
   const router = useRouter()
   const params = useParams()
   const userRole = mockUserRole
@@ -169,7 +169,7 @@ export function UserRoleDetails() {
                 </p>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Permissions:</h4>
+                <h4 className="font-medium mb-2">Izin:</h4>
                 <div className="space-y-1">
                   {userRole.role.permissions.map((permission) => (
                     <div key={permission} className="flex items-center gap-2 text-sm">

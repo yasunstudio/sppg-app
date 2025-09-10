@@ -25,12 +25,13 @@ export async function GET() {
       success: true,
       data: configs,
       grouped,
-      count: configs.length
+      count: configs.length,
+      message: 'Konfigurasi sistem berhasil dimuat'
     });
   } catch (error) {
     console.error('Error fetching system configs:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch system configurations' },
+      { success: false, error: 'Gagal memuat konfigurasi sistem' },
       { status: 500 }
     );
   }
@@ -53,12 +54,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: config,
-      message: 'System configuration created successfully'
+      message: 'Konfigurasi sistem berhasil dibuat'
     });
   } catch (error) {
     console.error('Error creating system config:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create system configuration' },
+      { success: false, error: 'Gagal membuat konfigurasi sistem' },
       { status: 500 }
     );
   }
@@ -81,12 +82,12 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: config,
-      message: 'System configuration updated successfully'
+      message: 'Konfigurasi sistem berhasil diperbarui'
     });
   } catch (error) {
     console.error('Error updating system config:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update system configuration' },
+      { success: false, error: 'Gagal memperbarui konfigurasi sistem' },
       { status: 500 }
     );
   }
