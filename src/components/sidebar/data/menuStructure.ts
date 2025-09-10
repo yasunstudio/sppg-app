@@ -422,18 +422,21 @@ export const SYSTEM_MANAGEMENT: MenuItem[] = [
         href: "/dashboard/users",
         icon: Users,
         current: false,
+        description: "Data lengkap pengguna sistem"
       },
       {
         name: "Manajemen Role",
         href: "/dashboard/roles",
         icon: Shield,
         current: false,
+        description: "Kelola peran dan hak akses"
       },
       {
         name: "Penugasan Role",
         href: "/dashboard/user-roles",
         icon: UserCheck,
         current: false,
+        description: "Assign role ke pengguna"
       },
     ]
   },
@@ -449,33 +452,46 @@ export const SYSTEM_MANAGEMENT: MenuItem[] = [
         href: "/dashboard/audit-logs",
         icon: Shield,
         current: false,
+        description: "Riwayat aktivitas sistem"
       },
       {
         name: "Notifikasi Sistem",
         href: "/dashboard/notifications",
         icon: Bell,
         current: false,
+        description: "Notifikasi dan peringatan"
       },
     ]
   },
   {
-    name: "Konfigurasi Sistem",
+    name: "Konfigurasi & Admin",
     href: "/dashboard/system-config",
     icon: Settings,
     current: false,
-    description: "Pengaturan dan konfigurasi aplikasi"
-  },
-  {
-    name: "Panel Admin",
-    href: "/dashboard/admin",
-    icon: Wrench,
-    current: false,
-  },
-  {
-    name: "Profil Pengguna",
-    href: "/dashboard/profile",
-    icon: User,
-    current: false,
+    description: "Pengaturan dan administrasi sistem",
+    submenu: [
+      {
+        name: "Konfigurasi Sistem",
+        href: "/dashboard/system-config",
+        icon: Settings,
+        current: false,
+        description: "Pengaturan aplikasi global"
+      },
+      {
+        name: "Panel Administrator",
+        href: "/dashboard/admin",
+        icon: Wrench,
+        current: false,
+        description: "Tools administrasi lanjutan"
+      },
+      {
+        name: "Profil Pengguna",
+        href: "/dashboard/profile",
+        icon: User,
+        current: false,
+        description: "Kelola profil dan preferensi"
+      },
+    ]
   },
 ]
 

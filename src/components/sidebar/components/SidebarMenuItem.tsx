@@ -53,7 +53,7 @@ export function SidebarMenuItem({
         href={item.href}
         onClick={onLinkClick}
         className={cn(
-          "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out ml-5",
+          "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out ml-6",
           "hover:bg-accent/60 hover:text-accent-foreground hover:shadow-sm",
           "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
           "group relative overflow-hidden",
@@ -226,10 +226,10 @@ export function SidebarMenuItem({
       {hasSubmenu && !isCollapsed && (
         <div className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
-          "border-l border-border/20 ml-3 mt-0.5",
+          "border-l border-border/25 ml-4 mt-0.5",
           isSubmenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         )}>
-          <div className="py-0.5 space-y-0.5 bg-gradient-to-r from-muted/3 to-transparent rounded-r-md">
+          <div className="py-1 space-y-0.5 bg-gradient-to-r from-muted/4 to-transparent rounded-r-md pl-1">
             {item.submenu?.map((subItem) => (
               <SidebarMenuItem
                 key={subItem.href}
