@@ -7,30 +7,25 @@ export const useActiveMenu = (pathname: string) => {
   // Centralized active menu detection
   const getActiveMenuType = (path: string): MenuType | null => {
     if (path.startsWith("/dashboard/production") || 
-        path.startsWith("/dashboard/production-plans") || 
-        path.startsWith("/dashboard/resource-usage")) {
+        path.startsWith("/dashboard/production-plans")) {
       return 'production'
     }
-    if (path.startsWith("/dashboard/menu-planning") || 
-        path.startsWith("/dashboard/recipes")) {
+    if (path.startsWith("/dashboard/menu-planning")) {
       return 'menuPlanning'
     }
     if (path.startsWith("/dashboard/distributions") || 
         path.startsWith("/dashboard/distribution")) {
       return 'distribution'
     }
-    if (path.startsWith("/dashboard/monitoring")) {
+    if (path.startsWith("/dashboard/monitoring") || 
+        path.startsWith("/dashboard/performance")) {
       return 'monitoring'
     }
     if (path.startsWith("/dashboard/quality") || 
         path.startsWith("/dashboard/quality-checks") ||
-        path.startsWith("/dashboard/food-samples") || 
-        path.startsWith("/dashboard/nutrition-consultations")) {
+        path.startsWith("/dashboard/quality-checkpoints") ||
+        path.startsWith("/dashboard/quality-standards")) {
       return 'quality'
-    }
-    if (path.startsWith("/dashboard/purchase-orders") || 
-        path.startsWith("/dashboard/inventory")) {
-      return 'operational'
     }
     if (path.startsWith("/dashboard/schools") || 
         path.startsWith("/dashboard/students") ||
@@ -40,18 +35,21 @@ export const useActiveMenu = (pathname: string) => {
         path.startsWith("/dashboard/suppliers") ||
         path.startsWith("/dashboard/vehicles") ||
         path.startsWith("/dashboard/drivers") ||
-        path.startsWith("/dashboard/quality-standards") ||
-        path.startsWith("/dashboard/quality-checkpoints")) {
+        path.startsWith("/dashboard/recipes") ||
+        path.startsWith("/dashboard/quality-standards")) {
       return 'dataMaster'
+    }
+    if (path.startsWith("/dashboard/purchase-orders") || 
+        path.startsWith("/dashboard/inventory") ||
+        path.startsWith("/dashboard/resource-usage")) {
+      return 'procurement'
     }
     if (path.startsWith("/dashboard/users") || 
         path.startsWith("/dashboard/roles") ||
         path.startsWith("/dashboard/user-roles") ||
-        path.startsWith("/dashboard/audit-logs") ||
-        path.startsWith("/dashboard/notifications") ||
         path.startsWith("/dashboard/system-config") ||
-        path.startsWith("/dashboard/admin") ||
-        path.startsWith("/dashboard/profile")) {
+        path.startsWith("/dashboard/audit-logs") ||
+        path.startsWith("/dashboard/admin")) {
       return 'system'
     }
     return null
@@ -85,9 +83,9 @@ export const useActiveMenu = (pathname: string) => {
       distribution: 'Distribusi',
       monitoring: 'Monitoring & Laporan',
       quality: 'Manajemen Kualitas',
-      operational: 'Operasional Harian',
       dataMaster: 'Data Master',
-      system: 'Administrasi Sistem'
+      procurement: 'Pengadaan & Inventori',
+      system: 'Manajemen Sistem'
     }
 
     return {

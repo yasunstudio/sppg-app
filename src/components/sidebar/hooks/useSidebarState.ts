@@ -11,8 +11,8 @@ const defaultMenuState: MenuState = {
   distribution: false,
   monitoring: false,
   quality: false,
-  operational: false,
   dataMaster: false,
+  procurement: false,
   system: false,
   preferences: {
     autoExpandActive: false,
