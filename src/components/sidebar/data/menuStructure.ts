@@ -27,7 +27,12 @@ import {
   Truck,
   Bell,
   BookOpen,
-  User
+  User,
+  Database,
+  FolderOpen,
+  Building2,
+  FileText,
+  Archive
 } from "lucide-react"
 
 import type { MenuItem, MenuSection } from "../types/sidebar.types"
@@ -41,42 +46,62 @@ export const CORE_NAVIGATION: MenuItem[] = [
   },
 ]
 
-export const EDUCATIONAL_MANAGEMENT: MenuItem[] = [
+// Data Master Section - Core Data Management
+export const DATA_MASTER: MenuItem[] = [
   {
-    name: "Sekolah",
+    name: "Data Pendidikan",
     href: "/dashboard/schools",
     icon: School,
     current: false,
+    submenu: [
+      {
+        name: "Manajemen Sekolah",
+        href: "/dashboard/schools",
+        icon: School,
+        current: false,
+      },
+      {
+        name: "Data Siswa",
+        href: "/dashboard/students",
+        icon: GraduationCap,
+        current: false,
+      },
+      {
+        name: "Data Kelas",
+        href: "/dashboard/classes",
+        icon: Users,
+        current: false,
+      },
+    ]
   },
   {
-    name: "Siswa",
-    href: "/dashboard/students",
-    icon: GraduationCap,
-    current: false,
-  },
-  {
-    name: "Kelas",
-    href: "/dashboard/classes",
-    icon: Users,
-    current: false,
-  },
-]
-
-export const RESOURCE_MANAGEMENT: MenuItem[] = [
-  {
-    name: "Bahan Baku",
+    name: "Data Sumber Daya",
     href: "/dashboard/raw-materials",
     icon: Package,
     current: false,
+    submenu: [
+      {
+        name: "Bahan Baku",
+        href: "/dashboard/raw-materials",
+        icon: Package,
+        current: false,
+      },
+      {
+        name: "Manajemen Item",
+        href: "/dashboard/items",
+        icon: Archive,
+        current: false,
+      },
+      {
+        name: "Data Pemasok",
+        href: "/dashboard/suppliers",
+        icon: Building2,
+        current: false,
+      },
+    ]
   },
   {
-    name: "Pemasok",
-    href: "/dashboard/suppliers",
-    icon: ShoppingCart,
-    current: false,
-  },
-  {
-    name: "Kendaraan & Driver",
+    name: "Data Transportasi",
     href: "/dashboard/vehicles",
     icon: Truck,
     current: false,
@@ -95,29 +120,50 @@ export const RESOURCE_MANAGEMENT: MenuItem[] = [
       },
     ]
   },
-]
-
-export const OPERATIONS_MANAGEMENT: MenuItem[] = [
   {
-    name: "Pengadaan",
-    href: "/dashboard/purchase-orders",
-    icon: ClipboardCheck,
-    current: false,
-  },
-  {
-    name: "Inventori",
-    href: "/dashboard/inventory",
-    icon: Package,
+    name: "Data Standar & Template",
+    href: "/dashboard/quality-standards",
+    icon: Shield,
     current: false,
     submenu: [
       {
-        name: "Manajemen Item",
-        href: "/dashboard/items",
-        icon: Package,
+        name: "Standar Kualitas",
+        href: "/dashboard/quality-standards",
+        icon: Shield,
         current: false,
       },
       {
-        name: "Stok Inventori",
+        name: "Titik Kontrol Kritis",
+        href: "/dashboard/quality-checkpoints",
+        icon: ClipboardCheck,
+        current: false,
+      },
+      {
+        name: "Template Resep",
+        href: "/dashboard/recipes",
+        icon: BookOpen,
+        current: false,
+      },
+    ]
+  },
+]
+
+// Operational Management - Daily Operations
+export const OPERATIONAL_MANAGEMENT: MenuItem[] = [
+  {
+    name: "Pengadaan & Inventori",
+    href: "/dashboard/purchase-orders",
+    icon: ClipboardCheck,
+    current: false,
+    submenu: [
+      {
+        name: "Purchase Orders",
+        href: "/dashboard/purchase-orders",
+        icon: ClipboardCheck,
+        current: false,
+      },
+      {
+        name: "Inventori Stok",
         href: "/dashboard/inventory",
         icon: Package,
         current: false,
@@ -130,12 +176,6 @@ export const OPERATIONS_MANAGEMENT: MenuItem[] = [
       },
     ]
   },
-  {
-    name: "Manajemen Resep",
-    href: "/dashboard/recipes",
-    icon: BookOpen,
-    current: false,
-  },
 ]
 
 export const MENU_PLANNING_SUBMENUS: MenuItem[] = [
@@ -144,13 +184,6 @@ export const MENU_PLANNING_SUBMENUS: MenuItem[] = [
     href: "/dashboard/menu-planning",
     icon: LayoutGrid,
     current: false,
-  },
-  {
-    name: "Manajemen Resep",
-    href: "/dashboard/recipes",
-    icon: ChefHat,
-    current: false,
-    badge: "New"
   },
   {
     name: "Perencanaan Menu",
@@ -234,15 +267,9 @@ export const QUALITY_SUBMENUS: MenuItem[] = [
     current: false,
   },
   {
-    name: "Titik Kontrol Kritis",
-    href: "/dashboard/quality-checkpoints",
-    icon: ClipboardCheck,
-    current: false,
-  },
-  {
-    name: "Standar Mutu",
-    href: "/dashboard/quality-standards",
-    icon: Shield,
+    name: "Dokumentasi Foto",
+    href: "/dashboard/production/quality/photo-documentation",
+    icon: Eye,
     current: false,
   },
 ]
@@ -352,13 +379,7 @@ export const SYSTEM_MANAGEMENT: MenuItem[] = [
     ]
   },
   {
-    name: "Konfigurasi Sistem",
-    href: "/dashboard/system-config",
-    icon: Settings,
-    current: false,
-  },
-  {
-    name: "Keamanan & Audit",
+    name: "Keamanan & Monitoring",
     href: "/dashboard/audit-logs",
     icon: Shield,
     current: false,
@@ -378,9 +399,9 @@ export const SYSTEM_MANAGEMENT: MenuItem[] = [
     ]
   },
   {
-    name: "Profil Pengguna",
-    href: "/dashboard/profile",
-    icon: User,
+    name: "Konfigurasi Sistem",
+    href: "/dashboard/system-config",
+    icon: Settings,
     current: false,
   },
   {
@@ -389,16 +410,15 @@ export const SYSTEM_MANAGEMENT: MenuItem[] = [
     icon: Wrench,
     current: false,
   },
+  {
+    name: "Profil Pengguna",
+    href: "/dashboard/profile",
+    icon: User,
+    current: false,
+  },
 ]
 
 export const OTHER_FEATURES: MenuItem[] = [
-  {
-    name: "Manajemen Limbah",
-    href: "/dashboard/waste-management",
-    icon: Trash,
-    current: false,
-    description: "Kelola limbah makanan dan daur ulang"
-  },
   {
     name: "Keuangan & Anggaran",
     href: "/dashboard/financial",
@@ -413,6 +433,20 @@ export const OTHER_FEATURES: MenuItem[] = [
     current: false,
     description: "Feedback dari siswa dan evaluasi program"
   },
+  {
+    name: "Manajemen Limbah",
+    href: "/dashboard/waste-records",
+    icon: Trash,
+    current: false,
+    description: "Kelola limbah makanan dan daur ulang"
+  },
+  {
+    name: "Analitik Lanjutan",
+    href: "/dashboard/analytics",
+    icon: BarChart,
+    current: false,
+    description: "Dashboard analitik komprehensif"
+  },
 ]
 
 // Main menu structure configuration
@@ -423,18 +457,13 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
     isExpandable: false,
   },
   {
-    title: "Manajemen Pendidikan",
-    items: EDUCATIONAL_MANAGEMENT,
+    title: "Data Master",
+    items: DATA_MASTER,
     isExpandable: false,
   },
   {
-    title: "Manajemen Sumber Daya",
-    items: RESOURCE_MANAGEMENT,
-    isExpandable: false,
-  },
-  {
-    title: "Operasional",
-    items: OPERATIONS_MANAGEMENT,
+    title: "Operasional Harian",
+    items: OPERATIONAL_MANAGEMENT,
     isExpandable: false,
   },
   {
