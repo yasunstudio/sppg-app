@@ -184,25 +184,29 @@ export const MENU_PLANNING_SUBMENUS: MenuItem[] = [
     href: "/dashboard/menu-planning",
     icon: LayoutGrid,
     current: false,
+    description: "Overview perencanaan menu mingguan"
   },
   {
     name: "Perencanaan Menu",
     href: "/dashboard/menu-planning/planning",
     icon: Calendar,
     current: false,
+    description: "Susun menu harian dan mingguan"
   },
   {
     name: "Standar Nutrisi",
     href: "/dashboard/menu-planning/nutrition",
     icon: Heart,
     current: false,
+    description: "Kelola standar gizi dan nutrisi"
   },
   {
-    name: "AI Planner",
+    name: "AI Menu Planner",
     href: "/dashboard/menu-planning/ai-planner",
     icon: TrendingUp,
     current: false,
-    badge: "Beta"
+    badge: "Beta",
+    description: "Rekomendasi menu berbasis AI"
   },
 ]
 
@@ -212,44 +216,51 @@ export const PRODUCTION_SUBMENUS: MenuItem[] = [
     href: "/dashboard/production",
     icon: LayoutGrid,
     current: false,
+    description: "Overview aktivitas produksi harian"
   },
   {
     name: "Rencana Produksi",
     href: "/dashboard/production-plans",
     icon: Calendar,
     current: false,
+    description: "Jadwal dan rencana produksi"
   },
   {
     name: "Eksekusi Produksi",
     href: "/dashboard/production/execution",
     icon: PlayCircle,
     current: false,
+    description: "Pantau proses produksi real-time"
   },
   {
     name: "Batch Produksi",
     href: "/dashboard/production/batches",
     icon: Package,
     current: false,
+    description: "Kelola batch dan lot produksi"
   },
   {
     name: "Manajemen Sumber Daya",
     href: "/dashboard/production/resources",
     icon: Wrench,
     current: false,
+    description: "Alat, peralatan, dan maintenance"
   },
   {
     name: "Optimasi AI",
     href: "/dashboard/production/ai-optimizer",
     icon: TrendingUp,
     current: false,
-    badge: "AI"
+    badge: "AI",
+    description: "Optimasi produksi dengan AI"
   },
   {
     name: "Analitik Produksi",
     href: "/dashboard/production/analytics",
     icon: BarChart,
     current: false,
-    badge: "Pro"
+    badge: "Pro",
+    description: "Laporan dan analisis performa"
   },
 ]
 
@@ -259,45 +270,87 @@ export const QUALITY_SUBMENUS: MenuItem[] = [
     href: "/dashboard/quality",
     icon: LayoutGrid,
     current: false,
+    description: "Ringkasan kontrol kualitas harian"
   },
   {
     name: "Inspeksi Kualitas",
     href: "/dashboard/quality-checks",
     icon: ClipboardCheck,
     current: false,
+    description: "Pemeriksaan dan validasi kualitas"
+  },
+  {
+    name: "Standar Kualitas",
+    href: "/dashboard/quality-standards",
+    icon: TestTube,
+    current: false,
+    description: "Kelola standar dan parameter"
   },
   {
     name: "Dokumentasi Foto",
     href: "/dashboard/production/quality/photo-documentation",
     icon: Eye,
     current: false,
+    description: "Dokumentasi visual kualitas"
+  },
+  {
+    name: "Sampel Makanan",
+    href: "/dashboard/food-samples",
+    icon: TestTube,
+    current: false,
+    description: "Kelola sampel untuk pengujian"
   },
 ]
 
 export const DISTRIBUTION_SUBMENUS: MenuItem[] = [
   {
-    name: "Ringkasan",
+    name: "Ringkasan Distribusi",
     href: "/dashboard/distributions",
     icon: LayoutGrid,
     current: false,
+    description: "Overview distribusi dan pengiriman"
   },
   {
     name: "Sekolah Distribusi",
     href: "/dashboard/distributions/schools",
     icon: School,
     current: false,
+    description: "Kelola distribusi per sekolah"
   },
   {
     name: "Pelacakan Pengiriman",
     href: "/dashboard/distributions/tracking",
     icon: Eye,
     current: false,
+    description: "Real-time tracking pengiriman"
   },
   {
     name: "Perencanaan Rute",
     href: "/dashboard/distributions/routes",
     icon: Truck,
     current: false,
+    description: "Optimasi rute pengiriman"
+  },
+  {
+    name: "Kendaraan & Driver",
+    href: "/dashboard/vehicles",
+    icon: Truck,
+    current: false,
+    description: "Manajemen armada dan driver",
+    submenu: [
+      {
+        name: "Kendaraan",
+        href: "/dashboard/vehicles",
+        icon: Truck,
+        current: false,
+      },
+      {
+        name: "Driver",
+        href: "/dashboard/drivers",
+        icon: UserCheck,
+        current: false,
+      },
+    ]
   },
 ]
 
@@ -307,30 +360,35 @@ export const MONITORING_SUBMENUS: MenuItem[] = [
     href: "/dashboard/monitoring",
     icon: LayoutGrid,
     current: false,
+    description: "Pusat kendali monitoring sistem"
   },
   {
     name: "Monitoring Real-time",
     href: "/dashboard/monitoring/real-time",
     icon: Activity,
     current: false,
+    description: "Pantau aktivitas real-time"
   },
   {
     name: "Analitik & Insights",
     href: "/dashboard/monitoring/analytics",
     icon: BarChart,
     current: false,
+    description: "Analisis mendalam dan insights"
   },
   {
     name: "Evaluasi Kinerja",
     href: "/dashboard/performance",
     icon: TrendingUp,
     current: false,
+    description: "KPI dan evaluasi performa"
   },
   {
     name: "Laporan Eksekutif",
     href: "/dashboard/monitoring/reports",
     icon: FileBarChart,
     current: false,
+    description: "Laporan untuk manajemen"
   },
 ]
 
@@ -357,6 +415,7 @@ export const SYSTEM_MANAGEMENT: MenuItem[] = [
     href: "/dashboard/users",
     icon: Users,
     current: false,
+    description: "Kelola pengguna dan akses sistem",
     submenu: [
       {
         name: "Daftar Pengguna",
@@ -379,10 +438,11 @@ export const SYSTEM_MANAGEMENT: MenuItem[] = [
     ]
   },
   {
-    name: "Keamanan & Monitoring",
+    name: "Keamanan & Audit",
     href: "/dashboard/audit-logs",
     icon: Shield,
     current: false,
+    description: "Log keamanan dan audit sistem",
     submenu: [
       {
         name: "Log Audit",
@@ -403,6 +463,7 @@ export const SYSTEM_MANAGEMENT: MenuItem[] = [
     href: "/dashboard/system-config",
     icon: Settings,
     current: false,
+    description: "Pengaturan dan konfigurasi aplikasi"
   },
   {
     name: "Panel Admin",
