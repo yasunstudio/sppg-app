@@ -1,44 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import bcrypt from "bcryptjs"
-import { permissionEngine } from "@/lib/permissions/core/permission-engine";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const hasPermission = await permissionEngine.hasPermission(
-      session.user.id,
-      'users:read'
-    );
-
-    if (!hasPermission) {
-      return NextResponse.json(
-        { error: 'Forbidden: Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
+    const session = await auth()
+    
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }    if (!hasPermission) {
-      return NextResponse.json(
-        { error: "Forbidden: Insufficient permissions" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!session || !session.user) {
-      return new NextResponse("Unauthorized", { status: 401 })
-    }
-
+    // User can always access their own profile, no permission check needed
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: {
@@ -51,81 +23,42 @@ export async function GET(request: NextRequest) {
     })
 
     if (!user) {
-      return new NextResponse("User not found", { status: 404 })
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     // Remove sensitive data
     const { password, ...safeUser } = user
 
-    return NextResponse.json(safeUser)
+    return NextResponse.json({
+      success: true,
+      data: safeUser
+    })
   } catch (error) {
     console.error("Error fetching profile:", error)
-    return new NextResponse("Internal Server Error", { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const hasPermission = await permissionEngine.hasPermission(
-      session.user.id,
-      'users:update'
-    );
-
-    if (!hasPermission) {
-      return NextResponse.json(
-        { error: 'Forbidden: Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
+    const session = await auth()
     
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (!hasPermission) {
-      return NextResponse.json(
-        { error: 'Forbidden: Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }    if (!hasPermission) {
-      return NextResponse.json(
-        { error: "Forbidden: Insufficient permissions" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!session || !session.user) {
-      return new NextResponse("Unauthorized", { status: 401 })
-    }
+    const body = await request.json()
+    const { name, email, phone, address, bio, dateOfBirth, gender } = body
 
-    const formData = await request.formData()
-    const name = formData.get("name") as string
-    const email = formData.get("email") as string
-    const phone = formData.get("phone") as string
-    const address = formData.get("address") as string
-    const bio = formData.get("bio") as string
-    const dateOfBirth = formData.get("dateOfBirth") as string
-    const gender = formData.get("gender") as string
-    const image = formData.get("image") as File
+    const updateData: any = {}
 
-    const updateData: any = {
-      name: name || null,
-      phone: phone || null,
-      address: address || null,
-    }
+    // Only update fields that are provided
+    if (name !== undefined) updateData.name = name
+    if (phone !== undefined) updateData.phone = phone
+    if (address !== undefined) updateData.address = address
 
     // Handle email change (requires verification)
     if (email && email !== session.user.email) {
@@ -134,18 +67,14 @@ export async function PUT(request: NextRequest) {
       })
       
       if (existingUser && existingUser.id !== session.user.id) {
-        return new NextResponse("Email already in use", { status: 409 })
+        return NextResponse.json(
+          { error: "Email already in use" },
+          { status: 409 }
+        )
       }
       
       updateData.email = email
       updateData.emailVerified = null // Reset verification
-    }
-
-    // Handle image upload
-    if (image && image.size > 0) {
-      // In a real app, you'd upload to cloud storage
-      // For now, we'll just store the filename
-      updateData.image = `/uploads/profiles/${session.user.id}-${Date.now()}.jpg`
     }
 
     // Update user
@@ -161,30 +90,19 @@ export async function PUT(request: NextRequest) {
       }
     })
 
-    // Handle profile data - for now we'll store in user table directly
-    // In the future, you can add a separate profile table
-    if (bio || dateOfBirth || gender) {
-      // These fields would need to be added to the User model in schema.prisma
-      // For now, we'll skip profile-specific fields
-    }
+    // Remove sensitive data
+    const { password, ...safeUser } = updatedUser
 
-    // Get updated user with profile
-    const finalUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        roles: {
-          include: {
-            role: true
-          }
-        }
-      }
+    return NextResponse.json({
+      success: true,
+      data: safeUser,
+      message: "Profile updated successfully"
     })
-
-    const { password, ...safeUser } = finalUser!
-
-    return NextResponse.json(safeUser)
   } catch (error) {
     console.error("Error updating profile:", error)
-    return new NextResponse("Internal Server Error", { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }

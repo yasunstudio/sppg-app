@@ -14,7 +14,7 @@ import {
 import { formatPhoneNumber, formatStudentCount, truncateText, getSchoolInitials } from '../utils/school-formatters'
 import type { School } from '../utils/school-types'
 import { useRouter } from 'next/navigation'
-import { usePermission } from '@/hooks/use-role-permissions'
+import { usePermission } from '@/hooks/use-permission'
 
 interface SchoolGridViewProps {
   schools: School[]
@@ -32,9 +32,10 @@ export function SchoolGridView({
   const router = useRouter()
 
   // Permissions
-  const canViewSchool = usePermission('schools.view')
-  const canEditSchool = usePermission('schools.edit')
-  const canDeleteSchool = usePermission('schools.delete')
+  const { hasPermission } = usePermission(['schools.view', 'schools.edit', 'schools.delete'])
+  const canViewSchool = hasPermission('schools.view')
+  const canEditSchool = hasPermission('schools.edit')
+  const canDeleteSchool = hasPermission('schools.delete')
 
   const handleView = (schoolId: string) => {
     if (canViewSchool) {

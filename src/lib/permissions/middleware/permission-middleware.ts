@@ -124,14 +124,14 @@ export async function checkRoutePermissions(
     return NextResponse.redirect(new URL('/auth/signin', request.url))
   }
 
-  const userId = token.sub
+  // Get user roles from JWT token (avoid database queries in middleware)
+  const userRoles = token.roles?.map((r: any) => r.role.name) || []
 
   try {
-    // Check role-based access first
+    // Check role-based access using JWT token data only
     if (routePermission.roles && routePermission.roles.length > 0) {
-      const userContext = await permissionEngine.getUserPermissionContext(userId)
       const hasRequiredRole = routePermission.roles.some(roleName =>
-        userContext.roles.some(role => role.name === roleName)
+        userRoles.includes(roleName)
       )
 
       if (!hasRequiredRole) {
@@ -139,30 +139,19 @@ export async function checkRoutePermissions(
       }
     }
 
-    // Check minimum priority
-    if (routePermission.minimumPriority) {
-      const hasMinPriority = await permissionEngine.hasMinimumPriority(
-        userId, 
-        routePermission.minimumPriority
+    // For admin routes, allow SUPER_ADMIN and ADMIN roles
+    if (pathname.startsWith('/dashboard/admin')) {
+      const isAdmin = userRoles.some((role: string) => 
+        ['SUPER_ADMIN', 'ADMIN'].includes(role)
       )
-
-      if (!hasMinPriority) {
+      
+      if (!isAdmin) {
         return NextResponse.redirect(new URL('/dashboard/unauthorized', request.url))
       }
     }
 
-    // Check permissions
-    if (routePermission.permissions.length > 0) {
-      const hasPermission = routePermission.requireAll
-        ? await permissionEngine.hasAllPermissions(userId, routePermission.permissions)
-        : await permissionEngine.hasAnyPermission(userId, routePermission.permissions)
-
-      if (!hasPermission) {
-        return NextResponse.redirect(new URL('/dashboard/unauthorized', request.url))
-      }
-    }
-
-    // All checks passed
+    // Skip database-dependent permission checks in middleware
+    // Let the actual pages handle detailed permission validation
     return null
 
   } catch (error) {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useSession } from 'next-auth/react'
-import { usePermissions } from "@/hooks/use-permission"
+import { usePermission } from "@/hooks/use-permission"
 
 export function useMenuPermissions() {
   const { data: session } = useSession()
@@ -22,14 +22,10 @@ export function useMenuPermissions() {
     'audit_logs:view', 'waste.view', 'items:view'
   ]
   
-  const { permissionResults, isLoading } = usePermissions(permissions)
-  
-  // Create hasPermission function for backward compatibility
-  const hasPermission = (permission: string) => permissionResults[permission] || false
+  const { hasPermission, isLoading } = usePermission(permissions)
   
   return {
     hasPermission,
-    permissionResults,
     isLoading,
     isAuthenticated: !!session
   }

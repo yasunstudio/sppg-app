@@ -21,7 +21,7 @@ import {
 import { formatDate, formatPhoneNumber } from '../utils/supplier-formatters'
 import type { Supplier } from '../utils/supplier-types'
 import { useRouter } from 'next/navigation'
-import { usePermission } from '@/hooks/use-role-permissions'
+import { usePermission } from '@/hooks/use-permission'
 
 interface SupplierTableViewProps {
   suppliers: Supplier[]
@@ -39,9 +39,10 @@ export function SupplierTableView({
   const router = useRouter()
 
   // Permissions
-  const canViewSupplier = usePermission('suppliers.view')
-  const canEditSupplier = usePermission('suppliers.edit')
-  const canDeleteSupplier = usePermission('suppliers.delete')
+  const { hasPermission } = usePermission(['suppliers.view', 'suppliers.edit', 'suppliers.delete'])
+  const canViewSupplier = hasPermission('suppliers.view')
+  const canEditSupplier = hasPermission('suppliers.edit')
+  const canDeleteSupplier = hasPermission('suppliers.delete')
 
   const handleView = (supplierId: string) => {
     if (canViewSupplier) {

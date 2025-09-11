@@ -11,7 +11,7 @@ import {
 } from "."
 import type { SidebarProps, MenuType, MenuSection } from "../types/sidebar.types"
 import { useSession } from "next-auth/react"
-import { usePermissions } from "@/hooks/use-permission"
+import { usePermission } from "@/hooks/use-permission"
 import { getPermissionsForPath } from "../utils/permissionHelpers"
 
 interface ModularSidebarProps extends SidebarProps {
@@ -42,7 +42,7 @@ export default function Sidebar({
   ).filter((perm, index, arr) => arr.indexOf(perm) === index && perm.length > 0)
 
   // Use permission hook to check all permissions
-  const { permissionResults, isLoading: permissionsLoading } = usePermissions(allMenuPermissions)
+  const { hasPermission, isLoading: permissionsLoading } = usePermission(allMenuPermissions)
 
   const sidebarData = useSidebar({
     isMobileOpen: externalMobileOpen,
@@ -76,7 +76,7 @@ export default function Sidebar({
     if (requiredPermissions.length === 0) return true
     
     // Check if user has at least one of the required permissions
-    return requiredPermissions.some(perm => permissionResults[perm] === true)
+    return requiredPermissions.some(perm => hasPermission(perm))
   }
 
   // Filter menu sections based on permissions

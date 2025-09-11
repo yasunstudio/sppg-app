@@ -8,515 +8,108 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 
-export interface Permission {
-  id: string
-  name: string
-  displayName: string
-  description: string
-  category: string
-  module: string
-  action: string
-  isActive: boolean
-  isSystemPerm: boolean
-}
-
-export interface Role {
-  id: string
-  name: string
-  description: string
-  permissions: string[]
-  color: string
-  priority: number
-  isSystemRole: boolean
-}
-
-export interface UserPermissionContext {
+interface UserPermissions {
   userId: string
-  roles: Role[]
+  roles: Array<{
+    id: string
+    name: string
+    priority: number
+  }>
   permissions: string[]
-  isSuperAdmin: boolean
+  highestPriority: number
 }
 
-/**
- * Hook to fetch and manage all permissions
- */
-export function usePermissions() {
-  const [permissions, setPermissions] = useState<Permission[]>([])
-  const [loading, setLoading] = useState(true)
+interface UsePermissionsReturn {
+  permissions: string[]
+  roles: Array<{
+    id: string
+    name: string
+    priority: number
+  }>
+  hasPermission: (permission: string) => boolean
+  hasAnyPermission: (permissions: string[]) => boolean
+  hasAllPermissions: (permissions: string[]) => boolean
+  isLoading: boolean
+  error: string | null
+  refetch: () => Promise<void>
+}
+
+export function usePermissions(): UsePermissionsReturn {
+  const { data: session, status } = useSession()
+  const [userPermissions, setUserPermissions] = useState<UserPermissions | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const fetchPermissions = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const response = await fetch('/api/permissions')
-      if (!response.ok) {
-        throw new Error(`Failed to fetch permissions: ${response.statusText}`)
-      }
-      
-      const data = await response.json()
-      setPermissions(data.permissions || [])
-    } catch (err) {
-      console.error('Error fetching permissions:', err)
-      setError(err instanceof Error ? err.message : 'Unknown error occurred')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchPermissions()
-  }, [fetchPermissions])
-
-  const refreshPermissions = useCallback(() => {
-    fetchPermissions()
-  }, [fetchPermissions])
-
-  const createPermission = useCallback(async (permissionData: Omit<Permission, 'id'>) => {
-    try {
-      const response = await fetch('/api/permissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(permissionData)
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to create permission: ${response.statusText}`)
-      }
-      
-      await refreshPermissions()
-      return await response.json()
-    } catch (err) {
-      console.error('Error creating permission:', err)
-      throw err
-    }
-  }, [refreshPermissions])
-
-  const updatePermission = useCallback(async (id: string, updates: Partial<Permission>) => {
-    try {
-      const response = await fetch(`/api/permissions/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to update permission: ${response.statusText}`)
-      }
-      
-      await refreshPermissions()
-      return await response.json()
-    } catch (err) {
-      console.error('Error updating permission:', err)
-      throw err
-    }
-  }, [refreshPermissions])
-
-  const deletePermission = useCallback(async (id: string) => {
-    try {
-      const response = await fetch(`/api/permissions/${id}`, {
-        method: 'DELETE'
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to delete permission: ${response.statusText}`)
-      }
-      
-      await refreshPermissions()
-    } catch (err) {
-      console.error('Error deleting permission:', err)
-      throw err
-    }
-  }, [refreshPermissions])
-
-  return {
-    permissions,
-    loading,
-    error,
-    refreshPermissions,
-    createPermission,
-    updatePermission,
-    deletePermission
-  }
-}
-
-/**
- * Hook to fetch and manage roles
- */
-export function useRoles() {
-  const [roles, setRoles] = useState<Role[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchRoles = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const response = await fetch('/api/roles')
-      if (!response.ok) {
-        throw new Error(`Failed to fetch roles: ${response.statusText}`)
-      }
-      
-      const data = await response.json()
-      setRoles(data.roles || [])
-    } catch (err) {
-      console.error('Error fetching roles:', err)
-      setError(err instanceof Error ? err.message : 'Unknown error occurred')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchRoles()
-  }, [fetchRoles])
-
-  const refreshRoles = useCallback(() => {
-    fetchRoles()
-  }, [fetchRoles])
-
-  const createRole = useCallback(async (roleData: Omit<Role, 'id'>) => {
-    try {
-      const response = await fetch('/api/roles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(roleData)
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to create role: ${response.statusText}`)
-      }
-      
-      await refreshRoles()
-      return await response.json()
-    } catch (err) {
-      console.error('Error creating role:', err)
-      throw err
-    }
-  }, [refreshRoles])
-
-  const updateRole = useCallback(async (id: string, updates: Partial<Role>) => {
-    try {
-      const response = await fetch(`/api/roles/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to update role: ${response.statusText}`)
-      }
-      
-      await refreshRoles()
-      return await response.json()
-    } catch (err) {
-      console.error('Error updating role:', err)
-      throw err
-    }
-  }, [refreshRoles])
-
-  const deleteRole = useCallback(async (id: string) => {
-    try {
-      const response = await fetch(`/api/roles/${id}`, {
-        method: 'DELETE'
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to delete role: ${response.statusText}`)
-      }
-      
-      await refreshRoles()
-    } catch (err) {
-      console.error('Error deleting role:', err)
-      throw err
-    }
-  }, [refreshRoles])
-
-  const assignPermission = useCallback(async (roleId: string, permissionId: string) => {
-    try {
-      const response = await fetch(`/api/roles/${roleId}/permissions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ permissionId })
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to assign permission: ${response.statusText}`)
-      }
-      
-      await refreshRoles()
-    } catch (err) {
-      console.error('Error assigning permission:', err)
-      throw err
-    }
-  }, [refreshRoles])
-
-  const removePermission = useCallback(async (roleId: string, permissionId: string) => {
-    try {
-      const response = await fetch(`/api/roles/${roleId}/permissions/${permissionId}`, {
-        method: 'DELETE'
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to remove permission: ${response.statusText}`)
-      }
-      
-      await refreshRoles()
-    } catch (err) {
-      console.error('Error removing permission:', err)
-      throw err
-    }
-  }, [refreshRoles])
-
-  return {
-    roles,
-    loading,
-    error,
-    refreshRoles,
-    createRole,
-    updateRole,
-    deleteRole,
-    assignPermission,
-    removePermission
-  }
-}
-
-/**
- * Hook to manage user role assignments
- */
-export function useUserRoles(userId?: string) {
-  const [userRoles, setUserRoles] = useState<Role[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchUserRoles = useCallback(async (targetUserId: string) => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const response = await fetch(`/api/user-roles?userId=${targetUserId}`)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch user roles: ${response.statusText}`)
-      }
-      
-      const data = await response.json()
-      setUserRoles(data.roles || [])
-    } catch (err) {
-      console.error('Error fetching user roles:', err)
-      setError(err instanceof Error ? err.message : 'Unknown error occurred')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (userId) {
-      fetchUserRoles(userId)
-    }
-  }, [userId, fetchUserRoles])
-
-  const assignRole = useCallback(async (targetUserId: string, roleId: string) => {
-    try {
-      const response = await fetch('/api/user-roles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: targetUserId, roleId })
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to assign role: ${response.statusText}`)
-      }
-      
-      if (targetUserId === userId) {
-        await fetchUserRoles(targetUserId)
-      }
-    } catch (err) {
-      console.error('Error assigning role:', err)
-      throw err
-    }
-  }, [userId, fetchUserRoles])
-
-  const removeRole = useCallback(async (targetUserId: string, roleId: string) => {
-    try {
-      const response = await fetch('/api/user-roles', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: targetUserId, roleId })
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to remove role: ${response.statusText}`)
-      }
-      
-      if (targetUserId === userId) {
-        await fetchUserRoles(targetUserId)
-      }
-    } catch (err) {
-      console.error('Error removing role:', err)
-      throw err
-    }
-  }, [userId, fetchUserRoles])
-
-  const refreshUserRoles = useCallback(() => {
-    if (userId) {
-      fetchUserRoles(userId)
-    }
-  }, [userId, fetchUserRoles])
-
-  return {
-    userRoles,
-    loading,
-    error,
-    assignRole,
-    removeRole,
-    refreshUserRoles
-  }
-}
-
-/**
- * Hook to check if user has a specific permission
- */
-export function usePermission(permission: string): { hasAccess: boolean; loading: boolean; error: string | null } {
-  const { data: session } = useSession()
-  const [hasAccess, setHasAccess] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const checkPermission = useCallback(async () => {
-    if (!session?.user?.id || !permission) {
-      setHasAccess(false)
-      setLoading(false)
+    if (!session?.user?.id || status !== 'authenticated') {
       return
     }
 
     try {
-      setLoading(true)
+      setIsLoading(true)
       setError(null)
 
-      const response = await fetch('/api/auth/check-permission', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: session.user.id,
-          permission: permission,
-          checkType: 'single'
-        })
+      const response = await fetch('/api/permissions/user', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       })
 
       if (!response.ok) {
-        throw new Error(`Permission check failed: ${response.statusText}`)
+        throw new Error(`Failed to fetch permissions: ${response.status}`)
       }
 
-      const result = await response.json()
-      setHasAccess(result.hasAccess || false)
+      const data = await response.json()
+      setUserPermissions(data)
     } catch (err) {
-      console.error('Error checking permission:', err)
-      setError(err instanceof Error ? err.message : 'Permission check failed')
-      setHasAccess(false)
+      console.error('Error fetching permissions:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load permissions')
+      setUserPermissions(null)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
-  }, [session?.user?.id, permission])
+  }, [session?.user?.id, status])
 
   useEffect(() => {
-    checkPermission()
-  }, [checkPermission])
-
-  return { hasAccess, loading, error }
-}
-
-/**
- * Hook to validate multiple permissions
- */
-export function usePermissionValidator() {
-  const { data: session } = useSession()
-
-  const validatePermissions = useCallback(async (permissions: string[], checkType: 'any' | 'all' = 'any') => {
-    if (!session?.user?.id || !permissions.length) {
-      return { hasAccess: false, results: {} }
+    if (status === 'authenticated') {
+      fetchPermissions()
+    } else if (status === 'unauthenticated') {
+      setUserPermissions(null)
+      setIsLoading(false)
+      setError(null)
     }
+  }, [fetchPermissions, status])
 
-    try {
-      const response = await fetch('/api/auth/check-permission', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: session.user.id,
-          permissions,
-          checkType
-        })
-      })
+  const hasPermission = useCallback((permission: string): boolean => {
+    if (!userPermissions) return false
+    return userPermissions.permissions.includes(permission)
+  }, [userPermissions])
 
-      if (!response.ok) {
-        throw new Error(`Permission validation failed: ${response.statusText}`)
-      }
+  const hasAnyPermission = useCallback((permissions: string[]): boolean => {
+    if (!userPermissions) return false
+    return permissions.some(permission => userPermissions.permissions.includes(permission))
+  }, [userPermissions])
 
-      return await response.json()
-    } catch (err) {
-      console.error('Error validating permissions:', err)
-      return { hasAccess: false, results: {}, error: err instanceof Error ? err.message : 'Validation failed' }
-    }
-  }, [session?.user?.id])
+  const hasAllPermissions = useCallback((permissions: string[]): boolean => {
+    if (!userPermissions) return false
+    return permissions.every(permission => userPermissions.permissions.includes(permission))
+  }, [userPermissions])
 
-  const hasAnyPermission = useCallback(async (permissions: string[]) => {
-    const result = await validatePermissions(permissions, 'any')
-    return result.hasAccess
-  }, [validatePermissions])
-
-  const hasAllPermissions = useCallback(async (permissions: string[]) => {
-    const result = await validatePermissions(permissions, 'all')
-    return result.hasAccess
-  }, [validatePermissions])
-
-  const hasModuleAccess = useCallback(async (module: string) => {
-    if (!session?.user?.id) return false
-
-    try {
-      const response = await fetch('/api/auth/check-permission', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: session.user.id,
-          module,
-          checkType: 'module'
-        })
-      })
-
-      if (!response.ok) return false
-
-      const result = await response.json()
-      return result.hasAccess || false
-    } catch (err) {
-      console.error('Error checking module access:', err)
-      return false
-    }
-  }, [session?.user?.id])
-
-  const getUserContext = useCallback(async (): Promise<UserPermissionContext | null> => {
-    if (!session?.user?.id) return null
-
-    try {
-      const response = await fetch(`/api/users/${session.user.id}/permissions`)
-      if (!response.ok) return null
-
-      return await response.json()
-    } catch (err) {
-      console.error('Error getting user context:', err)
-      return null
-    }
-  }, [session?.user?.id])
+  const refetch = useCallback(async () => {
+    await fetchPermissions()
+  }, [fetchPermissions])
 
   return {
-    validatePermissions,
+    permissions: userPermissions?.permissions || [],
+    roles: userPermissions?.roles || [],
+    hasPermission,
     hasAnyPermission,
     hasAllPermissions,
-    hasModuleAccess,
-    getUserContext
+    isLoading,
+    error,
+    refetch,
   }
 }
 
-// Legacy compatibility exports for smooth migration
-export const useDynamicPermission = usePermission
-export const usePermissionValidation = usePermissionValidator
+export default usePermissions

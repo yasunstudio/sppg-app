@@ -27,7 +27,7 @@ import {
   Phone,
   User
 } from 'lucide-react'
-import { usePermission } from '@/components/guards/permission-guard'
+import { usePermission } from '@/hooks/use-permission'
 import type { Driver } from '../utils/driver-types'
 import { 
   getStatusColor, 
@@ -47,10 +47,11 @@ export function DriverTableView({ drivers, isFiltering, onDelete }: DriverTableV
   const router = useRouter()
   
   // Permission checks
-  const canViewDriver = usePermission('drivers.view')
-  const canEditDriver = usePermission('drivers.edit')
-  const canDeleteDriver = usePermission('drivers.delete')
-  const canCreateDriver = usePermission('drivers.create')
+  const { hasPermission } = usePermission(['drivers.view', 'drivers.edit', 'drivers.delete', 'drivers.create'])
+  const canViewDriver = hasPermission('drivers.view')
+  const canEditDriver = hasPermission('drivers.edit')
+  const canDeleteDriver = hasPermission('drivers.delete')
+  const canCreateDriver = hasPermission('drivers.create')
 
   return (
     <div className={`rounded-md border transition-opacity duration-200 ${isFiltering ? 'opacity-50' : 'opacity-100'}`}>

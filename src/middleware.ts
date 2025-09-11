@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect unauthenticated users to sign in
   if (!token) {
-    const signInUrl = new URL('/auth/signin', request.url)
+    const signInUrl = new URL('/auth/login', request.url)
     signInUrl.searchParams.set('callbackUrl', request.url)
     return NextResponse.redirect(signInUrl)
   }
@@ -40,63 +40,8 @@ export async function middleware(request: NextRequest) {
 
   // Default dashboard routing based on user roles
   if (pathname === '/dashboard') {
-    try {
-      // Get user role to determine default dashboard
-      const userId = token.sub
-      if (!userId) {
-        return NextResponse.redirect(new URL('/auth/signin', request.url))
-      }
-
-      // Simple role-based dashboard routing
-      const response = await fetch(`${request.nextUrl.origin}/api/admin/user-roles/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token.sub}`
-        }
-      }).catch(() => null)
-
-      if (response && response.ok) {
-        const userData = await response.json()
-        const roles = userData.roles || []
-        
-        // Determine default dashboard based on highest priority role
-        const sortedRoles = roles.sort((a: any, b: any) => (b.priority || 0) - (a.priority || 0))
-        const primaryRole = sortedRoles[0]
-
-        if (primaryRole) {
-          switch (primaryRole.name) {
-            case 'SUPER_ADMIN':
-            case 'ADMIN':
-              return NextResponse.redirect(new URL('/dashboard/admin', request.url))
-            case 'CHEF':
-              return NextResponse.redirect(new URL('/dashboard/production', request.url))
-            case 'NUTRITIONIST':
-              return NextResponse.redirect(new URL('/dashboard/menu', request.url))
-            case 'QUALITY_CONTROL':
-              return NextResponse.redirect(new URL('/dashboard/quality', request.url))
-            case 'DISTRIBUTION_MANAGER':
-              return NextResponse.redirect(new URL('/dashboard/logistics', request.url))
-            case 'WAREHOUSE_MANAGER':
-              return NextResponse.redirect(new URL('/dashboard/inventory', request.url))
-            case 'FINANCIAL_ANALYST':
-              return NextResponse.redirect(new URL('/dashboard/finance', request.url))
-            case 'SCHOOL_ADMIN':
-              return NextResponse.redirect(new URL('/dashboard/school', request.url))
-            case 'PRODUCTION_STAFF':
-              return NextResponse.redirect(new URL('/dashboard/production', request.url))
-            case 'DRIVER':
-              return NextResponse.redirect(new URL('/dashboard/delivery', request.url))
-            default:
-              return NextResponse.redirect(new URL('/dashboard/overview', request.url))
-          }
-        }
-      }
-      
-      // Fallback to overview if role detection fails
-      return NextResponse.redirect(new URL('/dashboard/overview', request.url))
-    } catch (error) {
-      console.error('Error in dashboard routing:', error)
-      return NextResponse.redirect(new URL('/dashboard/overview', request.url))
-    }
+    // Simply redirect to main dashboard without complex role-based routing
+    return NextResponse.next()
   }
 
   // Continue with the request

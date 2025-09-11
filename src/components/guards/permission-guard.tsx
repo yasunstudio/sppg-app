@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { usePermissions } from '@/hooks/use-permission'
+import { usePermission } from '@/hooks/use-permission'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertTriangle, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -25,7 +25,7 @@ export function PermissionGuard({
   const router = useRouter()
   
   const permissions = Array.isArray(permission) ? permission : [permission]
-  const { hasAnyPermission, isLoading } = usePermissions(permissions)
+  const { hasAnyPermission, isLoading } = usePermission(permissions)
 
   useEffect(() => {
     if (status === 'loading' || isLoading) return
@@ -92,4 +92,4 @@ export function PermissionGuard({
 }
 
 // Re-export usePermission from hooks for backward compatibility
-export { usePermission, usePermissions } from '@/hooks/use-permission'
+export { usePermission } from '@/hooks/use-permission'

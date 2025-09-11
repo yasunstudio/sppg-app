@@ -28,7 +28,7 @@ import {
   Trash2,
   Plus
 } from 'lucide-react'
-import { usePermission } from '@/components/guards/permission-guard'
+import { usePermission } from '@/hooks/use-permission'
 import type { WasteRecord } from '../utils'
 import { getWasteTypeColor, getSourceColor, formatWasteType, formatSource, formatDateShort } from '../utils'
 
@@ -41,10 +41,11 @@ export function WasteTableView({ wasteRecords, isFiltering }: WasteTableViewProp
   const router = useRouter()
   
   // Permission checks
-  const canViewWaste = usePermission('waste.view')
-  const canEditWaste = usePermission('waste.edit')
-  const canDeleteWaste = usePermission('waste.delete')
-  const canCreateWaste = usePermission('waste.create')
+  const { hasPermission } = usePermission(['waste.view', 'waste.edit', 'waste.delete', 'waste.create'])
+  const canViewWaste = hasPermission('waste.view')
+  const canEditWaste = hasPermission('waste.edit')
+  const canDeleteWaste = hasPermission('waste.delete')
+  const canCreateWaste = hasPermission('waste.create')
 
   return (
     <div className={`rounded-md border transition-opacity duration-200 ${isFiltering ? 'opacity-50' : 'opacity-100'}`}>

@@ -28,14 +28,14 @@ export async function getDashboardRoute(userRoles: string[]): Promise<string> {
     // Admin Dashboard - Full system access (user management permissions)
     if (allPermissions.includes('users.create') || 
         allPermissions.includes('users.edit')) {
-      return '/admin';
+      return '/dashboard/admin';
     }
     
     // Financial Dashboard - Financial analysis focus
     if (allPermissions.includes('budget.view') || 
         allPermissions.includes('budget.create') ||
         allPermissions.includes('finance.view')) {
-      return '/financial';
+      return '/dashboard/financial';
     }
     
     // Kitchen Operations Dashboard - Main dashboard with full sidebar access
@@ -43,11 +43,11 @@ export async function getDashboardRoute(userRoles: string[]): Promise<string> {
         allPermissions.includes('production.create') ||
         allPermissions.includes('recipes.view') ||
         allPermissions.includes('inventory.view')) {
-      return '/home';
+      return '/dashboard';
     }
     
     // Default Basic Dashboard - Limited access
-    return '/home';
+    return '/dashboard';
     
   } catch (error) {
     console.error('Error determining dashboard route:', error)
@@ -64,21 +64,21 @@ export async function getDashboardRoute(userRoles: string[]): Promise<string> {
 export function getDashboardRouteSync(userRoles: string[]): string {
   // Admin roles - Full access
   if (userRoles.some(role => ['SUPER_ADMIN', 'ADMIN'].includes(role))) {
-    return '/admin';
+    return '/dashboard/admin';
   }
   
   // Financial roles - Financial dashboard
   if (userRoles.some(role => ['FINANCIAL_ANALYST'].includes(role))) {
-    return '/financial';
+    return '/dashboard/financial';
   }
   
   // Kitchen operations roles - Main dashboard (with full sidebar access)
   if (userRoles.some(role => ['CHEF', 'NUTRITIONIST'].includes(role))) {
-    return '/home';
+    return '/dashboard';
   }
   
   // All other roles - Basic dashboard
-  return '/home';
+  return '/dashboard';
 }
 
 /**

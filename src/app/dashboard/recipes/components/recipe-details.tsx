@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { useDynamicPermission } from "@/hooks/use-permissions"
+import { usePermissions } from "@/hooks/use-permissions"
 import { 
   ArrowLeft, 
   Edit, 

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { prisma } from "@/lib/prisma"
 import { DashboardAlerts } from "@/components/dashboard/dashboard-alerts"
+import PermissionDebug from "@/components/debug/PermissionDebug"
 import { 
   Users, 
   School, 
@@ -264,6 +265,9 @@ export default async function DashboardPage() {
   
   return (
     <div className="space-y-6">
+      {/* Debug Component - Remove this in production */}
+      <PermissionDebug />
+      
       {/* Dashboard Alerts for access denied or other notifications */}
       <DashboardAlerts />
       

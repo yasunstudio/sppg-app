@@ -1,65 +1,57 @@
+/**
+ * Individual Permission Hook 
+ * React hook for checking specific permissions via API
+ */
+
 'use client'
 
-import { useSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
-import { permissionEngine } from '@/lib/permissions/core/permission-engine'
+import { useSession } from 'next-auth/react'
 
-export function usePermission(permission: string) {
-  const { data: session } = useSession()
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const checkPermission = async () => {
-      if (!session?.user?.id) {
-        setHasPermission(false)
-        setIsLoading(false)
-        return
-      }
-
-      try {
-        const result = await permissionEngine.hasPermission(session.user.id, permission)
-        setHasPermission(result)
-      } catch (error) {
-        console.error('Error checking permission:', error)
-        setHasPermission(false)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    if (session !== undefined) {
-      checkPermission()
-    }
-  }, [session, permission])
-
-  return { hasPermission, isLoading }
+interface UsePermissionReturn {
+  hasPermission: (permission: string) => boolean
+  hasAnyPermission: (permissions: string[]) => boolean
+  hasAllPermissions: (permissions: string[]) => boolean
+  isLoading: boolean
+  error: string | null
 }
 
-export function usePermissions(permissions: string[]) {
-  const { data: session } = useSession()
+export function usePermission(permissions: string[] = []): UsePermissionReturn {
+  const { data: session, status } = useSession()
   const [permissionResults, setPermissionResults] = useState<Record<string, boolean>>({})
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const checkPermissions = async () => {
-      if (!session?.user?.id) {
-        const defaultResults = permissions.reduce((acc, perm) => ({ ...acc, [perm]: false }), {})
-        setPermissionResults(defaultResults)
+      if (status !== 'authenticated' || !session?.user?.id || permissions.length === 0) {
+        setPermissionResults({})
         setIsLoading(false)
         return
       }
 
       try {
-        const results: Record<string, boolean> = {}
-        
-        for (const permission of permissions) {
-          results[permission] = await permissionEngine.hasPermission(session.user.id, permission)
+        setIsLoading(true)
+        setError(null)
+
+        const response = await fetch('/api/permissions/user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ permissions })
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to check permissions: ${response.status}`)
         }
-        
-        setPermissionResults(results)
-      } catch (error) {
-        console.error('Error checking permissions:', error)
+
+        const data = await response.json()
+        setPermissionResults(data.permissions || {})
+      } catch (err) {
+        console.error('Error checking permissions:', err)
+        setError(err instanceof Error ? err.message : 'Failed to check permissions')
+        // Set all permissions to false on error
         const defaultResults = permissions.reduce((acc, perm) => ({ ...acc, [perm]: false }), {})
         setPermissionResults(defaultResults)
       } finally {
@@ -67,10 +59,8 @@ export function usePermissions(permissions: string[]) {
       }
     }
 
-    if (session !== undefined) {
-      checkPermissions()
-    }
-  }, [session, permissions])
+    checkPermissions()
+  }, [session?.user?.id, status, JSON.stringify(permissions)]) // Use JSON.stringify to compare array
 
   const hasPermission = (permission: string) => permissionResults[permission] || false
   const hasAnyPermission = (perms: string[]) => perms.some(perm => permissionResults[perm])
@@ -80,7 +70,9 @@ export function usePermissions(permissions: string[]) {
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
-    permissionResults,
-    isLoading
+    isLoading,
+    error,
   }
 }
+
+export default usePermission
