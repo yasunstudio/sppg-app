@@ -1,355 +1,118 @@
-import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { hasPermission } from "@/lib/permissions"
-import { getDashboardRouteSync } from "@/lib/dashboard-routing"
-
-// Professional URL mapping - maps clean URLs to internal dashboard routes
-const URL_REWRITES = {
-  // Core Management
-  '/home': '/dashboard',
-  '/users': '/dashboard/users',
-  '/schools': '/dashboard/schools',
-  '/students': '/dashboard/students',
-  '/classes': '/dashboard/classes',
-  
-  // Inventory & Materials
-  '/inventory': '/dashboard/inventory',
-  '/materials': '/dashboard/raw-materials',
-  '/items': '/dashboard/items',
-  '/suppliers': '/dashboard/suppliers',
-  '/suppliers/create': '/dashboard/suppliers/create',
-  '/orders': '/dashboard/purchase-orders',
-  '/orders/analytics': '/dashboard/purchase-orders/analytics',
-  
-  // Production & Planning
-  '/production': '/dashboard/production',
-  '/production-plans': '/dashboard/production-plans',
-  '/resource-usage': '/dashboard/resource-usage',
-  '/menu-planning': '/dashboard/menu-planning',
-  '/menu-planning/create': '/dashboard/menu-planning/create',
-  '/menu-planning/planning': '/dashboard/menu-planning/planning',
-  '/menu-planning/nutrition': '/dashboard/menu-planning/nutrition',
-  '/recipes': '/dashboard/recipes',
-  '/recipes/new': '/dashboard/recipes/new',
-  '/quality': '/dashboard/quality',
-  '/quality-checks': '/dashboard/quality-checks',
-  '/quality-checkpoints': '/dashboard/quality-checkpoints',
-  '/nutrition-consultations': '/dashboard/nutrition-consultations',
-  '/food-samples': '/dashboard/food-samples',
-  
-  // Distribution & Logistics
-  '/distribution': '/dashboard/distributions',
-  '/distributions': '/dashboard/distributions',
-  '/distributions/schools': '/dashboard/distributions/schools',
-  '/distributions/tracking': '/dashboard/distributions/tracking',
-  '/distributions/routes': '/dashboard/distributions/routes',
-  '/vehicles': '/dashboard/vehicles',
-  '/vehicles/create': '/dashboard/vehicles/create',
-  '/drivers': '/dashboard/drivers',
-  '/drivers/create': '/dashboard/drivers/create',
-  
-  // Monitoring & Reports
-  '/monitoring': '/dashboard/monitoring',
-  '/monitoring/real-time': '/dashboard/monitoring/real-time',
-  '/monitoring/analytics': '/dashboard/monitoring/analytics',
-  '/monitoring/reports': '/dashboard/monitoring/reports',
-  '/performance': '/dashboard/performance',
-  '/reports': '/dashboard/monitoring/reports',
-  '/analytics': '/dashboard/monitoring/analytics',
-  
-  // Financial
-  '/financial': '/dashboard/financial',
-  '/waste-management': '/dashboard/waste-management',
-  '/feedback': '/dashboard/feedback',
-  
-  // Administration
-  '/admin': '/dashboard/admin',
-  '/settings': '/dashboard/settings',
-  '/profile': '/dashboard/profile',
-  '/notifications': '/dashboard/notifications',
-  '/roles': '/dashboard/roles',
-  '/user-roles': '/dashboard/user-roles',
-  '/system-config': '/dashboard/system-config',
-  '/audit-logs': '/dashboard/audit-logs',
-} as const
-
-// Define route-to-permission mapping (for internal dashboard routes)
-const PROTECTED_ROUTES = {
-  '/dashboard/users': ['users.view'],
-  '/dashboard/roles': ['system.config'],
-  '/dashboard/user-roles': ['users.edit', 'system.config'],
-  '/dashboard/system-config': ['system.config'],
-  '/dashboard/audit-logs': ['audit.view'],
-  '/dashboard/admin': ['system.config'],
-  '/dashboard/financial': ['financial.view'],
-  '/dashboard/inventory': ['inventory.view'],
-  '/dashboard/items': ['inventory.view'],
-  '/dashboard/suppliers': ['suppliers.view'],
-  '/dashboard/suppliers/create': ['suppliers.manage'],
-  '/dashboard/purchase-orders': ['purchase_orders.view'],
-  '/dashboard/purchase-orders/analytics': ['purchase_orders.view'],
-  '/dashboard/production': ['production.view'],
-  '/dashboard/production-plans': ['production.view'],
-  '/dashboard/resource-usage': ['production.view'],
-  '/dashboard/quality': ['quality.check'],
-  '/dashboard/quality-checks': ['quality.check'],
-  '/dashboard/quality-checkpoints': ['quality.check'],
-  '/dashboard/menu-planning': ['menus.view'],
-  '/dashboard/menu-planning/create': ['menus.create'],
-  '/dashboard/menu-planning/planning': ['menus.view'],
-  '/dashboard/menu-planning/nutrition': ['menus.view'],
-  '/dashboard/recipes': ['recipes.view'],
-  '/dashboard/recipes/new': ['recipes.create'],
-  '/dashboard/nutrition-consultations': ['nutrition.consult'],
-  '/dashboard/students': ['students.view'],
-  '/dashboard/food-samples': ['quality.check'],
-  '/dashboard/drivers': ['drivers.view'],
-  '/dashboard/waste-management': ['waste.view'],
-  '/dashboard/raw-materials': ['inventory.view'],
-  '/dashboard/distributions': ['distributions.view'],
-  '/dashboard/distributions/schools': ['distributions.view'],
-  '/dashboard/distributions/tracking': ['distributions.track'],
-  '/dashboard/distributions/routes': ['distributions.view'],
-  '/dashboard/vehicles': ['vehicles.view'],
-  '/dashboard/vehicles/create': ['vehicles.create'],
-  '/dashboard/monitoring': ['reports.view'],
-  '/dashboard/monitoring/real-time': ['reports.view'],
-  '/dashboard/monitoring/analytics': ['analytics.view'],
-  '/dashboard/monitoring/reports': ['reports.view'],
-  '/dashboard/performance': ['reports.view'],
-  '/dashboard/feedback': ['feedback.view'],
-} as const
+import { getToken } from "next-auth/jwt"
+import { checkRoutePermissions } from "@/lib/permissions/middleware/permission-middleware"
 
 export async function middleware(request: NextRequest) {
-  const session = await auth()
   const { pathname } = request.nextUrl
 
-  // Skip middleware for static files and API routes
-  if (pathname.startsWith('/_next') || 
-      pathname.startsWith('/api') || 
-      pathname.startsWith('/favicon.ico') ||
-      /\.(png|jpg|jpeg|gif|svg)$/.test(pathname)) {
+  // Skip middleware for public routes and API routes that don't need protection
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/public') ||
+    pathname.includes('.') ||
+    pathname === '/' ||
+    pathname === '/favicon.ico'
+  ) {
     return NextResponse.next()
   }
 
-  // Handle authentication
-  if (!session && !pathname.startsWith("/auth")) {
-    return NextResponse.redirect(new URL("/auth/login", request.url))
+  // Get authentication token
+  const token = await getToken({ 
+    req: request,
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET 
+  })
+
+  // Redirect unauthenticated users to sign in
+  if (!token) {
+    const signInUrl = new URL('/auth/signin', request.url)
+    signInUrl.searchParams.set('callbackUrl', request.url)
+    return NextResponse.redirect(signInUrl)
   }
 
-  // Handle authenticated routes
-  if (session) {
-    // Redirect from auth pages if already logged in
-    if (pathname.startsWith("/auth")) {
-      const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
-      const dashboardRoute = getDashboardRouteSync(userRoles)
-      return NextResponse.redirect(new URL(dashboardRoute, request.url))
-    }
+  // Check permission-based route protection
+  const permissionResponse = await checkRoutePermissions(request, token)
+  if (permissionResponse) {
+    return permissionResponse
+  }
 
-    // Handle clean URL rewrites to internal dashboard routes
-    const rewriteTarget = URL_REWRITES[pathname as keyof typeof URL_REWRITES]
-    if (rewriteTarget) {
-      // Check permissions for the internal route
-      const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
-      
-      const requiredPermissions = PROTECTED_ROUTES[rewriteTarget as keyof typeof PROTECTED_ROUTES]
-      if (requiredPermissions) {
-        const hasAccess = requiredPermissions.some(permission => 
-          hasPermission(userRoles, permission as any)
-        )
+  // Default dashboard routing based on user roles
+  if (pathname === '/dashboard') {
+    try {
+      // Get user role to determine default dashboard
+      const userId = token.sub
+      if (!userId) {
+        return NextResponse.redirect(new URL('/auth/signin', request.url))
+      }
 
-        if (!hasAccess) {
-          // Redirect to appropriate dashboard with error message
-          const dashboardRoute = getDashboardRouteSync(userRoles)
-          const url = new URL(dashboardRoute, request.url)
-          url.searchParams.set('error', 'access_denied')
-          url.searchParams.set('message', 'You do not have permission to access this page')
-          return NextResponse.redirect(url)
+      // Simple role-based dashboard routing
+      const response = await fetch(`${request.nextUrl.origin}/api/admin/user-roles/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token.sub}`
+        }
+      }).catch(() => null)
+
+      if (response && response.ok) {
+        const userData = await response.json()
+        const roles = userData.roles || []
+        
+        // Determine default dashboard based on highest priority role
+        const sortedRoles = roles.sort((a: any, b: any) => (b.priority || 0) - (a.priority || 0))
+        const primaryRole = sortedRoles[0]
+
+        if (primaryRole) {
+          switch (primaryRole.name) {
+            case 'SUPER_ADMIN':
+            case 'ADMIN':
+              return NextResponse.redirect(new URL('/dashboard/admin', request.url))
+            case 'CHEF':
+              return NextResponse.redirect(new URL('/dashboard/production', request.url))
+            case 'NUTRITIONIST':
+              return NextResponse.redirect(new URL('/dashboard/menu', request.url))
+            case 'QUALITY_CONTROL':
+              return NextResponse.redirect(new URL('/dashboard/quality', request.url))
+            case 'DISTRIBUTION_MANAGER':
+              return NextResponse.redirect(new URL('/dashboard/logistics', request.url))
+            case 'WAREHOUSE_MANAGER':
+              return NextResponse.redirect(new URL('/dashboard/inventory', request.url))
+            case 'FINANCIAL_ANALYST':
+              return NextResponse.redirect(new URL('/dashboard/finance', request.url))
+            case 'SCHOOL_ADMIN':
+              return NextResponse.redirect(new URL('/dashboard/school', request.url))
+            case 'PRODUCTION_STAFF':
+              return NextResponse.redirect(new URL('/dashboard/production', request.url))
+            case 'DRIVER':
+              return NextResponse.redirect(new URL('/dashboard/delivery', request.url))
+            default:
+              return NextResponse.redirect(new URL('/dashboard/overview', request.url))
+          }
         }
       }
-
-      // Rewrite to internal dashboard route
-      const url = request.nextUrl.clone()
-      url.pathname = rewriteTarget
-      return NextResponse.rewrite(url)
-    }
-
-    // Handle dynamic routes (e.g., /menu-planning/[id]/edit)
-    const dynamicRouteMatch = handleDynamicRoutes(pathname)
-    if (dynamicRouteMatch) {
-      const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
       
-      // Check permissions for dynamic routes
-      const requiredPermissions = PROTECTED_ROUTES[dynamicRouteMatch.baseRoute as keyof typeof PROTECTED_ROUTES]
-      if (requiredPermissions) {
-        const hasAccess = requiredPermissions.some(permission => 
-          hasPermission(userRoles, permission as any)
-        )
-
-        if (!hasAccess) {
-          const dashboardRoute = getDashboardRouteSync(userRoles)
-          const url = new URL(dashboardRoute, request.url)
-          url.searchParams.set('error', 'access_denied')
-          return NextResponse.redirect(url)
-        }
-      }
-
-      // Rewrite to internal dashboard route
-      const url = request.nextUrl.clone()
-      url.pathname = dynamicRouteMatch.internalRoute
-      return NextResponse.rewrite(url)
-    }
-
-    // Handle direct access to internal dashboard routes (redirect to clean URLs)
-    if (pathname.startsWith("/dashboard")) {
-      const cleanUrl = getCleanUrl(pathname)
-      if (cleanUrl !== pathname) {
-        return NextResponse.redirect(new URL(cleanUrl, request.url))
-      }
-    }
-
-    // Legacy admin route protection (for backward compatibility)
-    if (pathname.startsWith("/admin") && !URL_REWRITES[pathname as keyof typeof URL_REWRITES]) {
-      const userRoles = session.user?.roles?.map((ur: any) => ur.role.name) || []
-      const isAdmin = userRoles.some(role => ['SUPER_ADMIN', 'ADMIN'].includes(role))
-      if (!isAdmin) {
-        const dashboardRoute = getDashboardRouteSync(userRoles)
-        return NextResponse.redirect(new URL(dashboardRoute, request.url))
-      }
+      // Fallback to overview if role detection fails
+      return NextResponse.redirect(new URL('/dashboard/overview', request.url))
+    } catch (error) {
+      console.error('Error in dashboard routing:', error)
+      return NextResponse.redirect(new URL('/dashboard/overview', request.url))
     }
   }
 
+  // Continue with the request
   return NextResponse.next()
-}
-
-// Helper function to convert internal dashboard routes to clean URLs
-function getCleanUrl(internalRoute: string): string {
-  for (const [cleanUrl, internalUrl] of Object.entries(URL_REWRITES)) {
-    if (internalUrl === internalRoute) {
-      return cleanUrl
-    }
-  }
-  
-  // Special mappings
-  if (internalRoute === '/dashboard') {
-    return '/home'
-  }
-  
-  // If no mapping found, remove /dashboard prefix and redirect to home if empty
-  const cleanPath = internalRoute.replace('/dashboard', '')
-  return cleanPath || '/home'
-}
-
-// Helper function to handle dynamic routes
-function handleDynamicRoutes(pathname: string): { baseRoute: string; internalRoute: string } | null {
-  // Handle menu planning dynamic routes
-  const menuPlanningEditMatch = pathname.match(/^\/menu-planning\/([^\/]+)\/edit$/)
-  if (menuPlanningEditMatch) {
-    return {
-      baseRoute: '/dashboard/menu-planning',
-      internalRoute: `/dashboard/menu-planning/${menuPlanningEditMatch[1]}/edit`
-    }
-  }
-
-  const menuPlanningViewMatch = pathname.match(/^\/menu-planning\/([^\/]+)$/)
-  if (menuPlanningViewMatch && !['create', 'planning', 'nutrition'].includes(menuPlanningViewMatch[1])) {
-    return {
-      baseRoute: '/dashboard/menu-planning',
-      internalRoute: `/dashboard/menu-planning/${menuPlanningViewMatch[1]}`
-    }
-  }
-
-  // Handle recipe dynamic routes
-  const recipeEditMatch = pathname.match(/^\/recipes\/([^\/]+)\/edit$/)
-  if (recipeEditMatch) {
-    return {
-      baseRoute: '/dashboard/recipes',
-      internalRoute: `/dashboard/recipes/${recipeEditMatch[1]}/edit`
-    }
-  }
-
-  const recipeViewMatch = pathname.match(/^\/recipes\/([^\/]+)$/)
-  if (recipeViewMatch && recipeViewMatch[1] !== 'new') {
-    return {
-      baseRoute: '/dashboard/recipes',
-      internalRoute: `/dashboard/recipes/${recipeViewMatch[1]}`
-    }
-  }
-
-  // Handle user dynamic routes
-  const userEditMatch = pathname.match(/^\/users\/([^\/]+)\/edit$/)
-  if (userEditMatch) {
-    return {
-      baseRoute: '/dashboard/users',
-      internalRoute: `/dashboard/users/${userEditMatch[1]}/edit`
-    }
-  }
-
-  // Handle vehicle dynamic routes
-  const vehicleEditMatch = pathname.match(/^\/vehicles\/([^\/]+)\/edit$/)
-  if (vehicleEditMatch) {
-    return {
-      baseRoute: '/dashboard/vehicles',
-      internalRoute: `/dashboard/vehicles/${vehicleEditMatch[1]}/edit`
-    }
-  }
-
-  const vehicleViewMatch = pathname.match(/^\/vehicles\/([^\/]+)$/)
-  if (vehicleViewMatch && vehicleViewMatch[1] !== 'create') {
-    return {
-      baseRoute: '/dashboard/vehicles',
-      internalRoute: `/dashboard/vehicles/${vehicleViewMatch[1]}`
-    }
-  }
-
-  // Handle supplier dynamic routes
-  const supplierEditMatch = pathname.match(/^\/suppliers\/([^\/]+)\/edit$/)
-  if (supplierEditMatch) {
-    return {
-      baseRoute: '/dashboard/suppliers',
-      internalRoute: `/dashboard/suppliers/${supplierEditMatch[1]}/edit`
-    }
-  }
-
-  const supplierViewMatch = pathname.match(/^\/suppliers\/([^\/]+)$/)
-  if (supplierViewMatch && supplierViewMatch[1] !== 'create') {
-    return {
-      baseRoute: '/dashboard/suppliers',
-      internalRoute: `/dashboard/suppliers/${supplierViewMatch[1]}`
-    }
-  }
-
-  // Handle driver dynamic routes
-  const driverEditMatch = pathname.match(/^\/drivers\/([^\/]+)\/edit$/)
-  if (driverEditMatch) {
-    return {
-      baseRoute: '/dashboard/drivers',
-      internalRoute: `/dashboard/drivers/${driverEditMatch[1]}/edit`
-    }
-  }
-
-  const driverViewMatch = pathname.match(/^\/drivers\/([^\/]+)$/)
-  if (driverViewMatch && driverViewMatch[1] !== 'create') {
-    return {
-      baseRoute: '/dashboard/drivers',
-      internalRoute: `/dashboard/drivers/${driverViewMatch[1]}`
-    }
-  }
-
-  return null
 }
 
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * - api/auth (auth routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public files (images, etc.)
+     * - public (public files)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$).*)",
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)',
   ],
 }

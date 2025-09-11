@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
-import { hasPermission } from '@/lib/permissions';
+import { permissionEngine } from "@/lib/permissions/core/permission-engine";
 
 export async function GET(
   req: NextRequest,
@@ -13,10 +13,28 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check permissions
-    const userRoles = session.user.roles?.map(r => r.role.name) || [];
-    if (!hasPermission(userRoles, 'quality.check')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'resource:read'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }    if (!hasPermission) {
+      return NextResponse.json(
+        { error: "Forbidden: Insufficient permissions" },
+        { status: 403 }
+      );
     }
 
     const { id } = await params;
@@ -51,10 +69,40 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check permissions
-    const userRoles = session.user.roles?.map(r => r.role.name) || [];
-    if (!hasPermission(userRoles, 'quality.check')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'quality-standards:update'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }    if (!hasPermission) {
+      return NextResponse.json(
+        { error: "Forbidden: Insufficient permissions" },
+        { status: 403 }
+      );
     }
 
     const { id } = await params;
@@ -103,10 +151,40 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check permissions
-    const userRoles = session.user.roles?.map(r => r.role.name) || [];
-    if (!hasPermission(userRoles, 'quality.check')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'quality-standards:delete'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }    if (!hasPermission) {
+      return NextResponse.json(
+        { error: "Forbidden: Insufficient permissions" },
+        { status: 403 }
+      );
     }
 
     const { id } = await params;
@@ -122,7 +200,5 @@ export async function DELETE(
       { error: 'Internal server error' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

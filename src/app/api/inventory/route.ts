@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from "@/lib/prisma"
 import { z } from 'zod'
 
+import { auth } from "@/lib/auth";
+import { permissionEngine } from "@/lib/permissions/core/permission-engine";
 // prisma imported from lib
 
 const createInventorySchema = z.object({
@@ -17,6 +19,35 @@ const createInventorySchema = z.object({
 // GET /api/inventory - Get all inventory items with filters
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'inventory:read'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }    if (!hasPermission) {
+      return NextResponse.json(
+        { error: "Forbidden: Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
     const status = searchParams.get('status')
@@ -103,6 +134,33 @@ export async function GET(request: NextRequest) {
 // POST /api/inventory - Create new inventory item
 export async function POST(request: NextRequest) {
   try {
+    
+    
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'inventory:create'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: "Forbidden: Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json()
     const validatedData = createInventorySchema.parse(body)
 

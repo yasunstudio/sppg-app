@@ -1,14 +1,22 @@
 import { LucideIcon } from "lucide-react"
 
 export interface MenuState {
+  // Core Operations
   production: boolean
   menuPlanning: boolean
   distribution: boolean
-  monitoring: boolean
   quality: boolean
-  operational: boolean
-  dataMaster: boolean
+  
+  // Management & Administration  
+  institution: boolean
+  supplyChain: boolean
+  standards: boolean
+  procurement: boolean
+  logistics: boolean
+  monitoring: boolean
   system: boolean
+  
+  // UI Preferences
   preferences: MenuPreferences
 }
 
@@ -62,7 +70,18 @@ export interface SidebarContextType {
   handleMobileLinkClick: () => void
 }
 
-export type MenuType = 'production' | 'menuPlanning' | 'distribution' | 'monitoring' | 'quality' | 'operational' | 'dataMaster' | 'system'
+export type MenuType = 
+  | 'production' 
+  | 'menuPlanning' 
+  | 'distribution' 
+  | 'quality'
+  | 'institution'
+  | 'supplyChain' 
+  | 'standards'
+  | 'procurement'
+  | 'logistics'
+  | 'monitoring' 
+  | 'system'
 
 export interface AnalyticsMetadata {
   action: string

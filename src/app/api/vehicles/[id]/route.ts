@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { vehicleUpdateSchema } from "@/app/dashboard/vehicles/components/utils/vehicle-schemas"
+import { auth } from "@/lib/auth";
+import { permissionEngine } from "@/lib/permissions/core/permission-engine";
 
 interface RouteParams {
   id: string
@@ -11,6 +13,35 @@ export async function GET(
   { params }: { params: Promise<RouteParams> }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'resource:read'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }    if (!hasPermission) {
+      return NextResponse.json(
+        { error: "Forbidden: Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params
 
     const vehicle = await prisma.vehicle.findUnique({
@@ -61,6 +92,26 @@ export async function PUT(
   { params }: { params: Promise<RouteParams> }
 ) {
   try {
+    
+    
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'vehicles:update'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+
     const { id } = await params
     const body = await request.json()
     
@@ -155,6 +206,26 @@ export async function DELETE(
   { params }: { params: Promise<RouteParams> }
 ) {
   try {
+    
+    
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'vehicles:delete'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+
     const { id } = await params
 
     // Check if vehicle exists
@@ -226,6 +297,26 @@ export async function PATCH(
   { params }: { params: Promise<RouteParams> }
 ) {
   try {
+    
+    
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'vehicles:update'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+
     const { id } = await params
     const body = await request.json()
 

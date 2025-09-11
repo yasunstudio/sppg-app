@@ -1,122 +1,94 @@
-import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+// ============================================================================
+// USER ROLES API ROUTE (src/app/api/user-roles/route.ts)
+// Enhanced with Database-Driven Permission System
+// ============================================================================
 
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
+import { permissionEngine } from '@/lib/permissions/core/permission-engine'
+
+// GET: Fetch user-role assignments
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const limit = parseInt(searchParams.get("limit") || "20")
-    const offset = parseInt(searchParams.get("offset") || "0")
-    const roleId = searchParams.get("roleId")
-    const userId = searchParams.get("userId")
-
-    // Build where clause
-    const where: any = {
-      ...(roleId && { roleId }),
-      ...(userId && { userId })
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const [userRoles, total] = await Promise.all([
-      prisma.userRole.findMany({
-        where,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true
-            }
-          },
-          role: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              permissions: true
-            }
+    const hasPermission = await permissionEngine.hasPermission(session.user.id, 'users.view')
+
+    if (!hasPermission) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('userId')
+    const roleId = searchParams.get('roleId')
+
+    const whereCondition: any = {}
+    if (userId) whereCondition.userId = userId
+    if (roleId) whereCondition.roleId = roleId
+
+    const userRoles = await prisma.userRole.findMany({
+      where: whereCondition,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
           }
         },
-        orderBy: { assignedAt: "desc" },
-        take: limit,
-        skip: offset
-      }),
-      prisma.userRole.count({ where })
-    ])
-
-    // Calculate stats
-    const allUserRoles = await prisma.userRole.findMany({
-      include: {
-        user: true,
-        role: true
+        role: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            color: true,
+            permissions: true
+          }
+        }
+      },
+      orderBy: {
+        assignedAt: 'desc'
       }
     })
-
-    const stats = {
-      total: allUserRoles.length,
-      active: allUserRoles.length, // All user roles are considered active in this schema
-      inactive: 0,
-      rolesCount: new Set(allUserRoles.map(ur => ur.roleId)).size,
-      usersCount: new Set(allUserRoles.map(ur => ur.userId)).size,
-      recent30Days: allUserRoles.filter(ur => {
-        const thirtyDaysAgo = new Date()
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-        return new Date(ur.assignedAt) >= thirtyDaysAgo
-      }).length,
-      roleBreakdown: Object.entries(
-        allUserRoles.reduce((acc: Record<string, number>, userRole) => {
-          const roleName = userRole.role?.name || 'Unknown'
-          acc[roleName] = (acc[roleName] || 0) + 1
-          return acc
-        }, {})
-      ).map(([role, count]) => ({
-        role,
-        count,
-        percentage: parseFloat(((count / allUserRoles.length) * 100).toFixed(1))
-      }))
-    }
 
     return NextResponse.json({
       success: true,
-      data: userRoles,
-      stats,
-      pagination: {
-        currentPage: Math.floor(offset / limit) + 1,
-        totalPages: Math.ceil(total / limit),
-        totalCount: total,
-        hasMore: offset + limit < total,
-        itemsPerPage: limit
-      }
+      data: userRoles
     })
 
   } catch (error) {
-    console.error("Error fetching user roles:", error)
+    console.error('Error in GET /api/user-roles:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: "Failed to fetch user roles",
-        details: error instanceof Error ? error.message : "Unknown error"
-      },
+      { error: 'Failed to fetch user roles' },
       { status: 500 }
     )
   }
 }
 
+// POST: Assign role to user
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    
-    const {
-      userId,
-      roleId
-    } = body
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    // Validate required fields
+    const hasPermission = await permissionEngine.hasPermission(session.user.id, 'users.update')
+
+    if (!hasPermission) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { userId, roleId } = body
+
     if (!userId || !roleId) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: "Missing required fields: userId, roleId"
-        },
+        { error: 'User ID and Role ID are required' },
         { status: 400 }
       )
     }
@@ -128,10 +100,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: "User not found"
-        },
+        { error: 'User not found' },
         { status: 404 }
       )
     }
@@ -143,28 +112,24 @@ export async function POST(request: NextRequest) {
 
     if (!role) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: "Role not found"
-        },
+        { error: 'Role not found' },
         { status: 404 }
       )
     }
 
-    // Check if user already has this role
-    const existingUserRole = await prisma.userRole.findFirst({
+    // Check if user-role assignment already exists
+    const existingAssignment = await prisma.userRole.findUnique({
       where: {
-        userId,
-        roleId
+        userId_roleId: {
+          userId,
+          roleId
+        }
       }
     })
 
-    if (existingUserRole) {
+    if (existingAssignment) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: "User already has this role assigned"
-        },
+        { error: 'User already has this role' },
         { status: 409 }
       )
     }
@@ -179,8 +144,7 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             name: true,
-            email: true,
-            avatar: true
+            email: true
           }
         },
         role: {
@@ -188,27 +152,97 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             description: true,
+            color: true,
             permissions: true
           }
         }
       }
     })
 
+    // Clear user permissions cache
+    permissionEngine.clearAllCaches()
+
     return NextResponse.json({
       success: true,
       data: userRole,
-      message: "User role assigned successfully"
+      message: 'Role assigned to user successfully'
     })
 
   } catch (error) {
-    console.error("Error creating user role:", error)
-    
+    console.error('Error in POST /api/user-roles:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: "Failed to assign user role",
-        details: error instanceof Error ? error.message : "Unknown error"
-      },
+      { error: 'Failed to assign role to user' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE: Remove role from user
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const hasPermission = await permissionEngine.hasPermission(session.user.id, 'users.update')
+
+    if (!hasPermission) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const userRoleId = searchParams.get('id')
+    const userId = searchParams.get('userId')
+    const roleId = searchParams.get('roleId')
+
+    if (!userRoleId && (!userId || !roleId)) {
+      return NextResponse.json(
+        { error: 'Either user-role ID or both user ID and role ID are required' },
+        { status: 400 }
+      )
+    }
+
+    let userRole;
+
+    if (userRoleId) {
+      userRole = await prisma.userRole.findUnique({
+        where: { id: userRoleId }
+      })
+    } else {
+      userRole = await prisma.userRole.findUnique({
+        where: {
+          userId_roleId: {
+            userId: userId!,
+            roleId: roleId!
+          }
+        }
+      })
+    }
+
+    if (!userRole) {
+      return NextResponse.json(
+        { error: 'User-role assignment not found' },
+        { status: 404 }
+      )
+    }
+
+    await prisma.userRole.delete({
+      where: { id: userRole.id }
+    })
+
+    // Clear user permissions cache
+    permissionEngine.clearAllCaches()
+
+    return NextResponse.json({
+      success: true,
+      message: 'Role removed from user successfully'
+    })
+
+  } catch (error) {
+    console.error('Error in DELETE /api/user-roles:', error)
+    return NextResponse.json(
+      { error: 'Failed to remove role from user' },
       { status: 500 }
     )
   }

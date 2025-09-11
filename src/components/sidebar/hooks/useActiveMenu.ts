@@ -6,43 +6,51 @@ import type { MenuType } from "../types/sidebar.types"
 export const useActiveMenu = (pathname: string) => {
   // Centralized active menu detection
   const getActiveMenuType = (path: string): MenuType | null => {
+    // Core Operations
     if (path.startsWith("/dashboard/production") || 
-        path.startsWith("/dashboard/production-plans") || 
-        path.startsWith("/dashboard/resource-usage")) {
+        path.startsWith("/dashboard/production-plans")) {
       return 'production'
     }
-    if (path.startsWith("/dashboard/menu-planning") || 
-        path.startsWith("/dashboard/recipes")) {
+    if (path.startsWith("/dashboard/menu-planning")) {
       return 'menuPlanning'
     }
     if (path.startsWith("/dashboard/distributions") || 
         path.startsWith("/dashboard/distribution")) {
       return 'distribution'
     }
-    if (path.startsWith("/dashboard/monitoring")) {
-      return 'monitoring'
-    }
-    if (path.startsWith("/dashboard/quality") || 
-        path.startsWith("/dashboard/quality-checks") ||
-        path.startsWith("/dashboard/food-samples") || 
-        path.startsWith("/dashboard/nutrition-consultations")) {
+    if (path.startsWith("/dashboard/quality")) {
       return 'quality'
     }
-    if (path.startsWith("/dashboard/purchase-orders") || 
-        path.startsWith("/dashboard/inventory")) {
-      return 'operational'
-    }
+    
+    // Management & Administration
     if (path.startsWith("/dashboard/schools") || 
         path.startsWith("/dashboard/students") ||
-        path.startsWith("/dashboard/classes") ||
-        path.startsWith("/dashboard/raw-materials") ||
-        path.startsWith("/dashboard/items") ||
+        path.startsWith("/dashboard/classes")) {
+      return 'institution'
+    }
+    if (path.startsWith("/dashboard/raw-materials") ||
         path.startsWith("/dashboard/suppliers") ||
-        path.startsWith("/dashboard/vehicles") ||
-        path.startsWith("/dashboard/drivers") ||
-        path.startsWith("/dashboard/quality-standards") ||
-        path.startsWith("/dashboard/quality-checkpoints")) {
-      return 'dataMaster'
+        path.startsWith("/dashboard/items")) {
+      return 'supplyChain'
+    }
+    if (path.startsWith("/dashboard/quality-standards") ||
+        path.startsWith("/dashboard/quality-checkpoints") ||
+        path.startsWith("/dashboard/recipes")) {
+      return 'standards'
+    }
+    if (path.startsWith("/dashboard/purchase-orders") || 
+        path.startsWith("/dashboard/inventory") ||
+        path.startsWith("/dashboard/resource-usage")) {
+      return 'procurement'
+    }
+    if (path.startsWith("/dashboard/vehicles") ||
+        path.startsWith("/dashboard/drivers")) {
+      return 'logistics'
+    }
+    if (path.startsWith("/dashboard/monitoring") ||
+        path.startsWith("/dashboard/analytics") ||
+        path.startsWith("/dashboard/performance")) {
+      return 'monitoring'
     }
     if (path.startsWith("/dashboard/users") || 
         path.startsWith("/dashboard/roles") ||
@@ -54,6 +62,7 @@ export const useActiveMenu = (pathname: string) => {
         path.startsWith("/dashboard/profile")) {
       return 'system'
     }
+    
     return null
   }
 
@@ -79,20 +88,23 @@ export const useActiveMenu = (pathname: string) => {
   const getBreadcrumbInfo = () => {
     if (!activeMenuType) return null
     
-    const menuLabels: Record<MenuType, string> = {
+    const menuNames: Record<MenuType, string> = {
       production: 'Produksi',
       menuPlanning: 'Perencanaan Menu',
       distribution: 'Distribusi',
-      monitoring: 'Monitoring & Laporan',
-      quality: 'Manajemen Kualitas',
-      operational: 'Operasional Harian',
-      dataMaster: 'Data Master',
-      system: 'Administrasi Sistem'
+      quality: 'Quality Assurance',
+      institution: 'Manajemen Institusi',
+      supplyChain: 'Manajemen Pasokan',
+      standards: 'Standar & Resep',
+      procurement: 'Pengadaan & Inventory',
+      logistics: 'Logistik & Transportasi',
+      monitoring: 'Monitoring & Analytics',
+      system: 'Sistem & Admin'
     }
 
     return {
       menuType: activeMenuType,
-      menuLabel: menuLabels[activeMenuType],
+      menuLabel: menuNames[activeMenuType],
       currentPath: pathname
     }
   }

@@ -1,104 +1,240 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { Class, ClassStats, PaginationData } from '../utils/class-types'
+import { useState, useEffect, useCallback } from 'react'
+import type { Class, ClassStats, ClassFilters } from '../utils/class-types'
 
-interface ClassFilters {
-  search?: string
-  gradeLevel?: string
-  academicYear?: string
-  status?: string
+interface UseClassesParams {
+  filters?: ClassFilters
+  page?: number
+  limit?: number
 }
 
 interface UseClassesReturn {
   classes: Class[]
   stats: ClassStats
-  pagination: PaginationData
-  filters: ClassFilters
-  isLoading: boolean
+  pagination: {
+    currentPage: number
+    totalPages: number
+    totalCount: number
+    hasMore: boolean
+    itemsPerPage: number
+  } | null
+  loading: boolean
   error: string | null
-  setPagination: (pagination: PaginationData | ((prev: PaginationData) => PaginationData)) => void
-  setFilters: (filters: ClassFilters) => void
-  refetch: () => void
+  refreshClasses: () => void
+  createClass: (data: any) => Promise<Class>
+  updateClass: (id: string, data: any) => Promise<Class>
+  deleteClass: (id: string) => Promise<void>
+  searchClasses: (term: string) => void
+  filterByGrade: (grade: string) => void
+  filterBySchool: (schoolId: string) => void
 }
 
-export function useClasses(): UseClassesReturn {
+export function useClasses(params: UseClassesParams = {}): UseClassesReturn {
+  const { filters, page = 1, limit = 10 } = params
+  
   const [classes, setClasses] = useState<Class[]>([])
   const [stats, setStats] = useState<ClassStats>({
     totalClasses: 0,
     totalStudents: 0,
+    totalCapacity: 0,
     averageCapacity: 0,
     occupancyRate: 0
   })
-  const [pagination, setPagination] = useState<PaginationData>({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10
-  })
-  const [filters, setFilters] = useState<ClassFilters>({})
-  const [isLoading, setIsLoading] = useState(true)
+  const [pagination, setPagination] = useState<{
+    currentPage: number
+    totalPages: number
+    totalCount: number
+    hasMore: boolean
+    itemsPerPage: number
+  } | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchClasses = async () => {
+  const fetchClasses = useCallback(async () => {
     try {
-      setIsLoading(true)
+      setLoading(true)
       setError(null)
-
-      const params = new URLSearchParams({
-        page: pagination.currentPage.toString(),
-        limit: pagination.itemsPerPage.toString(),
-        ...(filters.search && { search: filters.search }),
-        ...(filters.gradeLevel && { gradeLevel: filters.gradeLevel }),
-        ...(filters.academicYear && { academicYear: filters.academicYear }),
-        ...(filters.status && { status: filters.status })
+      
+      const queryParams = new URLSearchParams({
+        offset: ((page - 1) * limit).toString(),
+        limit: limit.toString(),
+        ...(filters?.selectedSchool && filters.selectedSchool !== 'all' && { 
+          schoolId: filters.selectedSchool 
+        }),
+        ...(filters?.selectedGrade && filters.selectedGrade !== 'all' && { 
+          grade: filters.selectedGrade 
+        })
       })
 
-      const response = await fetch(`/api/classes?${params}`)
+      const response = await fetch(`/api/classes?${queryParams}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch classes')
       }
 
-      const data = await response.json()
+      const result = await response.json()
       
-      setClasses(data.classes || [])
-      setStats(data.stats || {
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch classes')
+      }
+
+      // Filter by search term on client side for now
+      let classData = result.data || []
+      if (filters?.searchTerm) {
+        const searchLower = filters.searchTerm.toLowerCase()
+        classData = classData.filter((classItem: any) => 
+          classItem.name.toLowerCase().includes(searchLower) ||
+          (classItem.teacherName && classItem.teacherName.toLowerCase().includes(searchLower)) ||
+          (classItem.school?.name && classItem.school.name.toLowerCase().includes(searchLower))
+        )
+      }
+
+      setClasses(classData)
+      
+      // Set stats from API response
+      setStats(result.stats || {
         totalClasses: 0,
         totalStudents: 0,
+        totalCapacity: 0,
         averageCapacity: 0,
         occupancyRate: 0
       })
-      setPagination(prev => ({
-        ...prev,
-        totalPages: data.pagination?.totalPages || 1,
-        totalItems: data.pagination?.totalItems || 0
-      }))
-    } catch (error) {
-      console.error('Error fetching classes:', error)
-      setError(error instanceof Error ? error.message : 'Failed to fetch classes')
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
-  const refetch = () => {
+      // Set pagination data
+      setPagination(result.pagination || null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+      console.error('Error fetching classes:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [page, limit, filters])
+
+  const createClass = useCallback(async (classData: any): Promise<Class> => {
+    try {
+      setLoading(true)
+      
+      const response = await fetch('/api/classes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(classData),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to create class')
+      }
+      
+      // Refresh the list
+      await fetchClasses()
+      
+      return result.data
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create class')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchClasses])
+
+  const updateClass = useCallback(async (id: string, classData: any): Promise<Class> => {
+    try {
+      setLoading(true)
+      
+      const response = await fetch(`/api/classes/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(classData),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to update class')
+      }
+      
+      // Update local state
+      setClasses(prev => 
+        prev.map(classItem => 
+          classItem.id === id ? result.data : classItem
+        )
+      )
+      
+      return result.data
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update class')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const deleteClass = useCallback(async (id: string): Promise<void> => {
+    try {
+      setLoading(true)
+      
+      const response = await fetch(`/api/classes/${id}`, {
+        method: 'DELETE',
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to delete class')
+      }
+
+      // Remove from local state
+      setClasses(prev => prev.filter(classItem => classItem.id !== id))
+      
+      // Update stats
+      await fetchClasses()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete class')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchClasses])
+
+  const searchClasses = useCallback((term: string) => {
+    // This will trigger a re-fetch through the filters dependency
     fetchClasses()
-  }
+  }, [fetchClasses])
+
+  const filterByGrade = useCallback((grade: string) => {
+    fetchClasses()
+  }, [fetchClasses])
+
+  const filterBySchool = useCallback((schoolId: string) => {
+    fetchClasses()
+  }, [fetchClasses])
+
+  const refreshClasses = useCallback(() => {
+    fetchClasses()
+  }, [fetchClasses])
 
   useEffect(() => {
     fetchClasses()
-  }, [pagination.currentPage, pagination.itemsPerPage, filters])
+  }, [fetchClasses])
 
   return {
     classes,
     stats,
     pagination,
-    filters,
-    isLoading,
+    loading,
     error,
-    setPagination,
-    setFilters,
-    refetch
+    refreshClasses,
+    createClass,
+    updateClass,
+    deleteClass,
+    searchClasses,
+    filterByGrade,
+    filterBySchool,
   }
 }

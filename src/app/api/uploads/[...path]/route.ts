@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
+import { auth } from '@/lib/auth';
+import { permissionEngine } from '@/lib/permissions/core/permission-engine';
 
 export async function GET(
   request: NextRequest,
@@ -23,6 +25,30 @@ export async function GET(
         { error: 'Access denied' },
         { status: 403 }
       );
+    }
+
+    // Check if this is a protected folder (not public avatars)
+    const isPublicFolder = filePath[0] === 'avatars';
+    
+    if (!isPublicFolder) {
+      // For non-public folders, require authentication
+      const session = await auth();
+      if (!session?.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      // Check permission to access files
+      const hasPermission = await permissionEngine.hasPermission(
+        session.user.id,
+        'files:read'
+      );
+
+      if (!hasPermission) {
+        return NextResponse.json(
+          { error: 'Forbidden: Insufficient permissions' },
+          { status: 403 }
+        );
+      }
     }
     
     // Check if file exists

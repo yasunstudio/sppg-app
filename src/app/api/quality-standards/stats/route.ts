@@ -1,28 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
-import { hasPermission } from '@/lib/permissions';
+// ============================================================================
+// QUALITY STANDARDS STATS API ROUTE (src/app/api/quality-standards/stats/route.ts)
+// Enhanced with Database-Driven Permission System
+// ============================================================================
 
-export async function GET(req: NextRequest) {
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
+import { permissionEngine } from '@/lib/permissions/core/permission-engine'
+
+// GET: Get quality standards statistics
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check permissions
-    const userRoles = session.user.roles?.map(r => r.role.name) || [];
-    if (!hasPermission(userRoles, 'quality.check')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const hasPermission = await permissionEngine.hasPermission(session.user.id, 'quality.view')
+
+    if (!hasPermission) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    // Get total quality standards
-    const totalStandards = await prisma.qualityStandard.count();
-
-    // Get active standards
-    const activeStandards = await prisma.qualityStandard.count({
-      where: { isActive: true }
-    });
+    // Get basic counts
+    const [
+      totalStandards,
+      activeStandards,
+      inactiveStandards
+    ] = await Promise.all([
+      prisma.qualityStandard.count(),
+      prisma.qualityStandard.count({ where: { isActive: true } }),
+      prisma.qualityStandard.count({ where: { isActive: false } })
+    ])
 
     // Get standards by category
     const standardsByCategory = await prisma.qualityStandard.groupBy({
@@ -30,81 +39,89 @@ export async function GET(req: NextRequest) {
       _count: {
         id: true
       },
-      orderBy: {
-        _count: {
-          id: 'desc'
-        }
-      }
-    });
-
-    // Get standards with current values (being monitored)
-    const monitoredStandards = await prisma.qualityStandard.count({
       where: {
-        currentValue: {
-          not: null
-        },
         isActive: true
       }
-    });
+    })
 
-    // Get standards exceeding targets (performance issues)  
-    const allStandards = await prisma.qualityStandard.findMany({
+    // Get compliance metrics
+    const complianceData = await prisma.qualityStandard.findMany({
       where: {
-        currentValue: {
-          not: null
-        },
-        isActive: true
+        isActive: true,
+        currentValue: { not: null }
+      },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        targetValue: true,
+        currentValue: true,
+        unit: true
       }
-    });
+    })
 
-    const exceededStandards = allStandards.filter((s: any) => 
-      s.currentValue !== null && s.currentValue > s.targetValue
-    ).length;
+    const complianceStats = complianceData.map(standard => {
+      const compliance = standard.currentValue && standard.targetValue 
+        ? Math.min((standard.currentValue / standard.targetValue) * 100, 100)
+        : 0
 
-    // Get standards below targets (underperforming)
-    const belowTargetStandards = allStandards.filter((s: any) => 
-      s.currentValue !== null && s.currentValue < s.targetValue
-    ).length;
+      return {
+        id: standard.id,
+        name: standard.name,
+        category: standard.category,
+        targetValue: standard.targetValue,
+        currentValue: standard.currentValue,
+        unit: standard.unit,
+        compliance: Math.round(compliance),
+        status: compliance >= 95 ? 'excellent' : 
+                compliance >= 80 ? 'good' : 
+                compliance >= 60 ? 'fair' : 'poor'
+      }
+    })
 
-    // Get recent standards (last 7 days)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    
+    const averageCompliance = complianceStats.length > 0
+      ? Math.round(complianceStats.reduce((sum, item) => sum + item.compliance, 0) / complianceStats.length)
+      : 0
+
+    // Get trending data (last 7 days)
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
     const recentStandards = await prisma.qualityStandard.count({
       where: {
         createdAt: { gte: sevenDaysAgo }
       }
-    });
-
-    // Calculate compliance rate (standards meeting targets)
-    const meetingTargetStandards = allStandards.filter((s: any) => 
-      s.currentValue !== null && s.currentValue >= s.targetValue
-    ).length;
-
-    const complianceRate = monitoredStandards > 0 
-      ? Math.round((meetingTargetStandards / monitoredStandards) * 100) 
-      : 0;
+    })
 
     return NextResponse.json({
-      totalStandards,
-      activeStandards,
-      monitoredStandards,
-      exceededStandards,
-      belowTargetStandards,
-      recentStandards,
-      complianceRate,
-      standardsByCategory: standardsByCategory.map((item: any) => ({
-        category: item.category,
-        count: item._count.id
-      }))
-    });
+      success: true,
+      data: {
+        overview: {
+          totalStandards,
+          activeStandards,
+          inactiveStandards,
+          averageCompliance,
+          recentStandards
+        },
+        categoryBreakdown: standardsByCategory.map(item => ({
+          category: item.category,
+          count: item._count.id
+        })),
+        complianceMetrics: {
+          averageCompliance,
+          standardsAbove95: complianceStats.filter(s => s.compliance >= 95).length,
+          standardsAbove80: complianceStats.filter(s => s.compliance >= 80).length,
+          standardsBelow60: complianceStats.filter(s => s.compliance < 60).length,
+          details: complianceStats
+        }
+      }
+    })
+
   } catch (error) {
-    console.error('Error fetching quality standards stats:', error);
+    console.error('Error in GET /api/quality-standards/stats:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to get quality standards statistics' },
       { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
+    )
   }
 }

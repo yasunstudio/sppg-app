@@ -3,21 +3,29 @@
 import { useState, useEffect } from "react"
 import type { MenuState, MenuType } from "../types/sidebar.types"
 
-const STORAGE_KEY = 'sppg-professional-sidebar'
+const STORAGE_KEY = 'sppg-professional-sidebar-v2'
 
 const defaultMenuState: MenuState = {
+  // Core Operations
   production: false,
   menuPlanning: false,
   distribution: false,
-  monitoring: false,
   quality: false,
-  operational: false,
-  dataMaster: false,
+  
+  // Management & Administration
+  institution: false,
+  supplyChain: false,
+  standards: false,
+  procurement: false,
+  logistics: false,
+  monitoring: false,
   system: false,
+  
+  // UI Preferences
   preferences: {
-    autoExpandActive: true,
+    autoExpandActive: false,
     persistState: true,
-    preventActiveCollapse: true
+    preventActiveCollapse: false
   }
 }
 

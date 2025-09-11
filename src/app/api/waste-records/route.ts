@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth"
-import { hasPermission } from "@/lib/permissions"
+import { permissionEngine } from '@/lib/permissions/core/permission-engine'
 
 // prisma imported from lib;
 
@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'waste.view')) {
+    const hasPermission = await permissionEngine.hasPermission(session.user.id, 'waste.view');
+    if (!hasPermission) {
       return NextResponse.json(
         { success: false, error: "Forbidden - Insufficient permissions" },
         { status: 403 }
@@ -151,8 +151,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'waste.create')) {
+    const hasPermission = await permissionEngine.hasPermission(session.user.id, 'waste.create');
+    if (!hasPermission) {
       return NextResponse.json(
         { success: false, error: "Forbidden - Insufficient permissions" },
         { status: 403 }

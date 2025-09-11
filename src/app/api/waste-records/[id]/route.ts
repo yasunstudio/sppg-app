@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/lib/auth"
-import { hasPermission } from "@/lib/permissions"
+import { permissionEngine } from '@/lib/permissions/core/permission-engine'
 
 // GET single waste record
 export async function GET(
@@ -18,8 +18,8 @@ export async function GET(
       )
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'waste.view')) {
+    const hasPermission = await permissionEngine.hasPermission(session.user.id, 'waste.view');
+    if (!hasPermission) {
       return NextResponse.json(
         { success: false, error: "Forbidden - Insufficient permissions" },
         { status: 403 }
@@ -76,8 +76,8 @@ export async function PUT(
       )
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'waste.edit')) {
+    const hasPermission = await permissionEngine.hasPermission(session.user.id, 'waste.edit');
+    if (!hasPermission) {
       return NextResponse.json(
         { success: false, error: "Forbidden - Insufficient permissions" },
         { status: 403 }
@@ -158,8 +158,8 @@ export async function DELETE(
       )
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'waste.delete')) {
+    const hasPermission = await permissionEngine.hasPermission(session.user.id, 'waste.delete');
+    if (!hasPermission) {
       return NextResponse.json(
         { success: false, error: "Forbidden - Insufficient permissions" },
         { status: 403 }

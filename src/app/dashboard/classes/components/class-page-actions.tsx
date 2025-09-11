@@ -12,12 +12,13 @@ import { MoreHorizontal, Plus, FileDown, FileUp, Settings } from "lucide-react"
 import { useRouter } from 'next/navigation'
 
 interface ClassPageActionsProps {
+  onRefresh?: () => void
   onExport?: () => void
   onImport?: () => void
   onSettings?: () => void
 }
 
-export function ClassPageActions({ onExport, onImport, onSettings }: ClassPageActionsProps) {
+export function ClassPageActions({ onRefresh, onExport, onImport, onSettings }: ClassPageActionsProps) {
   const router = useRouter()
 
   const handleCreateClass = () => {

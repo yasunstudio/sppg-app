@@ -77,12 +77,34 @@ model Role {
   id          String     @id @default(cuid())
   name        String     @unique
   description String?
-  permissions String[]
+  permissions String[]   // Dynamic permissions array
+  color       String?    // UI color for role badge
+  priority    Int        @default(0) // Role hierarchy priority (higher = more important)
+  isSystemRole Boolean   @default(false) // System roles cannot be deleted
+  isActive    Boolean    @default(true)
+  metadata    Json?      // Additional role metadata (dashboards, limits, etc.)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   users       UserRole[]
 
   @@map("roles")
+}
+
+// Permission metadata model for dynamic permission management
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g., "users.create", "menus.view"
+  displayName String   // e.g., "Create Users", "View Menus"
+  description String?  // Human-readable description
+  category    String   // e.g., "User Management", "Menu Planning"
+  module      String   // e.g., "users", "menus", "production"
+  action      String   // e.g., "create", "view", "edit", "delete"
+  isSystemPerm Boolean @default(true) // System permissions cannot be deleted
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("permissions")
 }
 
 model UserRole {

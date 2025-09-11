@@ -1,46 +1,37 @@
-"use client"
+'use client'
 
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
-import { useClasses } from "../hooks/use-classes"
+import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface ClassPaginationProps {
-  className?: string
+  currentPage: number
+  totalPages: number
+  totalItems: number
+  itemsPerPage: number
+  onPageChange: (page: number) => void
+  onItemsPerPageChange: (itemsPerPage: number) => void
+  loading?: boolean
 }
 
-export function ClassPagination({ className }: ClassPaginationProps) {
-  const { pagination, setPagination } = useClasses()
-  const { currentPage, totalPages, totalItems, itemsPerPage } = pagination
-
+export function ClassPagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+  onItemsPerPageChange,
+  loading = false
+}: ClassPaginationProps) {
   const startItem = (currentPage - 1) * itemsPerPage + 1
   const endItem = Math.min(currentPage * itemsPerPage, totalItems)
 
-  const canGoPrevious = currentPage > 1
-  const canGoNext = currentPage < totalPages
-
-  const handlePageChange = (page: number) => {
-    setPagination(prev => ({ ...prev, currentPage: page }))
-  }
-
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
-    setPagination(prev => ({ 
-      ...prev, 
-      itemsPerPage: newItemsPerPage,
-      currentPage: 1 
-    }))
-  }
-
   const getVisiblePages = () => {
-    const delta = 2 // Number of pages to show on each side of current page
+    const delta = 2
     const range = []
     const rangeWithDots = []
 
-    for (
-      let i = Math.max(2, currentPage - delta);
-      i <= Math.min(totalPages - 1, currentPage + delta);
-      i++
-    ) {
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
       range.push(i)
     }
 
@@ -61,104 +52,105 @@ export function ClassPagination({ className }: ClassPaginationProps) {
     return rangeWithDots
   }
 
-  if (totalPages <= 1) return null
+  const visiblePages = getVisiblePages()
 
   return (
-    <div className={`flex items-center justify-between ${className}`}>
-      {/* Items per page selector */}
-      <div className="flex items-center space-x-2">
-        <p className="text-sm font-medium">Tampilkan</p>
-        <Select
-          value={itemsPerPage.toString()}
-          onValueChange={(value) => handleItemsPerPageChange(Number(value))}
-        >
-          <SelectTrigger className="h-8 w-[70px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent side="top">
-            {[10, 20, 30, 50, 100].map((pageSize) => (
-              <SelectItem key={pageSize} value={pageSize.toString()}>
-                {pageSize}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="text-sm font-medium">
-          dari {totalItems} kelas
-        </p>
-      </div>
-
-      {/* Page info and navigation */}
-      <div className="flex items-center space-x-6">
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Halaman {currentPage} dari {totalPages}
+    <div className="flex items-center justify-between px-2">
+      <div className="flex items-center space-x-6 lg:space-x-8">
+        <div className="flex items-center space-x-2">
+          <p className="text-sm font-medium">Rows per page</p>
+          <Select
+            value={`${itemsPerPage}`}
+            onValueChange={(value) => onItemsPerPageChange(Number(value))}
+            disabled={loading}
+          >
+            <SelectTrigger className="h-8 w-[70px]">
+              <SelectValue placeholder={itemsPerPage} />
+            </SelectTrigger>
+            <SelectContent side="top">
+              {[10, 20, 30, 40, 50].map((pageSize) => (
+                <SelectItem key={pageSize} value={`${pageSize}`}>
+                  {pageSize}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         
-        <div className="flex items-center space-x-2">
-          {/* First page */}
-          <Button
-            variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
-            onClick={() => handlePageChange(1)}
-            disabled={!canGoPrevious}
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </Button>
-          
-          {/* Previous page */}
-          <Button
-            variant="outline"
-            className="h-8 w-8 p-0"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={!canGoPrevious}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-
-          {/* Page numbers */}
-          <div className="flex items-center space-x-1">
-            {getVisiblePages().map((page, index) => (
-              <div key={index}>
-                {page === '...' ? (
-                  <span className="px-2 text-sm text-muted-foreground">…</span>
-                ) : (
-                  <Button
-                    variant={currentPage === page ? "default" : "outline"}
-                    className="h-8 w-8 p-0"
-                    onClick={() => handlePageChange(page as number)}
-                  >
-                    {page}
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Next page */}
-          <Button
-            variant="outline"
-            className="h-8 w-8 p-0"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={!canGoNext}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-
-          {/* Last page */}
-          <Button
-            variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
-            onClick={() => handlePageChange(totalPages)}
-            disabled={!canGoNext}
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
+        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+          {totalItems > 0 ? (
+            <>
+              {startItem}-{endItem} of{" "}
+              {totalItems}
+            </>
+          ) : (
+            "0-0 of 0"
+          )}
         </div>
       </div>
 
-      {/* Items range info */}
-      <div className="flex items-center text-sm font-medium">
-        Menampilkan {startItem}-{endItem} dari {totalItems} hasil
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          className="hidden h-8 w-8 p-0 lg:flex"
+          onClick={() => onPageChange(1)}
+          disabled={currentPage === 1 || loading}
+        >
+          <span className="sr-only">Go to first page</span>
+          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4 -ml-2" />
+        </Button>
+        
+        <Button
+          variant="outline"
+          className="h-8 w-8 p-0"
+          onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+          disabled={currentPage === 1 || loading}
+        >
+          <span className="sr-only">Go to previous page</span>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+
+        <div className="flex items-center space-x-1">
+          {visiblePages.map((page, index) =>
+            page === '...' ? (
+              <div key={`dots-${index}`} className="flex items-center justify-center w-8 h-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </div>
+            ) : (
+              <Button
+                key={page}
+                variant={currentPage === page ? 'default' : 'outline'}
+                className="h-8 w-8 p-0"
+                onClick={() => onPageChange(page as number)}
+                disabled={loading}
+              >
+                {page}
+              </Button>
+            )
+          )}
+        </div>
+
+        <Button
+          variant="outline"
+          className="h-8 w-8 p-0"
+          onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+          disabled={currentPage === totalPages || loading}
+        >
+          <span className="sr-only">Go to next page</span>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant="outline"
+          className="hidden h-8 w-8 p-0 lg:flex"
+          onClick={() => onPageChange(totalPages)}
+          disabled={currentPage === totalPages || loading}
+        >
+          <span className="sr-only">Go to last page</span>
+          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4 -ml-2" />
+        </Button>
       </div>
     </div>
   )

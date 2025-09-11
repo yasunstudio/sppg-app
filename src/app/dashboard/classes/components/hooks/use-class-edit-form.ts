@@ -54,7 +54,6 @@ export function useClassEditForm(classId: string) {
           name: classData.name,
           grade: classData.grade,
           capacity: classData.capacity,
-          currentCount: classData.currentCount || 0,
           teacherName: classData.teacherName || '',
           schoolId: classData.schoolId
         })

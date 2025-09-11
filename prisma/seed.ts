@@ -1,16 +1,17 @@
 import { PrismaClient } from '../src/generated/prisma'
+import seedPermissions from './seeds/00-permissions'
 import seedRoles from './seeds/01-roles'
-import seedUsers from './seeds/02-users'
-import seedUserRoles from './seeds/03-user-roles'
-import seedSchools from './seeds/04-schools'
-import seedRawMaterials from './seeds/05-raw-materials'
-import seedMenuItems from './seeds/06-menu-items'
-import seedSuppliers from './seeds/07-suppliers'
-import seedInventoryItems from './seeds/08-inventory-items'
-import seedStudents from './seeds/09-students'
-import seedMenuRecipes from './seeds/10-menu-recipes'
-import seedProductionBatches from './seeds/11-production-batches'
-import seedDistributions from './seeds/12-distributions'
+import { seedUsers } from './seeds/02-users'
+import { seedUserRoles } from './seeds/03-user-roles'
+import { seedSchools } from './seeds/04-schools'
+import { seedRawMaterials } from './seeds/05-raw-materials'
+import { seedMenus } from './seeds/06-menu-items'
+import { seedSuppliers } from './seeds/07-suppliers'
+import { seedInventoryItems } from './seeds/08-inventory-items'
+import { seedStudents } from './seeds/09-students'
+import { seedMenuRecipes } from './seeds/10-menu-recipes'
+import { seedProductionBatches } from './seeds/11-production-batches'
+import { seedDistributions } from './seeds/12-distributions'
 import seedVehicles from './seeds/13-vehicles'
 import seedDeliveries from './seeds/14-deliveries'
 import seedItems from './seeds/15-items'
@@ -27,14 +28,14 @@ import seedFinancialTransactions from './seeds/31-financial-transactions'
 import seedBudgets from './seeds/32-budgets'
 import seedWasteRecords from './seeds/33-waste-records'
 import seedFeedback from './seeds/34-feedback'
-import seedClasses from './seeds/35-classes'
-import seedMenuItemIngredients from './seeds/36-menu-item-ingredients'
+import { seedClasses } from './seeds/35-classes'
+import { seedMenuItemIngredients } from './seeds/36-menu-item-ingredients'
 import seedResourceUsageNew from './seeds/38-resource-usage'
-import seedProductionMetrics from './seeds/39-production-metrics'
+import { seedProductionMetrics } from './seeds/39-production-metrics'
 import { seedQualityChecks } from './seeds/40-quality-checks'
-import seedNutritionConsultations from './seeds/41-nutrition-consultations'
-import seedFoodSamples from './seeds/42-food-samples'
-import seedQualityStandards from './seeds/43-quality-standards'
+import { seedNutritionConsultations } from './seeds/41-nutrition-consultations'
+import { seedFoodSamples } from './seeds/42-food-samples'
+import { seedQualityStandards } from './seeds/43-quality-standards'
 import updateDriverStats from './seeds/44-update-driver-stats'
 
 const prisma = new PrismaClient()
@@ -46,7 +47,8 @@ async function main() {
   console.log('============================================================')
   
   // Check if database already has data
-  const [existingRoles, existingUsers, existingSchools, existingRawMaterials, existingMenus, existingSuppliers, existingInventory, existingStudents, existingVehicles, existingItems, existingResources, existingPurchaseOrders] = await Promise.all([
+  const [existingPermissions, existingRoles, existingUsers, existingSchools, existingRawMaterials, existingMenus, existingSuppliers, existingInventory, existingStudents, existingVehicles, existingItems, existingResources, existingPurchaseOrders] = await Promise.all([
+    prisma.permission.count(),
     prisma.role.count(),
     prisma.user.count(),
     prisma.school.count(),
@@ -61,14 +63,18 @@ async function main() {
     prisma.purchaseOrder.count()
   ])
 
-  if (existingRoles > 0 || existingUsers > 0 || existingSchools > 0 || existingRawMaterials > 0 || existingMenus > 0 || existingSuppliers > 0 || existingInventory > 0 || existingStudents > 0 || existingVehicles > 0 || existingItems > 0 || existingResources > 0 || existingPurchaseOrders > 0) {
+  if (existingPermissions > 0 || existingRoles > 0 || existingUsers > 0 || existingSchools > 0 || existingRawMaterials > 0 || existingMenus > 0 || existingSuppliers > 0 || existingInventory > 0 || existingStudents > 0 || existingVehicles > 0 || existingItems > 0 || existingResources > 0 || existingPurchaseOrders > 0) {
     console.log('⚠️  Database already contains data.')
-    console.log(`📊 Current counts: ${existingRoles} roles, ${existingUsers} users, ${existingSchools} schools, ${existingRawMaterials} raw materials, ${existingMenus} menus, ${existingSuppliers} suppliers, ${existingInventory} inventory items, ${existingStudents} students, ${existingVehicles} vehicles, ${existingItems} items, ${existingResources} resources, ${existingPurchaseOrders} purchase orders`)
+    console.log(`📊 Current counts: ${existingPermissions} permissions, ${existingRoles} roles, ${existingUsers} users, ${existingSchools} schools, ${existingRawMaterials} raw materials, ${existingMenus} menus, ${existingSuppliers} suppliers, ${existingInventory} inventory items, ${existingStudents} students, ${existingVehicles} vehicles, ${existingItems} items, ${existingResources} resources, ${existingPurchaseOrders} purchase orders`)
     console.log('🔄 Proceeding with seeding (will skip existing data)...')
     console.log('')
   }
 
   try {
+    // Priority 0: Permission System (Foundation)
+    console.log('🔐 Priority 0: Seeding Permission System...')
+    await seedPermissions(prisma)
+    
     // Priority 1: Core Operations (Foundation)
     console.log('🏗️ Priority 1: Seeding Core Operations...')
     await seedRoles()
@@ -80,7 +86,7 @@ async function main() {
 
     // Supply chain foundation
     await seedRawMaterials()
-    await seedMenuItems()
+    await seedMenus()
     await seedMenuItemIngredients()
     await seedSuppliers()
     await seedInventoryItems()

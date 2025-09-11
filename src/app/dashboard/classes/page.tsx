@@ -1,4 +1,4 @@
-import { ClassPageClient } from "./components/class-page-client"
+import { ClassPageClient } from './components'
 import { PermissionGuard } from "@/components/guards/permission-guard"
 import { Metadata } from "next"
 

@@ -1,31 +1,31 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { hasPermission } from "@/lib/permissions"
+import { permissionEngine } from '@/lib/permissions/core/permission-engine'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication and permissions
-    const session = await auth()
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'drivers.view')) {
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'drivers:read'
+    );
+
+    if (!hasPermission) {
       return NextResponse.json(
-        { success: false, error: "Forbidden - Insufficient permissions" },
+        { error: 'Forbidden: Insufficient permissions' },
         { status: 403 }
-      )
+      );
     }
 
-    const { id } = await params
+    const { id } = await params;
 
     // First verify the driver exists
     const driver = await prisma.driver.findFirst({

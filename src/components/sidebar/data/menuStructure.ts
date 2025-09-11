@@ -46,60 +46,120 @@ export const CORE_NAVIGATION: MenuItem[] = [
   },
 ]
 
-// Data Master Section - Core Data Management
-export const DATA_MASTER: MenuItem[] = [
+// INSTITUTION MANAGEMENT - School System Core
+export const INSTITUTION_MANAGEMENT: MenuItem[] = [
   {
-    name: "Data Pendidikan",
+    name: "Sekolah",
     href: "/dashboard/schools",
-    icon: School,
+    icon: Building2,
     current: false,
-    description: "Kelola data sekolah, siswa, dan kelas",
+    description: "Data sekolah dan informasi institusi",
   },
   {
-    name: "Data Sumber Daya",
-    href: "/dashboard/raw-materials",
-    icon: Package,
+    name: "Siswa",
+    href: "/dashboard/students",
+    icon: GraduationCap,
     current: false,
-    description: "Manajemen bahan baku dan pemasok",
+    description: "Data siswa dan informasi pribadi",
   },
   {
-    name: "Data Transportasi",
-    href: "/dashboard/vehicles",
-    icon: Truck,
+    name: "Kelas",
+    href: "/dashboard/classes",
+    icon: BookOpen,
     current: false,
-    description: "Kelola kendaraan dan driver",
-  },
-  {
-    name: "Standar & Template",
-    href: "/dashboard/quality-standards",
-    icon: Shield,
-    current: false,
-    description: "Template resep dan standar kualitas",
+    description: "Manajemen kelas dan kapasitas",
   },
 ]
 
-// Operational Management - Daily Operations
-export const OPERATIONAL_MANAGEMENT: MenuItem[] = [
+// SUPPLY CHAIN MANAGEMENT - Core Materials & Suppliers
+export const SUPPLY_CHAIN_MANAGEMENT: MenuItem[] = [
   {
-    name: "Pengadaan & Inventori",
+    name: "Bahan Baku",
+    href: "/dashboard/raw-materials",
+    icon: Package,
+    current: false,
+    description: "Master data bahan baku dan nutrisi",
+  },
+  {
+    name: "Pemasok",
+    href: "/dashboard/suppliers",
+    icon: Building2,
+    current: false,
+    description: "Data vendor dan pemasok bahan",
+  },
+  {
+    name: "Item Master",
+    href: "/dashboard/items",
+    icon: Archive,
+    current: false,
+    description: "Katalog item dan produk",
+  },
+]
+
+// LOGISTICS & TRANSPORTATION - Fleet Management
+export const LOGISTICS_MANAGEMENT: MenuItem[] = [
+  {
+    name: "Kendaraan",
+    href: "/dashboard/vehicles",
+    icon: Truck,
+    current: false,
+    description: "Manajemen armada dan kendaraan",
+  },
+  {
+    name: "Driver",
+    href: "/dashboard/drivers",
+    icon: User,
+    current: false,
+    description: "Data pengemudi dan jadwal",
+  },
+]
+
+// PROCUREMENT & INVENTORY - Purchase & Stock Management  
+export const PROCUREMENT_INVENTORY: MenuItem[] = [
+  {
+    name: "Purchase Orders",
     href: "/dashboard/purchase-orders",
     icon: ClipboardCheck,
     current: false,
-    description: "Kelola pembelian dan stok bahan",
+    description: "Pembelian dan pengadaan bahan",
   },
   {
-    name: "Inventori Stok",
+    name: "Inventori",
     href: "/dashboard/inventory",
     icon: Package,
     current: false,
-    description: "Monitor dan kelola inventori real-time",
+    description: "Stok dan manajemen gudang",
   },
   {
-    name: "Penggunaan Sumber Daya",
+    name: "Resource Usage",
     href: "/dashboard/resource-usage",
     icon: Activity,
     current: false,
-    description: "Tracking penggunaan bahan dan resources",
+    description: "Tracking penggunaan resources",
+  },
+]
+
+export const QUALITY_STANDARDS_TEMPLATES: MenuItem[] = [
+  {
+    name: "Standar Kualitas",
+    href: "/dashboard/quality-standards",
+    icon: TestTube,
+    current: false,
+    description: "Template dan parameter kualitas",
+  },
+  {
+    name: "Quality Checkpoints",
+    href: "/dashboard/quality-checkpoints",
+    icon: ClipboardCheck,
+    current: false,
+    description: "Titik kontrol kualitas",
+  },
+  {
+    name: "Resep & Formula",
+    href: "/dashboard/recipes",
+    icon: ChefHat,
+    current: false,
+    description: "Master resep dan formula makanan",
   },
 ]
 
@@ -451,27 +511,61 @@ export const OTHER_FEATURES: MenuItem[] = [
   },
 ]
 
-// Main menu structure configuration
+// Main menu structure configuration - Professional Structure
 export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
+  // Core Navigation - Always at top
   {
     title: "",
     items: CORE_NAVIGATION,
     isExpandable: false,
   },
+  
+  // Institution Management - School System Foundation
   {
-    title: "Data Master",
-    items: DATA_MASTER,
+    title: "Manajemen Institusi",
+    items: INSTITUTION_MANAGEMENT,
     isExpandable: true,
-    menuType: "dataMaster",
-    pathMatch: "/dashboard/schools|/dashboard/students|/dashboard/classes|/dashboard/raw-materials|/dashboard/items|/dashboard/suppliers|/dashboard/vehicles|/dashboard/drivers|/dashboard/quality-standards|/dashboard/quality-checkpoints|/dashboard/recipes",
+    menuType: "institution",
+    pathMatch: "/dashboard/schools|/dashboard/students|/dashboard/classes",
   },
+  
+  // Supply Chain Management - Materials & Suppliers
   {
-    title: "Operasional Harian",
-    items: OPERATIONAL_MANAGEMENT,
+    title: "Supply Chain Management", 
+    items: SUPPLY_CHAIN_MANAGEMENT,
     isExpandable: true,
-    menuType: "operational",
+    menuType: "supplyChain",
+    pathMatch: "/dashboard/raw-materials|/dashboard/suppliers|/dashboard/items",
+  },
+  
+  // Quality & Standards - Templates & Standards
+  {
+    title: "Standar & Template",
+    items: QUALITY_STANDARDS_TEMPLATES,
+    isExpandable: true,
+    menuType: "standards",
+    pathMatch: "/dashboard/quality-standards|/dashboard/quality-checkpoints|/dashboard/recipes",
+  },
+  
+  // Procurement & Inventory Management
+  {
+    title: "Pengadaan & Inventori",
+    items: PROCUREMENT_INVENTORY,
+    isExpandable: true,
+    menuType: "procurement",
     pathMatch: "/dashboard/purchase-orders|/dashboard/inventory|/dashboard/resource-usage",
   },
+  
+  // Logistics & Transportation
+  {
+    title: "Logistik & Transportasi",
+    items: LOGISTICS_MANAGEMENT,
+    isExpandable: true,
+    menuType: "logistics",
+    pathMatch: "/dashboard/vehicles|/dashboard/drivers",
+  },
+  
+  // Core Operations
   {
     title: "Perencanaan Menu",
     items: MENU_PLANNING_SUBMENUS,
@@ -479,6 +573,7 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
     menuType: "menuPlanning",
     pathMatch: "/dashboard/menu-planning",
   },
+  
   {
     title: "Produksi",
     items: PRODUCTION_SUBMENUS,
@@ -486,6 +581,7 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
     menuType: "production",
     pathMatch: "/dashboard/production",
   },
+  
   {
     title: "Kontrol Kualitas",
     items: QUALITY_SUBMENUS,
@@ -493,6 +589,7 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
     menuType: "quality",
     pathMatch: "/dashboard/quality",
   },
+  
   {
     title: "Distribusi & Pengiriman",
     items: DISTRIBUTION_SUBMENUS,
@@ -500,28 +597,66 @@ export const SIDEBAR_MENU_STRUCTURE: MenuSection[] = [
     menuType: "distribution",
     pathMatch: "/dashboard/distribution",
   },
+  
+  // Analytics & Monitoring
   {
     title: "Monitoring & Analitik",
     items: MONITORING_SUBMENUS,
     isExpandable: true,
     menuType: "monitoring",
-    pathMatch: "/dashboard/monitoring",
+    pathMatch: "/dashboard/monitoring|/dashboard/analytics|/dashboard/performance",
   },
+  
+  // Financial Management
+  {
+    title: "Keuangan",
+    items: [
+      {
+        name: "Keuangan & Anggaran",
+        href: "/dashboard/financial",
+        icon: DollarSign,
+        current: false,
+        description: "Laporan keuangan dan perencanaan anggaran"
+      },
+    ],
+    isExpandable: false,
+  },
+  
+  // Professional Services
   {
     title: "Layanan Profesional",
     items: PROFESSIONAL_SERVICES,
     isExpandable: false,
   },
+  
+  // Additional Features
   {
-    title: "Administrasi Sistem",
+    title: "Fitur Lainnya",
+    items: [
+      {
+        name: "Evaluasi & Feedback",
+        href: "/dashboard/feedback",
+        icon: MessageSquare,
+        current: false,
+        description: "Feedback dari siswa dan evaluasi program"
+      },
+      {
+        name: "Manajemen Limbah",
+        href: "/dashboard/waste-records",
+        icon: Trash,
+        current: false,
+        description: "Kelola limbah makanan dan daur ulang"
+      },
+    ],
+    isExpandable: false,
+  },
+  
+  // System Administration - Always at bottom
+  {
+    title: "Administrasi",
     items: SYSTEM_MANAGEMENT,
     isExpandable: true,
     menuType: "system",
-    pathMatch: "/dashboard/system",
-  },
-  {
-    title: "Fitur Tambahan",
-    items: OTHER_FEATURES,
-    isExpandable: false,
+    pathMatch: "/dashboard/admin|/dashboard/users|/dashboard/roles|/dashboard/user-roles|/dashboard/system-config|/dashboard/audit-logs|/dashboard/notifications|/dashboard/profile",
   },
 ]

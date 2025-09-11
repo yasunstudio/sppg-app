@@ -1,20 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { hasPermission } from "@/lib/permissions"
+import { permissionEngine } from '@/lib/permissions/core/permission-engine'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session || !session.user) {
-      return new NextResponse("Unauthorized", { status: 401 })
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check permissions
-    const userRoles = session.user.roles?.map(r => r.role.name) || []
-    if (!hasPermission(userRoles, 'users.view')) {
-      return new NextResponse("Forbidden", { status: 403 })
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'users:read'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     const { searchParams } = new URL(request.url)

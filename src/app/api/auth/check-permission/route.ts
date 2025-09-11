@@ -1,14 +1,31 @@
 // ============================================================================
 // CHECK PERMISSIONS API (src/app/api/auth/check-permission/route.ts)
+// Enhanced with Database-Driven Permission System
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { hasPermission, hasAnyPermission, hasAllPermissions, canAccessModule } from '@/lib/permissions/database-roles'
+import { permissionEngine } from '@/lib/permissions/core/permission-engine'
 import { auth } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'resource:create'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -16,16 +33,19 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { 
-      role, 
+      userId,
       permission, 
       permissions, 
       module, 
       checkType = 'single' // 'single', 'any', 'all', 'module'
     } = body
     
-    if (!role) {
+    // Use current user ID if not provided
+    const targetUserId = userId || session.user.id
+    
+    if (!targetUserId) {
       return NextResponse.json(
-        { error: 'Role is required' },
+        { error: 'User ID is required' },
         { status: 400 }
       )
     }
@@ -41,7 +61,7 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           )
         }
-        hasAccess = await hasPermission(role, permission)
+        hasAccess = await permissionEngine.hasPermission(targetUserId, permission)
         details = { permission, hasAccess }
         break
 
@@ -52,7 +72,7 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           )
         }
-        hasAccess = await hasAnyPermission(role, permissions)
+        hasAccess = await permissionEngine.hasAnyPermission(targetUserId, permissions)
         details = { permissions, hasAccess, checkType: 'any' }
         break
 
@@ -63,7 +83,7 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           )
         }
-        hasAccess = await hasAllPermissions(role, permissions)
+        hasAccess = await permissionEngine.hasAllPermissions(targetUserId, permissions)
         details = { permissions, hasAccess, checkType: 'all' }
         break
 
@@ -74,8 +94,10 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           )
         }
-        hasAccess = await canAccessModule(role, module)
-        details = { module, hasAccess }
+        // For module access, check common module permissions
+        const modulePermissions = [`${module}.view`, `${module}.access`]
+        hasAccess = await permissionEngine.hasAnyPermission(targetUserId, modulePermissions)
+        details = { module, hasAccess, modulePermissions }
         break
 
       default:
@@ -88,7 +110,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       hasAccess,
-      role,
+      userId: targetUserId,
       details
     })
 

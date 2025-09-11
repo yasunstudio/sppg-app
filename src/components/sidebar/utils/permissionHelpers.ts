@@ -1,180 +1,105 @@
-import type { Permission } from "@/lib/permissions"
-
-// Permission mapping for all menu items
-export const PERMISSION_MAP: Record<string, Permission[]> = {
-  '/dashboard': ['system.config'],
-  '/dashboard/schools': ['schools.view'],
-  '/dashboard/students': ['students.view'],
-  '/dashboard/classes': ['students.view'],
-  '/dashboard/vehicles': ['production.view'],
-  '/dashboard/drivers': ['drivers.view'],
-  '/dashboard/raw-materials': ['inventory.view'],
-  '/dashboard/suppliers': ['suppliers.view'],
-  '/dashboard/purchase-orders': ['purchase_orders.view'],
-  '/dashboard/purchase-orders/analytics': ['purchase_orders.view'],
-  '/dashboard/inventory': ['inventory.view'],
-  '/dashboard/distribution': ['production.view'],
-  '/dashboard/distributions': ['distributions.view'],
-  '/dashboard/distributions/schools': ['distributions.view'],
-  '/dashboard/distributions/tracking': ['distributions.track'],
-  '/dashboard/distributions/routes': ['distributions.view'],
-  '/dashboard/delivery-tracking': ['production.view'],
-  '/dashboard/production': ['production.view'],
-  '/dashboard/production-plans': ['production.view'],
-  '/dashboard/resource-usage': ['production.view'],
-  '/dashboard/production/execution': ['production.view'],
-  '/dashboard/production/quality': ['quality.check'],
-  '/dashboard/quality-checks': ['quality.check'],
-  '/dashboard/quality-checkpoints': ['quality.check'],
-  '/dashboard/quality': ['quality.check'],
-  '/dashboard/recipes': ['recipes.view'],
-  '/dashboard/menu-planning': ['menus.view'],
-  '/dashboard/menu-planning/create': ['menus.create'],
-  '/dashboard/menu-planning/planning': ['menus.view'],
-  '/dashboard/recipes/new': ['recipes.create'],
-  '/dashboard/feedback': ['feedback.view'],
-  '/dashboard/nutrition-consultations': ['nutrition.consult'],
-  '/dashboard/food-samples': ['quality.check'],
-  '/dashboard/quality-standards': ['quality.check'],
-  '/dashboard/waste-management': ['waste.view'],
-  '/dashboard/financial': ['finance.view'],
-  '/dashboard/users': ['users.view'],
-  '/dashboard/roles': ['system.config'],
-  '/dashboard/user-roles': ['users.edit', 'system.config'],
-  '/dashboard/system-config': ['system.config'],
-  '/dashboard/audit-logs': ['audit.view'],
-  '/dashboard/admin': ['system.config'],
-  '/dashboard/notifications': ['system.config'],
-  '/dashboard/profile': [], // No permission required for user profile
-  '/dashboard/items': ['inventory.view'],
-  '/dashboard/monitoring': ['production.view'], // Using production.view as monitoring permission
-  '/dashboard/monitoring/real-time': ['production.view'],
-  '/dashboard/monitoring/analytics': ['production.view'],
-  '/dashboard/performance': ['production.view'],
-  '/dashboard/monitoring/reports': ['production.view'],
-  '/dashboard/menu-planning/nutrition': ['nutrition.consult'],
-  '/dashboard/menu-planning/ai-planner': ['menus.view'],
-  '/dashboard/production/batches': ['production.view'],
-  '/dashboard/production/resources': ['production.view'],
-  '/dashboard/production/ai-optimizer': ['production.view'],
-  '/dashboard/production/analytics': ['production.view'],
+// Permission mapping for all menu items using new database-driven permission system
+export const PERMISSION_MAP: Record<string, string[]> = {
+  '/dashboard': ['dashboard:view'],
+  '/dashboard/schools': ['schools:view'],
+  '/dashboard/students': ['students:view'],
+  '/dashboard/classes': ['classes:view'],
+  '/dashboard/vehicles': ['vehicles:view'],
+  '/dashboard/drivers': ['drivers:view'],
+  '/dashboard/raw-materials': ['raw_materials:view'],
+  '/dashboard/suppliers': ['suppliers:view'],
+  '/dashboard/purchase-orders': ['purchase_orders:view'],
+  '/dashboard/purchase-orders/analytics': ['purchase_orders:view'],
+  '/dashboard/inventory': ['inventory:view'],
+  '/dashboard/distribution': ['distribution:view'],
+  '/dashboard/distributions': ['distribution:view'],
+  '/dashboard/distributions/schools': ['distribution:view'],
+  '/dashboard/distributions/tracking': ['distribution:view'],
+  '/dashboard/distributions/routes': ['distribution:view'],
+  '/dashboard/distribution/create': ['distribution:create'],
+  '/dashboard/deliveries': ['distribution:view'],
+  '/dashboard/delivery-tracking': ['distribution:view'],
+  '/dashboard/recipes': ['recipes:view'],
+  '/dashboard/recipes/new': ['recipes:create'],
+  '/dashboard/menu-planning': ['menu_planning:view'],
+  '/dashboard/menu-planning/create': ['menu_planning:create'],
+  '/dashboard/menu-planning/ai-planner': ['menu_planning:create'],
+  '/dashboard/menu-planning/nutrition': ['menu_planning:view'],
+  '/dashboard/menu-planning/planning': ['menu_planning:view'],
+  '/dashboard/production': ['production_batches:view'],
+  '/dashboard/production/batches': ['production_batches:view'],
+  '/dashboard/production/batches/new': ['production_batches:create'],
+  '/dashboard/production/batches/from-recipe': ['production_batches:create'],
+  '/dashboard/production/resources': ['production_resources:view'],
+  '/dashboard/production/resources/add': ['production_resources:create'],
+  '/dashboard/production/resources/inventory': ['production_resources:view'],
+  '/dashboard/production/resources/maintenance': ['production_resources:view'],
+  '/dashboard/production/resources/purchase-order': ['purchase_orders:create'],
+  '/dashboard/production/resources/stock-report': ['production_resources:view'],
+  '/dashboard/production/quality': ['quality_standards:view'],
+  '/dashboard/production/quality/create': ['quality_standards:create'],
+  '/dashboard/production/quality/reports': ['quality_checks:view'],
+  '/dashboard/production/quality/sop-guidelines': ['quality_standards:view'],
+  '/dashboard/production/quality/photo-documentation': ['quality_checks:view'],
+  '/dashboard/production/quality/report-issue': ['quality_checks:create'],
+  '/dashboard/production/execution': ['production_batches:view'],
+  '/dashboard/production/analytics': ['production_batches:view'],
+  '/dashboard/production/ai-optimizer': ['production_batches:create'],
+  '/dashboard/production-plans': ['production_plans:view'],
+  '/dashboard/production-plans/create': ['production_plans:create'],
+  '/dashboard/quality': ['quality_standards:view'],
+  '/dashboard/quality-standards': ['quality_standards:view'],
+  '/dashboard/quality-standards/create': ['quality_standards:create'],
+  '/dashboard/quality-checks': ['quality_checks:view'],
+  '/dashboard/quality-checks/create': ['quality_checks:create'],
+  '/dashboard/quality-checkpoints': ['quality_checkpoints:view'],
+  '/dashboard/quality-checkpoints/create': ['quality_checkpoints:create'],
+  '/dashboard/food-samples': ['food_samples:view'],
+  '/dashboard/food-samples/create': ['food_samples:create'],
+  '/dashboard/nutrition-consultations': ['nutrition_consultations:view'],
+  '/dashboard/nutrition-consultations/create': ['nutrition_consultations:create'],
+  '/dashboard/users': ['users:view'],
+  '/dashboard/users/create': ['users:create'],
+  '/dashboard/roles': ['roles:view'],
+  '/dashboard/roles/create': ['roles:create'],
+  '/dashboard/user-roles': ['user_roles:view'],
+  '/dashboard/user-roles/create': ['user_roles:create'],
+  '/dashboard/notifications': ['notifications:view'],
+  '/dashboard/monitoring': ['monitoring:view'],
+  '/dashboard/monitoring/real-time': ['monitoring:view'],
+  '/dashboard/monitoring/performance': ['monitoring:view'],
+  '/dashboard/monitoring/analytics': ['monitoring:view'],
+  '/dashboard/monitoring/reports': ['monitoring:view'],
+  '/dashboard/analytics': ['analytics:view'],
+  '/dashboard/performance': ['performance:view'],
+  '/dashboard/financial': ['financial:view'],
+  '/dashboard/financial/transactions': ['financial:view'],
+  '/dashboard/financial/transactions/create': ['financial:create'],
+  '/dashboard/financial/budgets/create': ['financial:create'],
+  '/dashboard/feedback': ['feedback:view'],
+  '/dashboard/waste-records': ['waste_records:view'],
+  '/dashboard/waste-records/create': ['waste_records:create'],
+  '/dashboard/items': ['items:view'],
+  '/dashboard/items/create': ['items:create'],
+  '/dashboard/resource-usage': ['resource_usage:view'],
+  '/dashboard/resource-usage/create': ['resource_usage:create'],
+  '/dashboard/audit-logs': ['audit_logs:view'],
+  '/dashboard/system-config': ['system_config:edit'],
+  '/dashboard/admin': ['admin:access'],
+  '/dashboard/admin/users': ['users:view'],
+  '/dashboard/admin/settings': ['system_config:edit'],
+  '/dashboard/admin/security': ['admin:access'],
+  '/dashboard/admin/database': ['admin:access'],
+  '/dashboard/profile': [] // Always accessible to authenticated users
 }
 
-/**
- * Gets required permissions for a specific menu item href
- */
-export const getMenuPermissions = (href: string): Permission[] => {
-  return PERMISSION_MAP[href] || []
+// Helper function to get permissions for a given path
+export function getPermissionsForPath(path: string): string[] {
+  return PERMISSION_MAP[path] || []
 }
 
-/**
- * Checks if permissions array is empty (no permission required)
- */
-export const isPublicMenuItem = (href: string): boolean => {
-  const permissions = getMenuPermissions(href)
-  return permissions.length === 0
-}
-
-/**
- * Gets all unique permissions from the permission map
- */
-export const getAllPermissions = (): Permission[] => {
-  const allPermissions = Object.values(PERMISSION_MAP).flat()
-  return Array.from(new Set(allPermissions))
-}
-
-/**
- * Groups menu items by their required permissions
- */
-export const groupMenuItemsByPermission = (): Record<string, string[]> => {
-  const groups: Record<string, string[]> = {}
-  
-  Object.entries(PERMISSION_MAP).forEach(([href, permissions]) => {
-    permissions.forEach(permission => {
-      if (!groups[permission]) {
-        groups[permission] = []
-      }
-      groups[permission].push(href)
-    })
-  })
-  
-  return groups
-}
-
-/**
- * Finds menu items that require specific permission
- */
-export const findMenuItemsByPermission = (permission: Permission): string[] => {
-  return Object.entries(PERMISSION_MAP)
-    .filter(([_, permissions]) => permissions.includes(permission))
-    .map(([href]) => href)
-}
-
-/**
- * Checks if a href requires admin-level permissions
- */
-export const requiresAdminPermission = (href: string): boolean => {
-  const permissions = getMenuPermissions(href)
-  const adminPermissions: Permission[] = ['system.config', 'users.edit', 'audit.view']
-  
-  return permissions.some(permission => adminPermissions.includes(permission))
-}
-
-/**
- * Gets permission level for a menu item (public, user, admin)
- */
-export const getPermissionLevel = (href: string): 'public' | 'user' | 'admin' => {
-  if (isPublicMenuItem(href)) {
-    return 'public'
-  }
-  
-  if (requiresAdminPermission(href)) {
-    return 'admin'
-  }
-  
-  return 'user'
-}
-
-/**
- * Validates if a user has all required permissions for a menu item
- */
-export const validateMenuItemAccess = (
-  href: string, 
-  userPermissions: Permission[]
-): boolean => {
-  const requiredPermissions = getMenuPermissions(href)
-  
-  if (requiredPermissions.length === 0) {
-    return true // Public access
-  }
-  
-  return requiredPermissions.some(permission => 
-    userPermissions.includes(permission)
-  )
-}
-
-/**
- * Filters menu items based on user permissions
- */
-export const filterMenuItemsByPermissions = (
-  menuItems: string[], 
-  userPermissions: Permission[]
-): string[] => {
-  return menuItems.filter(href => 
-    validateMenuItemAccess(href, userPermissions)
-  )
-}
-
-/**
- * Gets missing permissions for a menu item
- */
-export const getMissingPermissions = (
-  href: string, 
-  userPermissions: Permission[]
-): Permission[] => {
-  const requiredPermissions = getMenuPermissions(href)
-  
-  return requiredPermissions.filter(permission => 
-    !userPermissions.includes(permission)
-  )
+// Helper function to check if a path requires specific permissions
+export function pathRequiresPermissions(path: string): boolean {
+  const permissions = getPermissionsForPath(path)
+  return permissions.length > 0
 }

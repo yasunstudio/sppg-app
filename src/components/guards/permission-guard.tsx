@@ -2,15 +2,15 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { hasPermission, type Permission } from '@/lib/permissions'
+import { useEffect } from 'react'
+import { usePermissions } from '@/hooks/use-permission'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertTriangle, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface PermissionGuardProps {
   children: React.ReactNode
-  permission: Permission | Permission[]
+  permission: string | string[]
   fallback?: React.ReactNode
   redirectTo?: string
 }
@@ -23,93 +23,73 @@ export function PermissionGuard({
 }: PermissionGuardProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null)
+  
+  const permissions = Array.isArray(permission) ? permission : [permission]
+  const { hasAnyPermission, isLoading } = usePermissions(permissions)
 
   useEffect(() => {
-    if (status === 'loading') return
+    if (status === 'loading' || isLoading) return
 
-    if (!session?.user) {
-      router.push('/auth/login')
-      return
-    }
-
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    
-    // Check if user has required permission(s)
-    const permissions = Array.isArray(permission) ? permission : [permission]
-    const hasRequiredPermission = permissions.some(perm => hasPermission(userRoles, perm))
-    
-    setHasAccess(hasRequiredPermission)
-
-    // Redirect if no access and redirect URL is provided
-    if (!hasRequiredPermission && redirectTo) {
+    if (!session && redirectTo) {
       router.push(redirectTo)
     }
-  }, [session, status, permission, router, redirectTo])
+  }, [session, status, redirectTo, router, isLoading])
 
-  // Loading state
-  if (status === 'loading' || hasAccess === null) {
+  // Show loading state
+  if (status === 'loading' || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     )
   }
 
-  // No access
-  if (!hasAccess) {
-    if (fallback) {
-      return <>{fallback}</>
-    }
-
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="p-6 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-red-100 rounded-full">
-                <Shield className="h-8 w-8 text-red-600" />
-              </div>
-            </div>
-            <h2 className="text-xl font-semibold mb-2">Akses Ditolak</h2>
-            <p className="text-muted-foreground mb-4">
-              Anda tidak memiliki izin untuk mengakses halaman ini.
-            </p>
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <span>Permission yang diperlukan: {Array.isArray(permission) ? permission.join(', ') : permission}</span>
-            </div>
-            <Button onClick={() => router.back()} variant="outline">
-              Kembali
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+  // Not authenticated
+  if (!session) {
+    return fallback || (
+      <Card className="max-w-md mx-auto mt-8">
+        <CardContent className="p-6 text-center">
+          <Shield className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Authentication Required
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Please sign in to access this content.
+          </p>
+          <Button onClick={() => router.push('/auth/login')}>
+            Sign In
+          </Button>
+        </CardContent>
+      </Card>
     )
   }
 
+  // No permission
+  if (!hasAnyPermission(permissions)) {
+    return fallback || (
+      <Card className="max-w-md mx-auto mt-8">
+        <CardContent className="p-6 text-center">
+          <AlertTriangle className="h-12 w-12 mx-auto text-red-400 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Access Denied
+          </h3>
+          <p className="text-gray-600 mb-4">
+            You don't have permission to access this resource.
+          </p>
+          <Button 
+            variant="outline" 
+            onClick={() => router.back()}
+          >
+            Go Back
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Has permission - show content
   return <>{children}</>
 }
 
-// Hook untuk mengecek permission dalam komponen
-export function usePermission(permission: Permission | Permission[]) {
-  const { data: session } = useSession()
-  
-  if (!session?.user) return false
-
-  const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-  const permissions = Array.isArray(permission) ? permission : [permission]
-  
-  return permissions.some(perm => hasPermission(userRoles, perm))
-}
-
-// Hook untuk mendapatkan semua permission user
-export function useUserPermissions() {
-  const { data: session } = useSession()
-  
-  if (!session?.user) return []
-
-  const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-  
-  return userRoles
-}
+// Re-export usePermission from hooks for backward compatibility
+export { usePermission, usePermissions } from '@/hooks/use-permission'

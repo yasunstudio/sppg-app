@@ -19,7 +19,7 @@ export const useSidebar = ({ isMobileOpen, onMobileClose }: Pick<SidebarProps, '
   // Compose all hooks
   const sidebarState = useSidebarState()
   const activeMenu = useActiveMenu(pathname)
-  const permissions = useMenuPermissions(userRoles)
+  const permissions = useMenuPermissions()
   const analytics = useSidebarAnalytics()
 
   // Helper function to handle link clicks on mobile

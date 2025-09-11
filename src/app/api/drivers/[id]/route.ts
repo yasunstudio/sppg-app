@@ -1,87 +1,51 @@
-import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
-import { hasPermission } from "@/lib/permissions"
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { permissionEngine } from '@/lib/permissions/core/permission-engine';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication and permissions
-    const session = await auth()
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'drivers.view')) {
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'drivers:read'
+    );
+
+    if (!hasPermission) {
       return NextResponse.json(
-        { success: false, error: "Forbidden - Insufficient permissions" },
+        { error: 'Forbidden: Insufficient permissions' },
         { status: 403 }
-      )
+      );
     }
 
-    const { id } = await params
+    const { id } = await params;
 
-    const driver = await prisma.driver.findFirst({
-      where: {
-        OR: [
-          { id: id },
-          { employeeId: id }
-        ],
-        deletedAt: null
-      },
-      include: {
-        _count: {
-          select: {
-            distributions: true,
-            deliveries: true
-          }
-        }
-      }
-    })
+    const driver = await prisma.driver.findUnique({
+      where: { id }
+    });
 
     if (!driver) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: "Driver not found" 
-        },
+        { error: 'Driver not found' },
         { status: 404 }
-      )
+      );
     }
 
-    // Calculate total deliveries count
-    const totalDeliveries = await prisma.delivery.count({
-      where: {
-        driverId: driver.id
-      }
-    })
-
-    const driverWithStats = {
-      ...driver,
-      totalDeliveries: totalDeliveries
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: driverWithStats
-    })
+    return NextResponse.json({ success: true, data: driver });
 
   } catch (error) {
-    console.error("Error fetching driver:", error)
+    console.error('Driver GET error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: "Failed to fetch driver",
-        details: error instanceof Error ? error.message : "Unknown error"
-      },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -90,89 +54,44 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication and permissions
-    const session = await auth()
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'drivers.edit')) {
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'drivers:update'
+    );
+
+    if (!hasPermission) {
       return NextResponse.json(
-        { success: false, error: "Forbidden - Insufficient permissions" },
+        { error: 'Forbidden: Insufficient permissions' },
         { status: 403 }
-      )
+      );
     }
 
-    const { id } = await params
-    const body = await request.json()
-    
-    const {
-      employeeId,
-      name,
-      phone,
-      email,
-      licenseNumber,
-      licenseExpiry,
-      address,
-      emergencyContact,
-      emergencyPhone,
-      notes,
-      isActive
-    } = body
+    const { id } = await params;
+    const data = await request.json();
 
-    const driver = await prisma.driver.updateMany({
-      where: {
-        OR: [
-          { id: id },
-          { employeeId: id }
-        ],
-        deletedAt: null
-      },
+    const updatedDriver = await prisma.driver.update({
+      where: { id },
       data: {
-        employeeId,
-        name,
-        phone,
-        email,
-        licenseNumber,
-        licenseExpiry: licenseExpiry ? new Date(licenseExpiry) : undefined,
-        address,
-        emergencyContact,
-        emergencyPhone,
-        notes,
-        isActive,
-        updatedAt: new Date()
+        name: data.name,
+        licenseNumber: data.licenseNumber,
+        licenseType: data.licenseType,
+        phone: data.phone
       }
-    })
+    });
 
-    if (driver.count === 0) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: "Driver not found" 
-        },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Driver updated successfully"
-    })
+    return NextResponse.json({ success: true, data: updatedDriver });
 
   } catch (error) {
-    console.error("Error updating driver:", error)
+    console.error('Driver PUT error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: "Failed to update driver",
-        details: error instanceof Error ? error.message : "Unknown error"
-      },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -181,63 +100,39 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication and permissions
-    const session = await auth()
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'drivers.delete')) {
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'drivers:delete'
+    );
+
+    if (!hasPermission) {
       return NextResponse.json(
-        { success: false, error: "Forbidden - Insufficient permissions" },
+        { error: 'Forbidden: Insufficient permissions' },
         { status: 403 }
-      )
+      );
     }
 
-    const { id } = await params
+    const { id } = await params;
 
-    const driver = await prisma.driver.updateMany({
-      where: {
-        OR: [
-          { id: id },
-          { employeeId: id }
-        ],
-        deletedAt: null
-      },
-      data: {
-        deletedAt: new Date(),
-        updatedAt: new Date()
-      }
-    })
-
-    if (driver.count === 0) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: "Driver not found" 
-        },
-        { status: 404 }
-      )
-    }
+    await prisma.driver.delete({
+      where: { id }
+    });
 
     return NextResponse.json({
       success: true,
-      message: "Driver deleted successfully"
-    })
+      message: 'Driver deleted successfully'
+    });
 
   } catch (error) {
-    console.error("Error deleting driver:", error)
+    console.error('Driver DELETE error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: "Failed to delete driver",
-        details: error instanceof Error ? error.message : "Unknown error"
-      },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }

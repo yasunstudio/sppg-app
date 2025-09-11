@@ -46,6 +46,7 @@ declare module "@auth/core/jwt" {
 
 const config: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
   },

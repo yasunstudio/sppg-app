@@ -1,16 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
+import { permissionEngine } from '@/lib/permissions/core/permission-engine'
 import { saveFile, validateFile } from '@/lib/upload'
 
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const session = await auth()
-    if (!session) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
+    }
+
+    // Check permission to upload avatar
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'files:upload'
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Forbidden: Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     const formData = await request.formData()

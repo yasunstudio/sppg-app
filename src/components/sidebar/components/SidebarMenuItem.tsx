@@ -166,7 +166,7 @@ export function SidebarMenuItem({
             "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1",
             "group relative overflow-hidden",
             "backdrop-blur-sm border border-transparent hover:border-border/30",
-            isCollapsed ? "px-2 justify-center mx-0" : "px-3 gap-2.5 mx-0",
+            "px-3 gap-2.5 mx-0",
             isCurrentItem 
               ? "bg-primary/10 text-primary border-primary/20 shadow-sm font-medium" 
               : "text-muted-foreground/85 hover:text-foreground"
@@ -182,28 +182,26 @@ export function SidebarMenuItem({
           )}
           
           <div className={cn(
-            "relative z-10 flex items-center",
-            isCollapsed ? "justify-center" : "gap-2.5 w-full"
+            "relative z-10 flex items-center gap-2.5 w-full"
           )}>
             <div className={cn(
               "flex items-center justify-center rounded transition-all duration-200",
-              isCollapsed ? "w-4 h-4" : "w-5 h-5",
+              "w-4 h-4",
               isCurrentItem 
                 ? "bg-primary/15 text-primary" 
                 : "bg-muted/30 text-muted-foreground/70 group-hover:bg-accent/30 group-hover:text-accent-foreground"
             )}>
               <item.icon className={cn(
                 "flex-shrink-0 transition-all duration-200",
-                isCollapsed ? "h-3 w-3" : "h-3.5 w-3.5",
+                "h-3 w-3",
                 isCurrentItem ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
               )} />
             </div>
             
             <div className={cn(
-              "transition-all duration-300 ease-in-out overflow-hidden flex items-center flex-1",
-              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+              "transition-all duration-300 ease-in-out overflow-hidden flex items-center flex-1"
             )}>
-              <span className="truncate font-medium flex-1">{item.name}</span>
+              <span className="truncate text-sm flex-1">{item.name}</span>
               
               <div className="flex items-center gap-1">
                 {item.badge && (

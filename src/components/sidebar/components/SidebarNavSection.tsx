@@ -48,20 +48,25 @@ export default function SidebarNavSection({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 px-3 py-2">
-        {Icon && <Icon className="h-4 w-4 text-muted-foreground/70" />}
-        <div className="flex-1 min-w-0">
-          <h3 className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider truncate">
-            {title}
-          </h3>
-          {description && (
-            <p className="text-[10px] text-muted-foreground/60 mt-0.5 line-clamp-1">
-              {description}
-            </p>
-          )}
+      {title && !isMainSection && (
+        <div className="flex items-center gap-2 px-3 py-1.5">
+          {Icon && <Icon className="h-4 w-4 text-muted-foreground/70" />}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider truncate">
+              {title}
+            </h3>
+            {description && (
+              <p className="text-[10px] text-muted-foreground/60 mt-0.5 line-clamp-1">
+                {description}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="space-y-1">
+      )}
+      <div className={cn(
+        "space-y-0.5",
+        isMainSection ? "space-y-1" : ""
+      )}>
         {children || items?.map((item) => {
           if (hasPermissionCheck && !hasPermissionCheck(item)) return null
           return (

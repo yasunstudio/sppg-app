@@ -1,27 +1,29 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
-import { getUserRoles } from '@/lib/auth-utils'
-import { hasPermission, type Permission } from "@/lib/permissions"
+import { permissionEngine } from "@/lib/permissions/core/permission-engine"
 
 export async function withPermission(
-  permission: Permission,
+  permission: string,
   handler: (request: NextRequest) => Promise<NextResponse>
 ) {
   return async (request: NextRequest) => {
     try {
       const session = await auth()
       
-      if (!session || !session.user) {
+      if (!session?.user?.id) {
         return NextResponse.json(
           { error: "Unauthorized" }, 
           { status: 401 }
         )
       }
 
-      // Get user roles from session
-      const userRoles = getUserRoles(session)
+      // Check permission using database-driven system
+      const hasPermission = await permissionEngine.hasPermission(
+        session.user.id,
+        permission
+      );
       
-      if (!hasPermission(userRoles, permission)) {
+      if (!hasPermission) {
         return NextResponse.json(
           { error: "Forbidden - Insufficient permissions" }, 
           { status: 403 }
@@ -39,7 +41,7 @@ export async function withPermission(
   }
 }
 
-export function createPermissionMiddleware(permission: Permission) {
+export function createPermissionMiddleware(permission: string) {
   return (handler: (request: NextRequest) => Promise<NextResponse>) =>
     withPermission(permission, handler)
 }

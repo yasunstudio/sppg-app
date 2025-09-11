@@ -11,6 +11,8 @@ import {
 } from "."
 import type { SidebarProps, MenuType, MenuSection } from "../types/sidebar.types"
 import { useSession } from "next-auth/react"
+import { usePermissions } from "@/hooks/use-permission"
+import { getPermissionsForPath } from "../utils/permissionHelpers"
 
 interface ModularSidebarProps extends SidebarProps {
   user?: any // Will be properly typed when integrated
@@ -26,6 +28,21 @@ export default function Sidebar({
 }: ModularSidebarProps) {
   const { data: session } = useSession()
   const sessionUser = user || session?.user
+
+  // Get all possible permissions from menu structure
+  const allMenuPermissions = SIDEBAR_MENU_STRUCTURE.flatMap(section => 
+    section.items.flatMap(item => {
+      const permissions = getPermissionsForPath(item.href)
+      if (item.submenu) {
+        const submenuPermissions = item.submenu.flatMap(subItem => getPermissionsForPath(subItem.href))
+        return [...permissions, ...submenuPermissions]
+      }
+      return permissions
+    })
+  ).filter((perm, index, arr) => arr.indexOf(perm) === index && perm.length > 0)
+
+  // Use permission hook to check all permissions
+  const { permissionResults, isLoading: permissionsLoading } = usePermissions(allMenuPermissions)
 
   const sidebarData = useSidebar({
     isMobileOpen: externalMobileOpen,
@@ -45,16 +62,47 @@ export default function Sidebar({
     
     // Actions
     toggleMenu,
-    handleMobileLinkClick,
-    
-    // Permissions
-    filterMenuItems
+    handleMobileLinkClick
   } = sidebarData
 
   // Create permission check function for components
   const hasPermissionCheck = (item: any) => {
-    return filterMenuItems([item]).length > 0
+    if (permissionsLoading) return false // Hide items while loading
+    if (!sessionUser) return false // Hide items if not logged in
+    
+    const requiredPermissions = getPermissionsForPath(item.href)
+    
+    // If no permissions required, show item (like profile, dashboard)
+    if (requiredPermissions.length === 0) return true
+    
+    // Check if user has at least one of the required permissions
+    return requiredPermissions.some(perm => permissionResults[perm] === true)
   }
+
+  // Filter menu sections based on permissions
+  const filterMenuItems = (items: any[]) => {
+    return items.filter(item => {
+      // Check main item permission
+      if (!hasPermissionCheck(item)) return false
+      
+      // If item has submenu, filter submenu items too
+      if (item.submenu && item.submenu.length > 0) {
+        const filteredSubmenu = item.submenu.filter((subItem: any) => hasPermissionCheck(subItem))
+        // Only show parent if it has at least one accessible submenu item
+        if (filteredSubmenu.length === 0) return false
+        // Update item with filtered submenu
+        item.submenu = filteredSubmenu
+      }
+      
+      return true
+    })
+  }
+
+  // Filter sidebar menu structure based on permissions
+  const filteredMenuStructure = SIDEBAR_MENU_STRUCTURE.map(section => ({
+    ...section,
+    items: filterMenuItems([...section.items]) // Create copy to avoid mutating original
+  })).filter(section => section.items.length > 0) // Remove empty sections
 
   // Use external collapsed state if provided, otherwise use internal state
   const isCollapsed = externalCollapsed ?? false
@@ -88,40 +136,57 @@ export default function Sidebar({
 
         {/* Navigation Content */}
         <div className="flex-1 overflow-y-auto overscroll-contain bg-gradient-to-b from-transparent via-muted/5 to-muted/10 dark:from-transparent dark:via-muted/10 dark:to-muted/20">
-          <nav className="p-3 pt-4 space-y-3" role="navigation">
-            {SIDEBAR_MENU_STRUCTURE.map((section: MenuSection) => {
+          <nav className="p-2 pt-3 space-y-4" role="navigation">
+            {/* Show loading state while permissions are being checked */}
+            {permissionsLoading && !isCollapsed && (
+              <div className="px-3 py-2 text-sm text-muted-foreground">
+                Loading menu...
+              </div>
+            )}
+            
+            {!permissionsLoading && filteredMenuStructure.map((section: MenuSection, index: number) => {
               // Handle expandable sections
               if (section.isExpandable && section.menuType) {
                 const menuType = section.menuType as MenuType
                 
                 return (
-                  <SidebarExpandable
-                    key={section.title}
-                    title={section.title}
-                    icon={section.items[0]?.icon} // Use first item's icon as section icon
-                    items={section.items}
-                    isExpanded={isMenuExpanded(menuType)}
-                    isCollapsed={isCollapsed}
-                    hasActiveSubmenu={hasActiveSubmenu(menuType)}
-                    onToggle={() => toggleMenu(menuType, undefined)}
-                    onLinkClick={handleMobileLinkClick}
-                    menuType={menuType}
-                    hasPermissionCheck={hasPermissionCheck}
-                  />
+                  <div key={section.title} className="space-y-1">
+                    <SidebarExpandable
+                      title={section.title}
+                      icon={section.items[0]?.icon} // Use first item's icon as section icon
+                      items={section.items}
+                      isExpanded={isMenuExpanded(menuType)}
+                      isCollapsed={isCollapsed}
+                      hasActiveSubmenu={hasActiveSubmenu(menuType)}
+                      onToggle={() => toggleMenu(menuType, undefined)}
+                      onLinkClick={handleMobileLinkClick}
+                      menuType={menuType}
+                      hasPermissionCheck={hasPermissionCheck}
+                    />
+                    {/* Add separator after primary sections */}
+                    {(index === 5 || index === 7) && !isCollapsed && (
+                      <div className="mx-3 my-4 border-t border-border/30" />
+                    )}
+                  </div>
                 )
               }
 
               // Handle regular sections
               return (
-                <SidebarNavSection
-                  key={section.title}
-                  title={section.title}
-                  items={section.items}
-                  isCollapsed={isCollapsed}
-                  onLinkClick={handleMobileLinkClick}
-                  isMainSection={!section.isExpandable}
-                  hasPermissionCheck={hasPermissionCheck}
-                />
+                <div key={section.title} className="space-y-1">
+                  <SidebarNavSection
+                    title={section.title}
+                    items={section.items}
+                    isCollapsed={isCollapsed}
+                    onLinkClick={handleMobileLinkClick}
+                    isMainSection={!section.isExpandable}
+                    hasPermissionCheck={hasPermissionCheck}
+                  />
+                  {/* Add separator after specific sections */}
+                  {(section.title === "Keuangan" || section.title === "Layanan Profesional") && !isCollapsed && (
+                    <div className="mx-3 my-4 border-t border-border/30" />
+                  )}
+                </div>
               )
             })}
           </nav>
@@ -153,7 +218,7 @@ export default function Sidebar({
       <SidebarMobile
         isOpen={isMobileOpen}
         onClose={handleMobileClose}
-        menuStructure={SIDEBAR_MENU_STRUCTURE}
+        menuStructure={filteredMenuStructure}
         hasPermissionCheck={hasPermissionCheck}
         user={sessionUser}
         onLinkClick={handleMobileLinkClick}

@@ -1,6 +1,6 @@
 'use client'
 
-import { MoreVertical, Eye, Edit, Trash2, Users, GraduationCap } from 'lucide-react'
+import { MoreVertical, Eye, Edit, Trash2, Users, GraduationCap, School } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,151 +12,176 @@ import {
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatCapacity, formatGradeLevel, formatClassStatus, formatClassStatusText, formatTeacherName } from '../utils/class-formatters'
 import type { Class } from '../utils/class-types'
-import { useClasses } from '../hooks/use-classes'
-import { useRouter } from 'next/navigation'
 
 interface ClassGridViewProps {
-  className?: string
+  classes: Class[]
+  loading?: boolean
+  onView?: (classId: string) => void
+  onEdit?: (classId: string) => void
+  onDelete?: (classId: string) => void
 }
 
-export function ClassGridView({ className }: ClassGridViewProps) {
-  const router = useRouter()
-  const { classes, isLoading, error } = useClasses()
-
-  const handleView = (classId: string) => {
-    router.push(`/dashboard/classes/${classId}`)
+export function ClassGridView({
+  classes,
+  loading,
+  onView,
+  onEdit,
+  onDelete
+}: ClassGridViewProps) {
+  const getGradeBadgeColor = (grade: number) => {
+    const colors = {
+      1: "bg-red-100 text-red-800",
+      2: "bg-orange-100 text-orange-800", 
+      3: "bg-yellow-100 text-yellow-800",
+      4: "bg-green-100 text-green-800",
+      5: "bg-blue-100 text-blue-800",
+      6: "bg-purple-100 text-purple-800",
+    } as const
+    return colors[grade as keyof typeof colors] || "bg-gray-100 text-gray-800"
   }
 
-  const handleEdit = (classId: string) => {
-    router.push(`/dashboard/classes/${classId}/edit`)
-  }
+  const LoadingSkeleton = () => (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-4" />
+        </div>
+        <Skeleton className="h-4 w-20" />
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center space-x-2">
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+        <Skeleton className="h-8 w-full" />
+      </CardContent>
+    </Card>
+  )
 
-  const handleDelete = (classId: string) => {
-    // Implement delete logic
-    console.log('Delete class:', classId)
-  }
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
-                <Skeleton className="h-8 w-20" />
-              </div>
-            </CardContent>
-          </Card>
+          <LoadingSkeleton key={i} />
         ))}
       </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="text-center py-8">
-          <p className="text-muted-foreground">Error: {error}</p>
-        </CardContent>
-      </Card>
     )
   }
 
   if (classes.length === 0) {
     return (
       <Card>
-        <CardContent className="text-center py-16">
-          <div className="flex flex-col items-center gap-2">
-            <GraduationCap className="h-12 w-12 text-muted-foreground" />
-            <h3 className="text-lg font-medium">Tidak ada data kelas</h3>
-            <p className="text-muted-foreground">Belum ada kelas yang terdaftar</p>
-          </div>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <GraduationCap className="h-12 w-12 text-muted-foreground mb-4" />
+          <p className="text-muted-foreground text-center">
+            Tidak ada data kelas ditemukan
+          </p>
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {classes.map((classItem) => {
-        const status = formatClassStatus(classItem.currentCount, classItem.capacity)
-        const fillPercentage = (classItem.currentCount / classItem.capacity) * 100
-        
-        return (
-          <Card key={classItem.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{classItem.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {formatGradeLevel(classItem.grade)}
-                  </p>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Open menu</span>
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleView(classItem.id)}>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Lihat Detail
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleEdit(classItem.id)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      className="text-destructive"
-                      onClick={() => handleDelete(classItem.id)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Hapus
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Kapasitas</span>
-                  <span className="font-medium">
-                    {formatCapacity(classItem.currentCount, classItem.capacity)}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all"
-                    style={{ width: `${Math.min(fillPercentage, 100)}%` }}
-                  />
-                </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {classes.map((classItem) => (
+        <Card key={classItem.id} className="hover:shadow-md transition-shadow">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold">
+                {classItem.name}
+              </CardTitle>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onView?.(classItem.id)}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Lihat Detail
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit?.(classItem.id)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Kelas
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => onDelete?.(classItem.id)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Hapus Kelas
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <Badge className={getGradeBadgeColor(classItem.grade)} variant="secondary">
+              Kelas {classItem.grade}
+            </Badge>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 text-sm">
+                <School className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{classItem.school?.name}</span>
               </div>
               
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Users className="h-4 w-4" />
-                  <span>{formatTeacherName(classItem.teacherName)}</span>
+              {classItem.teacherName && (
+                <div className="flex items-center space-x-2 text-sm">
+                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                  <span>{classItem.teacherName}</span>
                 </div>
-                <Badge variant={status === 'full' ? 'destructive' : status === 'active' ? 'default' : 'secondary'}>
-                  {formatClassStatusText(status)}
-                </Badge>
+              )}
+              
+              <div className="flex items-center space-x-2 text-sm">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span>Kapasitas: {classItem.capacity} siswa</span>
               </div>
-            </CardContent>
-          </Card>
-        )
-      })}
+            </div>
+
+            <div className="pt-3 border-t">
+              <div className="flex space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => onView?.(classItem.id)}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Detail
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => onEdit?.(classItem.id)}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Button>
+              </div>
+            </div>
+
+            {classItem.notes && (
+              <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                {classItem.notes}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ))}
     </div>
   )
 }

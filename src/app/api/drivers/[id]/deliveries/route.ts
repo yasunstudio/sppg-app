@@ -1,31 +1,31 @@
-import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
-import { hasPermission } from "@/lib/permissions"
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { permissionEngine } from '@/lib/permissions/core/permission-engine';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication and permissions
-    const session = await auth()
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'drivers.view')) {
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'drivers:read'
+    );
+
+    if (!hasPermission) {
       return NextResponse.json(
-        { success: false, error: "Forbidden - Insufficient permissions" },
+        { error: 'Forbidden: Insufficient permissions' },
         { status: 403 }
-      )
+      );
     }
 
-    const { id } = await params
+    const { id } = await params;
 
     // First verify the driver exists
     const driver = await prisma.driver.findFirst({
@@ -36,37 +36,73 @@ export async function GET(
         ],
         deletedAt: null
       }
-    })
+    });
 
     if (!driver) {
       return NextResponse.json(
-        { success: false, error: "Driver not found" },
+        { error: 'Driver not found' },
         { status: 404 }
-      )
+      );
     }
 
-    // Get pagination parameters
-    const searchParams = request.nextUrl.searchParams
-    const limit = parseInt(searchParams.get("limit") || "10")
-    const offset = parseInt(searchParams.get("offset") || "0")
-    const status = searchParams.get("status")
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
+    const status = searchParams.get('status');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
 
-    // Build where clause for deliveries
+    const skip = (page - 1) * limit;
+
+    // Build where conditions
     const where: any = {
-      driverId: driver.id,
-      ...(status && { status }),
+      driverId: driver.id
+    };
+
+    if (status) {
+      where.status = status;
     }
 
-    // Fetch deliveries with related data
+    if (startDate) {
+      where.plannedTime = {
+        ...where.plannedTime,
+        gte: new Date(startDate)
+      };
+    }
+
+    if (endDate) {
+      where.plannedTime = {
+        ...where.plannedTime,
+        lte: new Date(endDate)
+      };
+    }
+
+    // Get deliveries with related data
     const [deliveries, total] = await Promise.all([
       prisma.delivery.findMany({
         where,
+        skip,
+        take: limit,
         include: {
+          driver: {
+            select: {
+              id: true,
+              name: true,
+              employeeId: true,
+              phone: true
+            }
+          },
+          vehicle: {
+            select: {
+              id: true,
+              plateNumber: true,
+              type: true
+            }
+          },
           distribution: {
             select: {
               id: true,
-              distributionDate: true,
-              status: true
+              distributionDate: true
             }
           },
           school: {
@@ -75,70 +111,62 @@ export async function GET(
               name: true,
               address: true
             }
-          },
-          vehicle: {
-            select: {
-              id: true,
-              plateNumber: true,
-              model: true,
-              type: true
-            }
           }
         },
-        orderBy: { createdAt: "desc" },
-        take: limit,
-        skip: offset
+        orderBy: {
+          plannedTime: 'desc'
+        }
       }),
       prisma.delivery.count({ where })
-    ])
+    ]);
 
-    // Transform data for response
-    const transformedDeliveries = deliveries.map(delivery => ({
-      id: delivery.id,
-      status: delivery.status,
-      deliveryOrder: delivery.deliveryOrder,
-      plannedTime: delivery.plannedTime,
-      departureTime: delivery.departureTime,
-      arrivalTime: delivery.arrivalTime,
-      completionTime: delivery.completionTime,
-      portionsDelivered: delivery.portionsDelivered,
-      notes: delivery.notes,
-      school: delivery.school ? {
-        id: delivery.school.id,
-        name: delivery.school.name,
-        address: delivery.school.address
-      } : null,
-      vehicle: delivery.vehicle ? {
-        id: delivery.vehicle.id,
-        plateNumber: delivery.vehicle.plateNumber,
-        model: delivery.vehicle.model,
-        type: delivery.vehicle.type
-      } : null,
-      distribution: delivery.distribution ? {
-        id: delivery.distribution.id,
-        date: delivery.distribution.distributionDate,
-        status: delivery.distribution.status
-      } : null,
-      createdAt: delivery.createdAt,
-      updatedAt: delivery.updatedAt
-    }))
+    // Calculate statistics
+    const stats = await prisma.delivery.groupBy({
+      by: ['status'],
+      where: {
+        driverId: driver.id
+      },
+      _count: {
+        status: true
+      }
+    });
+
+    const statusStats = stats.reduce((acc: any, stat: any) => {
+      acc[stat.status] = stat._count.status;
+      return acc;
+    }, {});
 
     return NextResponse.json({
       success: true,
-      data: transformedDeliveries,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total
+      data: {
+        deliveries,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        },
+        stats: {
+          total,
+          byStatus: statusStats
+        },
+        driver: {
+          id: driver.id,
+          name: driver.name,
+          employeeId: driver.employeeId
+        }
       }
-    })
+    });
 
   } catch (error) {
-    console.error("Error fetching driver deliveries:", error)
+    console.error('Driver deliveries fetch error:', error);
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { 
+        success: false,
+        error: 'Failed to fetch driver deliveries',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
-    )
+    );
   }
 }

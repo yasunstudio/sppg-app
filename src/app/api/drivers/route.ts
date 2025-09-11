@@ -1,145 +1,81 @@
-import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
-import { hasPermission } from "@/lib/permissions"
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { permissionEngine } from '@/lib/permissions/core/permission-engine';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const session = await auth()
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'drivers.view')) {
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'drivers:read'
+    );
+
+    if (!hasPermission) {
       return NextResponse.json(
-        { success: false, error: "Forbidden - Insufficient permissions" },
+        { error: 'Forbidden: Insufficient permissions' },
         { status: 403 }
-      )
+      );
     }
 
-    const searchParams = request.nextUrl.searchParams
-    const limit = parseInt(searchParams.get("limit") || "20")
-    const offset = parseInt(searchParams.get("offset") || "0")
-    const isActive = searchParams.get("isActive")
-    const licenseType = searchParams.get("licenseType")
+    const drivers = await prisma.driver.findMany({
+      orderBy: { name: 'asc' }
+    });
 
-    // Build where clause
-    const where: any = {
-      ...(isActive !== null && { isActive: isActive === "true" }),
-      ...(licenseType && { licenseType }),
-      deletedAt: null
-    }
-
-    const [drivers, total] = await Promise.all([
-      prisma.driver.findMany({
-        where,
-        include: {
-          _count: {
-            select: {
-              distributions: true,
-              deliveries: true
-            }
-          }
-        },
-        orderBy: { name: "asc" },
-        take: limit,
-        skip: offset
-      }),
-      prisma.driver.count({ where })
-    ])
-
-    return NextResponse.json({
-      success: true,
-      data: drivers,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total
-      }
-    })
+    return NextResponse.json({ success: true, data: drivers });
 
   } catch (error) {
-    console.error("Error fetching drivers:", error)
+    console.error('Drivers GET error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: "Failed to fetch drivers",
-        details: error instanceof Error ? error.message : "Unknown error"
-      },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const session = await auth()
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRoles = session.user.roles?.map((ur: any) => ur.role.name) || []
-    if (!hasPermission(userRoles, 'drivers.create')) {
+    const hasPermission = await permissionEngine.hasPermission(
+      session.user.id,
+      'drivers:create'
+    );
+
+    if (!hasPermission) {
       return NextResponse.json(
-        { success: false, error: "Forbidden - Insufficient permissions" },
+        { error: 'Forbidden: Insufficient permissions' },
         { status: 403 }
-      )
+      );
     }
 
-    const body = await request.json()
-    
-    const {
-      employeeId,
-      name,
-      phone,
-      email,
-      licenseNumber,
-      licenseExpiry,
-      address,
-      emergencyContact,
-      emergencyPhone,
-      notes
-    } = body
+    const data = await request.json();
 
     const driver = await prisma.driver.create({
       data: {
-        employeeId,
-        name,
-        phone,
-        email,
-        licenseNumber,
-        licenseExpiry: new Date(licenseExpiry),
-        address,
-        emergencyContact,
-        emergencyPhone,
-        notes
+        employeeId: data.employeeId,
+        name: data.name,
+        licenseNumber: data.licenseNumber,
+        licenseType: data.licenseType,
+        licenseExpiry: new Date(data.licenseExpiry),
+        phone: data.phone || null
       }
-    })
+    });
 
-    return NextResponse.json({
-      success: true,
-      data: driver
-    })
+    return NextResponse.json({ success: true, data: driver });
 
   } catch (error) {
-    console.error("Error creating driver:", error)
+    console.error('Driver POST error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: "Failed to create driver",
-        details: error instanceof Error ? error.message : "Unknown error"
-      },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }

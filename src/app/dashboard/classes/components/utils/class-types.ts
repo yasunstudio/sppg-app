@@ -1,16 +1,14 @@
-// Class types - Updated to match Prisma schema and API
+// Class types - Updated to match API schema and vehicles pattern
 export interface Class {
   id: string
   name: string
   grade: number
   capacity: number
-  currentCount: number
   teacherName?: string | null
   notes?: string | null
   schoolId: string
   createdAt: string     // API returns ISO string
   updatedAt: string     // API returns ISO string
-  deletedAt?: string | null
   school?: {            // Added to match API response with include
     id: string
     name: string
@@ -20,8 +18,14 @@ export interface Class {
 export interface ClassStats {
   totalClasses: number
   totalStudents: number
+  totalCapacity: number
   averageCapacity: number
   occupancyRate: number
+  gradeBreakdown?: Array<{
+    grade: string
+    count: number
+    percentage: number
+  }>
 }
 
 export interface ClassFilters {
@@ -33,7 +37,8 @@ export interface ClassFilters {
 export interface PaginationData {
   currentPage: number
   totalPages: number
-  totalItems: number
+  totalCount: number
+  hasMore: boolean
   itemsPerPage: number
 }
 
@@ -51,9 +56,11 @@ export interface UpdateClassData extends Partial<CreateClassData> {
   id: string
 }
 
-// API response types - Updated to match actual API structure
+// API response types - Updated to match vehicles pattern
 export interface ClassesApiResponse {
-  classes: Class[]
+  success: boolean
+  data: Class[]
+  stats: ClassStats
   pagination: PaginationData
 }
 
